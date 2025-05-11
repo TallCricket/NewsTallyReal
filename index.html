@@ -19,6 +19,9 @@
   <meta name="author" content="NewsTally Team" />
   <link rel="canonical" href="https://newstally.online/index.html" />
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="https://pbs.twimg.com/media/GqpcfVqWkAA-NTP?format=jpg&name=small" />
+
   <!-- Open Graph (OG) Tags for Social Media -->
   <meta property="og:title" content="NewsTally - Latest and Trending News Worldwide" />
   <meta property="og:description" content="Stay informed with NewsTally, your source for the latest and trending news from around the world in politics, sports, tech, entertainment, and more." />
@@ -298,7 +301,7 @@
             </ul>
           </div>
         </div>
-        <div>
+        <div class="hidden md:block">
           <input
             id="search-input"
             type="search"
@@ -803,18 +806,20 @@
       });
 
       const searchInput = document.getElementById('search-input');
-      searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        filteredNews = news.filter(item =>
-          item.headline.toLowerCase().includes(query) ||
-          item.category.toLowerCase().includes(query)
-        );
-        if (categoryFilter.value !== 'All') {
-          filteredNews = filteredNews.filter(item => item.category === categoryFilter.value);
-        }
-        displayedNewsCount = 0;
-        renderNews();
-      });
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase();
+          filteredNews = news.filter(item =>
+            item.headline.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query)
+          );
+          if (categoryFilter.value !== 'All') {
+            filteredNews = filteredNews.filter(item => item.category === categoryFilter.value);
+          }
+          displayedNewsCount = 0;
+          renderNews();
+        });
+      }
     }
 
     // Highlight Active Navigation Link
