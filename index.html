@@ -22,6 +22,12 @@
   <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="https://pbs.twimg.com/media/GqpcfVqWkAA-NTP?format=jpg&name=small" />
 
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
   <!-- Open Graph (OG) Tags for Social Media -->
   <meta property="og:title" content="NewsTally - Latest and Trending News Worldwide" />
   <meta property="og:description" content="Stay informed with NewsTally, your source for the latest and trending news from around the world in politics, sports, tech, entertainment, and more." />
@@ -45,9 +51,11 @@
     gtag('config', 'G-JYEMEVD1J4');
   </script>
 
-  <!-- Tailwind CSS and Font Awesome -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+  <!-- Font Awesome CSS CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <!-- External Stylesheet -->
   <link href="style.css" rel="stylesheet" />
@@ -97,7 +105,11 @@
     }
     /* Hover animation for news cards */
     .news-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease;
+      opacity: 0;
+    }
+    .news-card.loaded {
+      opacity: 1;
     }
     .news-card:hover {
       transform: translateY(-5px);
@@ -150,6 +162,10 @@
       transition: transform 0.3s ease, opacity 0.5s ease;
       border-radius: 15px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+    }
+    .carousel img.loaded {
+      opacity: 1;
     }
     .carousel img:hover {
       transform: scale(1.05);
@@ -259,6 +275,37 @@
     .scroll-btn.right {
       right: -1rem;
     }
+    /* Bottom Navigation for Mobile */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.25rem 0;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 30;
+    }
+    .bottom-nav a {
+      color: black;
+      text-align: center;
+      flex: 1;
+      padding: 0.25rem;
+      transition: background-color 0.3s ease;
+    }
+    .bottom-nav a:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    .bottom-nav i {
+      font-size: 1.25rem;
+    }
+    .bottom-nav span {
+      display: block;
+      font-size: 0.65rem;
+      margin-top: 0.15rem;
+    }
   </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -267,18 +314,20 @@
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
 
-  <div id="root" class="min-h-screen">
+  <div id="root" class="min-h-screen pb-16 md:pb-0">
     <!-- Top Bar (Sticky) -->
     <header class="gradient-bg text-white py-3 sticky top-0 z-20">
       <div class="container mx-auto px-4 flex justify-between items-center">
-        <div class="flex space-x-4">
-          <a href="https://www.facebook.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="https://www.twitter.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="https://www.youtube.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on YouTube"><i class="fab fa-youtube"></i></a>
-          <a href="https://www.instagram.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="index.html" class="flex items-center space-x-2">
+          <img src="https://pbs.twimg.com/media/GqpcfVqWkAA-NTP?format=jpg&name=small" alt="NewsTally Favicon" class="w-6 h-6">
+          <h1 class="text-2xl font-extrabold tracking-tight">NewsTally</h1>
+        </a>
+        <div class="flex space-x-2">
+          <a href="https://www.facebook.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Facebook"><i class="fab fa-facebook-f text-sm"></i></a>
+          <a href="https://www.twitter.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Twitter"><i class="fab fa-twitter text-sm"></i></a>
+          <a href="https://www.youtube.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on YouTube"><i class="fab fa-youtube text-sm"></i></a>
+          <a href="https://www.instagram.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Instagram"><i class="fab fa-instagram text-sm"></i></a>
         </div>
-        <a href="index.html"><h1 class="text-2xl font-extrabold tracking-tight">NewsTally</h1></a>
-        <div class="w-6"></div>
       </div>
     </header>
 
@@ -318,7 +367,7 @@
       <!-- Date and Time (Plain Text) -->
       <div class="mb-4">
         <p class="text-sm text-gray-600">
-          <time id="current-date"></time> | <time id="current-time"></time>
+          <time id="current-date" datetime=""></time> | <time id="current-time" datetime=""></time>
         </p>
       </div>
 
@@ -331,7 +380,7 @@
         <div class="md:w-1/2 relative carousel">
           <div class="image-container">
             <a id="carousel-link" href="#">
-              <img id="carousel-image" src="https://via.placeholder.com/600x400" alt="Featured News Image" class="w-full h-96 object-cover">
+              <img id="carousel-image" src="https://via.placeholder.com/600x400" alt="Featured News Image" class="w-full h-96 object-cover" loading="lazy">
             </a>
             <div class="caption" id="carousel-caption"></div>
           </div>
@@ -406,6 +455,30 @@
       </aside>
     </main>
 
+    <!-- Bottom Navigation for Mobile -->
+    <nav class="bottom-nav md:hidden">
+      <a href="index.html" class="nav-active">
+        <i class="fas fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="live.html">
+        <i class="fas fa-tower-broadcast"></i>
+        <span>Live</span>
+      </a>
+      <a href="quick.html">
+        <i class="fas fa-bolt"></i>
+        <span>Quick</span>
+      </a>
+      <a href="trending.html">
+        <i class="fas fa-fire"></i>
+        <span>Trending</span>
+      </a>
+      <a href="cricket.html">
+        <i class="fas fa-baseball-ball"></i>
+        <span>Cricket</span>
+      </a>
+    </nav>
+
     <!-- Footer -->
     <footer class="gradient-bg text-white py-10">
       <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -452,6 +525,21 @@
     let categories = [];
     let displayedNewsCount = 0;
     const NEWS_PER_PAGE = 15;
+
+    // Register Service Worker for PWA (Commented out due to missing sw.js)
+    /*
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(error => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
+    */
 
     // Fetch news from Google Sheet (Sheet1)
     async function fetchNews() {
@@ -538,7 +626,7 @@
         ? topPlayers.map(item => `
             <div class="player-card flex items-center space-x-3">
               <a href="playerbio.html?player=${encodeURIComponent(item.playerName)}">
-                <img src="${item.image}" alt="${item.playerName} Profile Image" class="player-image w-12 h-12">
+                <img src="${item.image}" alt="${item.playerName} Profile Image" class="player-image w-12 h-12" loading="lazy">
               </a>
               <div class="flex-1">
                 <h4 class="text-sm font-semibold hover:text-blue-600 transition">
@@ -560,7 +648,7 @@
         ? featuredNews.map(item => `
             <article class="featured-news-card">
               <a href="opennews.html?headline=${encodeURIComponent(item.headline)}">
-                <img src="${item.image}" alt="${item.headline}" class="w-full h-24 mb-2">
+                <img src="${item.image}" alt="${item.headline}" class="w-full h-24 mb-2" loading="lazy">
                 <h4 class="text-sm font-semibold text-gray-800 hover:text-blue-600 transition">${item.headline}</h4>
                 <p class="text-xs text-gray-600 mt-1">${item.source}</p>
               </a>
@@ -598,7 +686,7 @@
     // Display and update date and time
     function updateDateTime() {
       const now = new Date();
-      
+
       // Format date as "Day, Month Date, Year" (e.g., "Sat, May 10, 2025")
       const dateOptions = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
       const formattedDate = now.toLocaleDateString('en-US', dateOptions);
@@ -607,8 +695,16 @@
       const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
       const formattedTime = now.toLocaleTimeString('en-US', timeOptions);
 
-      document.getElementById('current-date').textContent = formattedDate;
-      document.getElementById('current-time').textContent = formattedTime;
+      // Set the datetime attribute for accessibility (ISO format)
+      const isoDateTime = now.toISOString();
+      const dateElement = document.getElementById('current-date');
+      const timeElement = document.getElementById('current-time');
+
+      dateElement.textContent = formattedDate;
+      dateElement.setAttribute('datetime', isoDateTime.split('T')[0]);
+
+      timeElement.textContent = formattedTime;
+      timeElement.setAttribute('datetime', isoDateTime);
     }
 
     // Update carousel slide
@@ -637,7 +733,7 @@
           }
 
           // Fade in
-          carouselImage.style.opacity = '1';
+          carouselImage.classList.add('loaded');
         }
       }, 500); // Match the opacity transition duration
     }
@@ -655,6 +751,7 @@
         carouselImage.alt = topStories[currentSlide].headline;
         carouselLink.href = `opennews.html?headline=${encodeURIComponent(topStories[currentSlide].headline)}`;
         carouselCaption.textContent = topStories[currentSlide].headline;
+        carouselImage.classList.add('loaded');
       }
 
       // Create navigation dots
@@ -714,7 +811,7 @@
 
       const newsHTML = newsToDisplay.map(item => `
         <article class="news-card bg-white p-4 rounded-xl shadow-md flex items-start space-x-4">
-          <img src="${item.image}" alt="${item.headline}" class="w-24 h-24 object-cover rounded-lg">
+          <img src="${item.image}" alt="${item.headline}" class="w-24 h-24 object-cover rounded-lg" loading="lazy">
           <div class="flex-1">
             <h3 class="text-lg font-semibold hover:text-blue-600 transition">
               <a href="opennews.html?headline=${encodeURIComponent(item.headline)}">${item.headline}</a>
@@ -730,6 +827,13 @@
       } else {
         newsFeed.innerHTML = newsHTML;
       }
+
+      // Add loaded class for fade-in effect
+      document.querySelectorAll('.news-card').forEach((card, index) => {
+        setTimeout(() => {
+          card.classList.add('loaded');
+        }, index * 100);
+      });
 
       displayedNewsCount = endIndex;
 
@@ -825,7 +929,13 @@
     // Highlight Active Navigation Link
     function highlightActiveNav() {
       const navLinks = document.querySelectorAll('#nav-menu a');
+      const bottomNavLinks = document.querySelectorAll('.bottom-nav a');
       navLinks.forEach(link => {
+        if (link.href.includes('index.html') || (link.href.endsWith('#') && window.location.pathname.endsWith('index.html'))) {
+          link.classList.add('nav-active');
+        }
+      });
+      bottomNavLinks.forEach(link => {
         if (link.href.includes('index.html') || (link.href.endsWith('#') && window.location.pathname.endsWith('index.html'))) {
           link.classList.add('nav-active');
         }
