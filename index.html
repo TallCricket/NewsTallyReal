@@ -585,7 +585,7 @@
 
         // Filter Featured News
         featuredNews = news
-          .filter(item => item.category.toLowerCase() === 'featured')
+          .filter(item => item.category.toLowerCase() === 'top')
           .sort((a, b) => b.rank - a.rank);
 
         filteredNews = [...news];
