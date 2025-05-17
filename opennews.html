@@ -1,136 +1,560 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NewsTally - News Details</title>
+  <!-- Google Tag Manager -->
+  <script async>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-WBPCRDT2');</script>
+  <!-- End Google Tag Manager -->
 
-   <!-- Favicon -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- SEO Meta Tags -->
+  <title>NewsTally - News Details</title>
+  <meta name="description" content="Read detailed news articles on NewsTally. Explore breaking news, politics, sports, entertainment, and more with real-time updates and vibrant visuals." />
+  <meta name="keywords" content="News Details, Breaking News, Politics, Sports, Entertainment, Technology, NewsTally Article, ताज़ा खबर, न्यूज़ डिटेल्स, NewsTally" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="NewsTally Team" />
+  <link rel="canonical" href="https://newstally.online/opennews.html" />
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7970185951737996" crossorigin="anonymous"></script>
+
+  <!-- Favicon -->
   <link rel="icon" type="image/jpeg" href="https://pbs.twimg.com/media/GqpcfVqWkAA-NTP?format=jpg&name=small" />
-  
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <!-- Open Graph (OG) Tags for Social Media -->
+  <meta property="og:title" content="NewsTally - News Details" />
+  <meta property="og:description" content="Read detailed news articles on NewsTally. Explore breaking news, politics, sports, entertainment, and more with vibrant visuals." />
+  <meta property="og:url" content="https://newstally.online/opennews.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="https://newstally.online/images/logo.png" />
+  <meta property="og:site_name" content="NewsTally" />
+
+  <!-- Twitter Card Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NewsTally - News Details" />
+  <meta name="twitter:description" content="Read detailed news articles on NewsTally. Explore breaking news, politics, sports, entertainment, and more with vibrant visuals." />
+  <meta name="twitter:image" content="https://newstally.online/images/logo.png" />
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JYEMEVD1J4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JYEMEVD1J4');
+  </script>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+  <!-- Font Awesome CSS CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- External Stylesheet -->
+  <link href="style.css" rel="stylesheet" />
+
+  <!-- Structured Data (JSON-LD) for Organization and Website -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "NewsTally",
+          "url": "https://newstally.online",
+          "logo": "https://newstally.online/images/logo.png",
+          "sameAs": [
+            "https://www.facebook.com/newstally",
+            "https://www.twitter.com/newstally",
+            "https://www.instagram.com/newstally",
+            "https://www.youtube.com/newstally"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "url": "https://newstally.online",
+          "name": "NewsTally",
+          "description": "Detailed news articles across all categories.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://newstally.online/opennews.html?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+  </script>
+
+  <!-- Inline Styles -->
   <style>
+    /* Responsive Image Sizing */
+    @media (max-width: 640px) {
+      #news-image {
+        height: 200px;
+      }
+    }
+    @media (min-width: 641px) {
+      #news-image {
+        height: 400px;
+      }
+    }
     /* Gradient background for top bar and footer */
     .gradient-bg {
       background: linear-gradient(90deg, #1e3a8a, #3b82f6);
     }
-    /* Hover animation for news cards */
-    .news-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* Enhanced Header Styling */
+    header {
+      z-index: 30;
     }
-    .news-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    /* Enhanced Navigation Styling */
+    nav {
+      z-index: 20;
     }
-    /* Active nav link underline */
-    .nav-active {
-      position: relative;
+    #nav-menu a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      font-size: 0.875rem;
     }
-    .nav-active::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
+    #nav-menu a:hover {
+      background-color: #e5e7eb;
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    #nav-menu a.nav-active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    #nav-menu a.nav-active::after {
+      display: none;
+    }
+    /* Sliding Navigation Panel */
+    #nav-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 256px;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 30;
+      overflow-y: auto;
+    }
+    #nav-panel.open {
+      transform: translateX(0);
+    }
+    #nav-panel a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      color: white;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: background-color 0.3s ease;
+    }
+    #nav-panel a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    #nav-panel a.nav-active {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    /* Bottom Navigation for Mobile and Tablet */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
       left: 0;
       width: 100%;
-      height: 2px;
-      background-color: #dc2626;
+      height: 56px;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+      z-index: 20;
     }
-    /* Smooth button animations */
-    .btn {
+    @media (min-width: 1024px) {
+      .bottom-nav {
+        display: none;
+      }
+    }
+    .bottom-nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.4rem;
+      transition: all 0.3s ease;
+      border-radius: 12px;
+      position: relative;
+      color: #000000;
+    }
+    .bottom-nav a:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      transform: scale(1.1);
+    }
+    .bottom-nav a.nav-active {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+    .bottom-nav a.nav-active::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      width: 6px;
+      height: 6px;
+      background-color: #dc2626;
+      border-radius: 50%;
+    }
+    .bottom-nav i {
+      font-size: 1.25rem;
+    }
+    .bottom-nav span {
+      font-size: 0.65rem;
+    }
+    /* Search Toggle Button */
+    #search-toggle {
+      padding: 0.375rem;
+      border-radius: 50%;
       transition: background-color 0.3s ease, transform 0.3s ease;
     }
-    .btn:hover {
+    #search-toggle:hover {
+      background-color: #e5e7eb;
+      transform: scale(1.1);
+    }
+    #search-toggle i {
+      font-size: 1rem;
+    }
+    /* Search Results Dropdown */
+    #search-results {
+      position: absolute;
+      top: 104px;
+      right: 0;
+      width: 100%;
+      max-width: 384px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 20;
+      scrollbar-width: thin;
+    }
+    #search-results input {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-bottom: 1px solid #e5e7eb;
+      outline: none;
+    }
+    .search-result-card {
+      padding: 0.75rem;
+      border-bottom: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .search-result-card:hover {
+      background-color: #f3f4f6;
+    }
+    .search-result-card:last-child {
+      border-bottom: none;
+    }
+    /* Skeleton Loading Styles */
+    .skeleton {
+      background: linear-gradient(90deg, #e5e7eb 25%, #d1d5db 50%, #e5e7eb 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-text {
+      height: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+    }
+    .skeleton-image {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+    }
+    .skeleton-card {
+      opacity: 1 !important;
+    }
+    /* Article Styling */
+    .news-article {
+      position: relative;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity: 0;
+      border: 2px solid transparent;
+      background-image: linear-gradient(white, white), linear-gradient(135deg, #fef3c7, #f3e8ff);
+      background-origin: border-box;
+      background-clip: content-box, border-box;
+    }
+    .news-article.loaded {
+      opacity: 1;
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    .news-article:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    #news-image {
+      width: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .news-article:hover #news-image {
       transform: scale(1.05);
     }
-    /* Subtle background gradient for main content */
-    .content-bg {
-      background: linear-gradient(180deg, #f3f4f6, #ffffff);
+    /* Share Buttons */
+    .share-button {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    .share-button:hover {
+      transform: scale(1.1);
+    }
+    .share-facebook { background: #3b5998; color: white; }
+    .share-twitter { background: #1da1f2; color: white; }
+    .share-whatsapp { background: #25d366; color: white; }
+    /* Breadcrumb */
+    .breadcrumb a {
+      position: relative;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    .breadcrumb a:hover {
+      background-color: #e5e7eb;
+    }
+    .category-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: white;
+    }
+    /* Category Colors */
+    .category-entertainment { background: #ec4899; }
+    .category-politics { background: #2563eb; }
+    .category-sports { background: #16a34a; }
+    .category-technology { background: #6b7280; }
+    .category-breaking { background: #dc2626; }
+    .category-default { background: #475569; }
+    /* Related News */
+    .related-news-item {
+      position: relative;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity: 0;
+    }
+    .related-news-item.loaded {
+      opacity: 1;
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    .related-news-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    .related-news-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .related-news-item:hover img {
+      transform: scale(1.05);
+    }
+    .related-news-item .category-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+    /* Newsletter */
+    .newsletter-input {
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .newsletter-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+    }
+    .newsletter-button {
+      background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .newsletter-button:hover {
+      background: linear-gradient(90deg, #3b82f6, #1e3a8a);
+      transform: scale(1.05);
+    }
+    /* Fade-in Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Back Button */
+    .back-button {
+      background: linear-gradient(90deg, #dc2626, #b91c1c);
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .back-button:hover {
+      background: linear-gradient(90deg, #b91c1c, #dc2626);
+      transform: scale(1.05);
     }
   </style>
 </head>
 <body class="bg-gray-50 font-sans">
-  <div id="root" class="min-h-screen flex flex-col">
-    <!-- Top Bar -->
-    <div class="gradient-bg text-white py-3">
-      <div class="container mx-auto px-4 flex justify-between items-center">
-        <div class="flex space-x-4">
-          <a href="#" class="hover:text-gray-200 transition"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="hover:text-gray-200 transition"><i class="fab fa-twitter"></i></a>
-          <a href="#" class="hover:text-gray-200 transition"><i class="fab fa-youtube"></i></a>
-          <a href="#" class="hover:text-gray-200 transition"><i class="fab fa-instagram"></i></a>
-        </div>
-        <a href="index.html"><h1 class="text-2xl font-extrabold tracking-tight">NewsTally</h1></a>
-        <div class="w-6"></div>
-      </div>
-    </div>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WBPCRDT2"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
 
-    <!-- Navigation Menu -->
-    <nav class="bg-white shadow-lg sticky top-0 z-10">
-      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+  <div id="root" class="min-h-screen max-md:pb-14">
+    <!-- Top Bar (Sticky) -->
+    <header class="gradient-bg text-white py-3 sticky top-0 z-30">
+      <div class="container mx-auto px-4 flex justify-between items-center">
+        <a href="index.html" class="flex items-center space-x-2">
+          <img src="https://pbs.twimg.com/media/GqpcfVqWkAA-NTP?format=jpg&name=small" alt="NewsTally Favicon" class="w-6 h-6">
+          <h1 class="text-2xl font-extrabold tracking-tight">NewsTally</h1>
+        </a>
+        <div class="flex space-x-2">
+          <a href="https://www.facebook.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Facebook"><i class="fab fa-facebook-f text-sm"></i></a>
+          <a href="https://www.twitter.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Twitter"><i class="fab fa-twitter text-sm"></i></a>
+          <a href="https://www.youtube.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on YouTube"><i class="fab fa-youtube text-sm"></i></a>
+          <a href="https://www.instagram.com/newstally" class="hover:text-gray-200 transition" aria-label="Follow NewsTally on Instagram"><i class="fab fa-instagram text-sm"></i></a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Menu (Sticky, below Top Bar) -->
+    <nav class="bg-white shadow-lg sticky top-[48px] z-20">
+      <div class="container mx-auto px-4 py-2 flex justify-between items-center">
         <div class="flex items-center">
-          <button id="menu-toggle" class="md:hidden mr-4">
-            <i class="fas fa-bars text-xl text-gray-700"></i>
+          <button id="menu-toggle" class="md:hidden mr-4" aria-label="Toggle navigation panel">
+            <i class="fas fa-ellipsis-v text-lg text-gray-700"></i>
           </button>
-          <div id="nav-menu" class="hidden md:block absolute md:static top-14 left-0 w-full md:w-auto bg-white md:bg-transparent shadow-md md:shadow-none">
-            <ul class="flex flex-col md:flex-row md:space-x-6 p-4 md:p-0">
-              <li><a href="live.html" class="block py-2 md:py-0 text-gray-700 hover:text-blue-600 transition">Live</a></li>
-              <li><a href="latest.html" class="block py-2 md:py-0 text-gray-700 hover:text-blue-600 transition">Latest</a></li>
-              <li><a href="breaking.html" class="block py-2 md:py-0 text-gray-700 hover:text-blue-600 transition">Breaking</a></li>
-              <li><a href="politics.html" class="block py-2 md:py-0 text-gray-700 hover:text-blue-600 transition">Politics</a></li>
-              <li><a href="sports.html" class="block py-2 md:py-0 text-gray-700 hover:text-blue-600 transition">Sports</a></li>
-              <li><a href="tech.html" class="block py-2 md:py-0 text-gray-700 hover:text-blue-600 transition">Tech</a></li>
-              <li><a href="entertainment.html" class="block py-2 md:py-0 text-gray-700 hover:text-blue-600 transition">Entertainment</a></li>
+          <div id="nav-menu" class="hidden md:block absolute md:static top-[104px] left-0 w-full md:w-auto bg-white md:bg-transparent shadow-md md:shadow-none">
+            <ul class="flex flex-col md:flex-row md:space-x-4 p-2 md:p-0">
+              <li><a href="live.html" class="block"><i class="fas fa-tower-broadcast mr-2"></i>Live News</a></li>
+              <li><a href="latest.html" class="block"><i class="fas fa-newspaper mr-2"></i>Latest News</a></li>
+              <li><a href="breaking.html" class="block"><i class="fas fa-bolt mr-2"></i>Breaking News</a></li>
+              <li><a href="politics.html" class="block"><i class="fas fa-landmark mr-2"></i>Politics</a></li>
+              <li><a href="sports.html" class="block"><i class="fas fa-football-ball mr-2"></i>Sports</a></li>
+              <li><a href="tech.html" class="block"><i class="fas fa-microchip mr-2"></i>Technology</a></li>
+              <li><a href="entertainment.html" class="block"><i class="fas fa-film mr-2"></i>Entertainment</a></li>
             </ul>
           </div>
         </div>
-        <div>
-          <input
-            id="search-input"
-            type="text"
-            placeholder="Search..."
-            class="px-4 py-2 border rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div class="flex items-center">
+          <button id="search-toggle" class="p-1.5 rounded-full" aria-label="Toggle search">
+            <i class="fas fa-search text-gray-700 text-lg"></i>
+          </button>
         </div>
       </div>
     </nav>
 
+    <!-- Sliding Navigation Panel (Mobile/Tablet) -->
+    <div id="nav-panel" class="md:hidden">
+      <div class="flex justify-between items-center p-4 border-b border-white/20">
+        <h2 class="text-white text-lg font-bold">Menu</h2>
+        <button id="close-panel" aria-label="Close navigation panel">
+          <i class="fas fa-times text-white text-xl"></i>
+        </button>
+      </div>
+      <ul class="flex flex-col p-4 space-y-2">
+        <li><a href="live.html"><i class="fas fa-tower-broadcast mr-2"></i>Live News</a></li>
+        <li><a href="latest.html"><i class="fas fa-newspaper mr-2"></i>Latest News</a></li>
+        <li><a href="breaking.html"><i class="fas fa-bolt mr-2"></i>Breaking News</a></li>
+        <li><a href="politics.html"><i class="fas fa-landmark mr-2"></i>Politics</a></li>
+        <li><a href="sports.html"><i class="fas fa-football-ball mr-2"></i>Sports</a></li>
+        <li><a href="tech.html"><i class="fas fa-microchip mr-2"></i>Technology</a></li>
+        <li><a href="entertainment.html"><i class="fas fa-film mr-2"></i>Entertainment</a></li>
+      </ul>
+    </div>
+
+    <!-- Search Results Dropdown -->
+    <div id="search-results" class="hidden">
+      <input id="search-input" type="search" placeholder="Search news..." aria-label="Search news articles" />
+      <div id="search-results-list">
+        <div class="search-result-card skeleton-card">
+          <div class="skeleton skeleton-text w-full h-5 mb-2"></div>
+          <div class="skeleton skeleton-text w-3/4 h-4"></div>
+        </div>
+        <div class="search-result-card skeleton-card">
+          <div class="skeleton skeleton-text w-full h-5 mb-2"></div>
+          <div class="skeleton skeleton-text w-3/4 h-4"></div>
+        </div>
+        <div class="search-result-card skeleton-card">
+          <div class="skeleton skeleton-text w-full h-5 mb-2"></div>
+          <div class="skeleton skeleton-text w-3/4 h-4"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-10 flex flex-col md:flex-row gap-8 content-bg flex-1">
+    <main class="container mx-auto px-4 py-10 flex flex-col md:flex-row gap-8">
       <!-- News Content (70%) -->
       <section class="md:w-3/4">
         <!-- Breadcrumb -->
-        <nav class="text-sm text-gray-600 mb-4" aria-label="Breadcrumb">
-          <ol class="list-none p-0 inline-flex">
+        <nav class="text-sm text-gray-600 mb-4 breadcrumb" aria-label="Breadcrumb">
+          <ol class="list-none p-0 inline-flex items-center space-x-2">
             <li class="flex items-center">
               <a href="index.html" class="hover:text-blue-600 transition">Home</a>
-              <i class="fas fa-chevron-right mx-2"></i>
+              <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
             </li>
             <li class="flex items-center">
-              <a id="category-breadcrumb" href="#" class="hover:text-blue-600 transition"></a>
-              <i class="fas fa-chevron-right mx-2"></i>
+              <a id="category-breadcrumb" href="#" class="category-badge"></a>
+              <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
             </li>
             <li class="text-gray-800" aria-current="page">Article</li>
           </ol>
         </nav>
 
         <!-- News Article -->
-        <div class="news-card bg-white p-6 rounded-xl shadow-md">
-          <img id="news-image" src="https://via.placeholder.com/600x400" alt="News Image" class="w-full md:w-3/4 h-auto rounded-lg mb-6 mx-auto">
+        <div class="news-article p-6">
+          <img id="news-image" src="https://via.placeholder.com/600x400" alt="News Image" class="w-full rounded-lg mb-6 mx-auto" loading="lazy">
           <h1 id="news-headline" class="text-3xl md:text-4xl font-extrabold mb-4 text-gray-800"></h1>
-          <div class="flex justify-between items-center mb-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
             <div>
               <p id="news-source" class="text-sm font-semibold text-gray-700"></p>
               <p id="news-date" class="text-sm text-gray-600"></p>
             </div>
             <div class="flex space-x-3">
-              <button id="share-facebook" class="text-blue-600 hover:text-blue-800 transition" aria-label="Share on Facebook">
+              <button id="share-facebook" class="share-button share-facebook" aria-label="Share on Facebook" title="Share on Facebook">
                 <i class="fab fa-facebook-f"></i>
               </button>
-              <button id="share-twitter" class="text-blue-400 hover:text-blue-600 transition" aria-label="Share on Twitter">
+              <button id="share-twitter" class="share-button share-twitter" aria-label="Share on Twitter" title="Share on Twitter">
                 <i class="fab fa-twitter"></i>
               </button>
-              <button id="share-whatsapp" class="text-green-500 hover:text-green-700 transition" aria-label="Share on WhatsApp">
+              <button id="share-whatsapp" class="share-button share-whatsapp" aria-label="Share on WhatsApp" title="Share on WhatsApp">
                 <i class="fab fa-whatsapp"></i>
               </button>
             </div>
@@ -138,7 +562,7 @@
           <p id="news-description" class="text-gray-700 leading-relaxed text-base md:text-lg mb-6"></p>
           <a id="news-link" href="#" class="text-blue-600 hover:underline font-medium">Read more at source</a>
           <div class="mt-6">
-            <a href="index.html" class="btn inline-block bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700">Back to News</a>
+            <a href="index.html" class="back-button inline-block text-white px-6 py-3 rounded-full shadow-lg">Back to News</a>
           </div>
         </div>
       </section>
@@ -158,13 +582,38 @@
             <input
               type="email"
               placeholder="Enter your email"
-              class="w-full px-4 py-2 border rounded-full mb-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="newsletter-input w-full px-4 py-2 border rounded-full mb-4 shadow-sm focus:outline-none"
+              aria-label="Enter your email for newsletter subscription"
             />
-            <button class="btn w-full bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition">Subscribe</button>
+            <button class="newsletter-button w-full text-white px-4 py-2 rounded-full shadow-lg">Subscribe</button>
           </div>
         </div>
       </aside>
     </main>
+
+    <!-- Bottom Navigation for Mobile and Tablet -->
+    <nav class="bottom-nav">
+      <a href="index.html">
+        <i class="fas fa-house"></i>
+        <span>Home</span>
+      </a>
+      <a href="live.html">
+        <i class="fas fa-tower-broadcast"></i>
+        <span>Live</span>
+      </a>
+      <a href="quick.html">
+        <i class="fas fa-bolt"></i>
+        <span>Quick</span>
+      </a>
+      <a href="trending.html">
+        <i class="fas fa-fire"></i>
+        <span>Trending</span>
+      </a>
+      <a href="cricket.html">
+        <i class="fas fa-baseball-ball"></i>
+        <span>Cricket</span>
+      </a>
+    </nav>
 
     <!-- Footer -->
     <footer class="gradient-bg text-white py-10">
@@ -176,7 +625,7 @@
         <div>
           <h3 class="text-xl font-bold mb-4">Quick Links</h3>
           <ul class="space-y-3">
-            <li><a href="#" class="hover:underline text-gray-200 hover:text-white transition">Home</a></li>
+            <li><a href="index.html" class="hover:underline text-gray-200 hover:text-white transition">Home</a></li>
             <li><a href="#" class="hover:underline text-gray-200 hover:text-white transition">About</a></li>
             <li><a href="#" class="hover:underline text-gray-200 hover:text-white transition">Contact</a></li>
           </ul>
@@ -184,10 +633,10 @@
         <div>
           <h3 class="text-xl font-bold mb-4">Follow Us</h3>
           <div class="flex space-x-4">
-            <a href="#" class="hover:text-blue-200 transition"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="hover:text-blue-200 transition"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="hover:text-blue-200 transition"><i class="fab fa-youtube"></i></a>
-            <a href="#" class="hover:text-blue-200 transition"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.facebook.com/newstally" class="hover:text-blue-200 transition" aria-label="Follow NewsTally on Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.twitter.com/newstally" class="hover:text-blue-200 transition" aria-label="Follow NewsTally on Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.youtube.com/newstally" class="hover:text-blue-200 transition" aria-label="Follow NewsTally on YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://www.instagram.com/newstally" class="hover:text-blue-200 transition" aria-label="Follow NewsTally on Instagram"><i class="fab fa-instagram"></i></a>
           </div>
         </div>
       </div>
@@ -201,8 +650,53 @@
     const API_KEY = 'AIzaSyC8D-4bl3GDyj_--BGG1pPdO5Bz63r5iXI';
     const SHEET_ID = '1Wy6rzaCALqPLFx079nqBCDRP7dk3au5eRO4GuMwQ8Sk';
     const SHEET_NAME = 'Sheet1';
+    const DEFAULT_IMAGE = 'https://pbs.twimg.com/media/Gq3vCCsWsAALzuo?format=jpg&name=small';
 
     let allNews = [];
+
+    // Category color mapping
+    const categoryColors = {
+      'Entertainment': 'category-entertainment',
+      'Politics': 'category-politics',
+      'Sports': 'category-sports',
+      'Technology': 'category-technology',
+      'Breaking': 'category-breaking',
+      'default': 'category-default'
+    };
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(error => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
+
+    // Preload images to improve loading performance
+    function preloadImages(imageUrls) {
+      imageUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+      });
+    }
+
+    // Debounce function for search
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
 
     // Fetch news from Google Sheet
     async function fetchNews() {
@@ -220,11 +714,15 @@
           date: row[3],
           description: row[4],
           link: row[5],
-          category: row[6],
-          image: row[7] || 'https://via.placeholder.com/150x150'
+          category: row[6] || 'Breaking',
+          image: row[7] && row[7] !== 'https://via.placeholder.com/150x150' ? row[7] : DEFAULT_IMAGE
         }));
 
+        const newsImages = allNews.map(item => item.image);
+        preloadImages(newsImages);
+
         displayNews(allNews);
+        setupSearch();
       } catch (error) {
         console.error('Error fetching news:', error);
         document.getElementById('news-headline').innerText = 'Failed to load news. Please check API key and sheet access.';
@@ -249,6 +747,39 @@
         const categoryBreadcrumb = document.getElementById('category-breadcrumb');
         categoryBreadcrumb.innerText = article.category;
         categoryBreadcrumb.href = `${article.category.toLowerCase()}.html`;
+        categoryBreadcrumb.classList.add(categoryColors[article.category] || categoryColors['default']);
+
+        // Add structured data for the article
+        const structuredData = {
+          "@context": "https://schema.org",
+          "@type": "NewsArticle",
+          "headline": article.headline,
+          "image": article.image,
+          "datePublished": article.date,
+          "description": article.description.slice(0, 100) + "...",
+          "author": {
+            "@type": "Organization",
+            "name": article.source
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "NewsTally",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://newstally.online/images/logo.png"
+            }
+          }
+        };
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.textContent = JSON.stringify(structuredData);
+        document.head.appendChild(script);
+
+        // Trigger fade-in animation
+        const articleElement = document.querySelector('.news-article');
+        setTimeout(() => {
+          articleElement.classList.add('loaded');
+        }, 100);
 
         // Display related news
         displayRelatedNews(article.category, article.headline, article.description);
@@ -264,7 +795,7 @@
 
     // Calculate keyword overlap score between two strings
     function calculateKeywordOverlap(str1, str2) {
-      const words1 = str1.toLowerCase().split(/\W+/).filter(word => word.length > 3); // Words longer than 3 chars
+      const words1 = str1.toLowerCase().split(/\W+/).filter(word => word.length > 3);
       const words2 = str2.toLowerCase().split(/\W+/).filter(word => word.length > 3);
       const commonWords = words1.filter(word => words2.includes(word));
       return commonWords.length;
@@ -274,17 +805,14 @@
     function displayRelatedNews(category, currentHeadline, currentDescription) {
       const relatedNewsContainer = document.getElementById('related-news');
 
-      // Filter articles by category, exclude the current article
       let relatedArticles = allNews
         .filter(item => item.category.toLowerCase() === category.toLowerCase() && item.headline !== currentHeadline);
 
-      // Calculate relevance score based on headline and description overlap
       relatedArticles = relatedArticles.map(item => ({
         ...item,
         relevanceScore: calculateKeywordOverlap(currentHeadline + ' ' + currentDescription, item.headline + ' ' + item.description)
       }));
 
-      // Sort by relevance score (descending) and then by date (descending)
       relatedArticles.sort((a, b) => {
         if (b.relevanceScore !== a.relevanceScore) {
           return b.relevanceScore - a.relevanceScore;
@@ -292,24 +820,45 @@
         return parseDate(b.date) - parseDate(a.date);
       });
 
-      // Limit to 3 related articles
       relatedArticles = relatedArticles.slice(0, 3);
 
       const relatedNewsHTML = relatedArticles.length > 0
-        ? relatedArticles.map(item => `
-            <div class="news-card p-4 rounded-lg border flex items-start space-x-3">
-              <img src="${item.image}" alt="${item.headline}" class="w-16 h-16 object-cover rounded-lg">
-              <div class="flex-1">
-                <h4 class="text-sm font-semibold hover:text-blue-600 transition">
-                  <a href="opennews.html?headline=${encodeURIComponent(item.headline)}">${item.headline}</a>
-                </h4>
-                <p class="text-xs text-gray-600 mt-1">${item.source} • ${item.date}</p>
-              </div>
+        ? relatedArticles.map((item, index) => `
+            <div class="related-news-item">
+              <span class="category-badge ${
+                categoryColors[item.category] || categoryColors['default']
+              }">${item.category}</span>
+              <a href="opennews.html?headline=${encodeURIComponent(item.headline)}">
+                <img src="${item.image}" alt="${item.headline}" class="w-full h-[120px]" loading="lazy">
+                <h4 class="text-sm font-semibold text-gray-800 hover:text-blue-600 transition p-3">${item.headline}</h4>
+              </a>
+              <p class="text-xs text-gray-600 px-3 pb-3">${item.source} • ${item.date}</p>
             </div>
           `).join('')
         : '<p class="text-gray-600 text-sm">No related news available.</p>';
 
       relatedNewsContainer.innerHTML = relatedNewsHTML;
+
+      // Trigger fade-in animations for related news
+      document.querySelectorAll('.related-news-item').forEach((item, index) => {
+        setTimeout(() => {
+          item.classList.add('loaded');
+        }, (index + 1) * 100);
+      });
+
+      // Lazy-load related news items
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('loaded');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '100px' });
+
+      document.querySelectorAll('.related-news-item:not(.loaded)').forEach(item => {
+        observer.observe(item);
+      });
     }
 
     // Share functionality
@@ -330,16 +879,71 @@
       });
     }
 
-    // Hamburger Menu Toggle
+    // Setup Search
+    function setupSearch() {
+      const searchToggle = document.getElementById('search-toggle');
+      const searchResults = document.getElementById('search-results');
+      const searchInput = document.getElementById('search-input');
+      const searchResultsList = document.getElementById('search-results-list');
+
+      searchToggle.addEventListener('click', () => {
+        searchResults.classList.toggle('hidden');
+        if (!searchResults.classList.contains('hidden')) {
+          searchInput.focus();
+        }
+      });
+
+      const debouncedSearch = debounce((query) => {
+        const results = allNews.filter(item =>
+          item.headline.toLowerCase().includes(query) ||
+          item.description.toLowerCase().includes(query) ||
+          item.source.toLowerCase().includes(query) ||
+          item.category.toLowerCase().includes(query)
+        );
+
+        searchResultsList.innerHTML = results.length > 0
+          ? results.map(item => `
+              <div class="search-result-card" data-headline="${encodeURIComponent(item.headline)}">
+                <h4 class="text-sm font-semibold text-gray-800">${item.headline}</h4>
+                <p class="text-xs text-gray-600 mt-1">${item.source} • ${item.category}</p>
+              </div>
+            `).join('')
+          : '<p class="text-gray-600 text-sm p-4">No results found.</p>';
+
+        searchResultsList.querySelectorAll('.search-result-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const headline = card.dataset.headline;
+            window.location.href = `opennews.html?headline=${headline}`;
+          });
+        });
+      }, 300);
+
+      searchInput.addEventListener('input', (e) => {
+        debouncedSearch(e.target.value.toLowerCase());
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!searchResults.contains(e.target) && e.target !== searchToggle && !searchToggle.contains(e.target)) {
+          searchResults.classList.add('hidden');
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          searchResults.classList.add('hidden');
+        }
+      });
+    }
+
+    // Navigation Panel Toggle
     document.getElementById('menu-toggle').addEventListener('click', () => {
-      const menu = document.getElementById('nav-menu');
-      menu.classList.toggle('hidden');
+      const panel = document.getElementById('nav-panel');
+      panel.classList.toggle('open');
     });
 
-    // Search functionality
-    document.getElementById('search-input').addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase();
-      window.location.href = `index.html?search=${encodeURIComponent(query)}`;
+    document.getElementById('close-panel').addEventListener('click', () => {
+      const panel = document.getElementById('nav-panel');
+      panel.classList.remove('open');
     });
 
     // Fetch news on load
