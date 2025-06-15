@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -105,8 +106,12 @@
       --gradient-start: #1e3a8a; /* blue-900 */
       --gradient-end: #3b82f6; /* blue-500 */
       --social-icon-color: #f8fafc;
-      --bottom-nav-bg: #ffffff;
-      --bottom-nav-text: #000000;
+      --quick-news-btn-bg: #3b82f6;
+      --quick-news-btn-hover-bg: #2563eb;
+      --featured-news-card-bg: #f8fafc; /* light grey for text bg */
+      --search-input-bg: #f3f4f6; /* light gray for search input background */
+      --search-input-text: #1a202c;
+      --search-input-border: #d1d5db;
     }
 
     body.dark-mode {
@@ -117,8 +122,12 @@
       --gradient-start: #0f172a; /* slate-900 */
       --gradient-end: #1e3a8a; /* blue-900 */
       --social-icon-color: #e2e8f0;
-      --bottom-nav-bg: #1a202c;
-      --bottom-nav-text: #e2e8f0;
+      --quick-news-btn-bg: #1e3a8a; /* Darker blue for dark mode */
+      --quick-news-btn-hover-bg: #1d4ed8; /* Even darker blue */
+      --featured-news-card-bg: #2d3748; /* dark grey for text bg */
+      --search-input-bg: #374151; /* Darker gray for search input background */
+      --search-input-text: #e2e8f0;
+      --search-input-border: #4b5563;
     }
 
     body {
@@ -189,62 +198,173 @@
       background-color: rgba(255, 255, 255, 0.2);
     }
 
-    .bottom-nav {
-      position: fixed; /* Ensures it stays fixed at the bottom */
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 56px;
-      background: var(--bottom-nav-bg);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
-      z-index: 20; /* Ensure it's above other content */
-    }
-    @media (min-width: 1024px) {
-      .bottom-nav {
-        display: none; /* Hide on desktop */
-      }
-    }
-    .bottom-nav a {
-      color: var(--bottom-nav-text);
-    }
-    .bottom-nav a:hover {
-      background-color: rgba(0, 0, 0, 0.1);
-    }
-    .bottom-nav a.nav-active {
-      background-color: rgba(0, 0, 0, 0.2);
+    /* Quick News Fixed Button */
+    .quick-news-fixed-btn-container {
+        position: fixed;
+        bottom: 1.5rem; /* Space from bottom */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50; /* Ensure it's above other elements */
+        max-width: 150px; /* Max width for smaller button */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none; /* Allows clicks to pass through if not on the button */
     }
 
-    /* Padding for root element to prevent content being obscured by fixed bottom nav */
-    #root {
-        padding-bottom: 56px; /* Height of bottom nav */
+    .quick-news-fixed-btn-container > a { /* Target the anchor tag inside the container */
+        pointer-events: auto; /* Re-enable clicks for the button itself */
+        background-color: var(--quick-news-btn-bg);
+        color: white;
+        padding: 0.75rem 1.25rem; /* Smaller padding */
+        border-radius: 9999px; /* Full rounded */
+        font-size: 1rem; /* Text size */
+        font-weight: 700; /* font-bold */
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem; /* Gap for icon and text */
+        text-decoration: none; /* Remove underline */
+        white-space: nowrap; /* Prevent text wrapping */
+        min-width: 120px; /* Ensure a minimum tap area */
+        justify-content: center;
     }
-    @media (min-width: 1024px) { /* Remove padding on desktop where bottom nav is hidden */
-        #root {
-            padding-bottom: 0;
+
+    .quick-news-fixed-btn-container > a:hover {
+        background-color: var(--quick-news-btn-hover-bg);
+        transform: translateY(-2px) scale(1.02); /* More subtle lift */
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Stronger hover shadow */
+    }
+    /* Add a specific active style for quick news button if needed */
+    .quick-news-fixed-btn-container > a.nav-active {
+        background-color: var(--quick-news-btn-hover-bg);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); /* Inset shadow for active state */
+        transform: translateY(0);
+    }
+
+
+    /* Padding for main content to prevent overlap with fixed button */
+    main {
+        padding-bottom: 7rem; /* Sufficient space for the fixed button + margin */
+    }
+    /* Adjust padding for larger screens where the button might be less prominent or on its own */
+    @media (min-width: 768px) {
+        main {
+            padding-bottom: 5rem; /* Less padding needed for desktop */
+        }
+        .quick-news-fixed-btn-container {
+            display: none; /* Hide on desktop */
         }
     }
 
 
-    /* Search Results Dropdown */
+    /* Scroll to Top Button */
+    #scroll-to-top-btn {
+        position: fixed;
+        bottom: 1.5rem; /* Same distance from bottom as Quick News button */
+        right: 1.5rem; /* Adjust from right */
+        background-color: var(--gradient-end); /* Blue color */
+        color: white;
+        width: 48px; /* Fixed size for good tap target */
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
+        z-index: 50; /* Same as Quick News button */
+        opacity: 0; /* Hidden by default */
+        pointer-events: none; /* No interaction when hidden */
+    }
+    #scroll-to-top-btn.show {
+        opacity: 1;
+        pointer-events: auto; /* Enable interaction when shown */
+    }
+    #scroll-to-top-btn:hover {
+        background-color: var(--gradient-start); /* Darker blue on hover */
+        transform: translateY(-3px) scale(1.05);
+    }
+    #scroll-to-top-btn i {
+        font-size: 1.25rem; /* Arrow icon size */
+    }
+    /* Hide on desktop if Quick News button is also hidden */
+    @media (min-width: 768px) {
+        #scroll-to-top-btn {
+            bottom: 2rem; /* slightly higher on desktop */
+            right: 2rem;
+        }
+    }
+
+
+    /* Search Results Dropdown & Input */
     #search-results {
+      position: absolute;
+      top: 104px; /* Adjusted for header + nav */
+      right: 0;
+      width: 100%;
+      max-width: 384px;
+      max-height: 400px;
+      overflow-y: auto;
       background: var(--card-bg);
+      border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 20;
+      scrollbar-width: thin;
+      border: 1px solid var(--border-color); /* Added subtle border */
+    }
+    #search-results .search-input-wrapper {
+        position: relative;
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--search-input-border);
     }
     #search-results input {
-      background: var(--card-bg);
-      color: var(--text-color);
-      border-bottom: 1px solid var(--border-color);
+      width: 100%;
+      padding: 0.75rem 2.5rem 0.75rem 0.75rem; /* Right padding for clear button */
+      border: none;
+      outline: none;
+      background-color: var(--search-input-bg);
+      color: var(--search-input-text);
+      border-radius: 4px;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
+    #search-results input:focus {
+        box-shadow: 0 0 0 2px var(--gradient-end); /* Blue ring on focus */
+    }
+    #search-results .clear-search-btn {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-color);
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+        font-size: 1rem;
+        padding: 0.2rem;
+    }
+    #search-results .clear-search-btn:hover {
+        opacity: 1;
+    }
+
     .search-result-card {
-      color: var(--text-color);
+      padding: 0.75rem;
       border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
     }
     .search-result-card:hover {
       background-color: var(--border-color);
     }
+    .search-result-card:last-child {
+      border-bottom: none;
+    }
+
 
     /* Skeleton Loading Styles - adjust for dark mode */
     .skeleton {
@@ -401,6 +521,9 @@
     .featured-news-container {
       position: relative;
       overflow: hidden;
+      background-color: var(--card-bg); /* Ensure container has a background */
+      border-radius: 0.75rem; /* Rounded corners for the entire section */
+      padding: 1rem; /* Some padding around the content */
     }
     .featured-news-scroll {
       display: flex;
@@ -409,47 +532,100 @@
       gap: 1rem;
       padding-bottom: 0.5rem;
       scrollbar-width: none; /* Firefox */
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
     .featured-news-scroll::-webkit-scrollbar {
       display: none; /* Chrome, Safari, Edge */
     }
     .featured-news-card {
       flex: 0 0 auto;
-      width: 150px;
+      width: 160px; /* Slightly wider cards */
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background-color: var(--featured-news-card-bg); /* Background for card content area */
+      border-radius: 8px;
+      overflow: hidden; /* Hide overflow for image border-radius */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Lighter shadow for individual cards */
     }
     .featured-news-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-5px); /* More noticeable lift */
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
     }
     .featured-news-card img {
-      border-radius: 8px;
+      width: 100%;
+      height: 90px; /* Fixed height for consistent image size */
+      border-radius: 8px; /* Rounded corners for images */
       object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
     }
+    .featured-news-card:hover img {
+        transform: scale(1.05); /* Slight zoom on image hover */
+    }
+    .featured-news-card a {
+        display: block; /* Make the whole card clickable */
+        text-decoration: none;
+        color: inherit; /* Inherit text color */
+    }
+    .featured-news-card .card-content {
+        padding: 0.75rem; /* Padding inside the card for text */
+    }
+    .featured-news-card h4 {
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 600;
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+        height: 2.4em; /* Limit to 2 lines for consistency */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .featured-news-card p {
+        font-size: 0.75rem; /* text-xs */
+        color: var(--text-color); /* Use text-color variable */
+        opacity: 0.7;
+    }
+
     /* Scroll buttons for Featured News */
     .scroll-btn {
       position: absolute;
-      top: 50%;
+      top: calc(50% + 1rem); /* Adjusted to be slightly below center, aligning with card text */
       transform: translateY(-50%);
       background-color: var(--card-bg);
       border-radius: 50%;
-      width: 32px;
-      height: 32px;
+      width: 36px; /* Slightly larger buttons */
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease, background-color 0.3s ease;
+      transition: transform 0.3s ease, background-color 0.3s ease, opacity 0.3s ease;
       z-index: 10;
+      opacity: 0.8; /* Slightly transparent when not hovered */
     }
     .scroll-btn:hover {
       transform: translateY(-50%) scale(1.1);
       background-color: var(--border-color);
+      opacity: 1;
+    }
+    .scroll-btn.left {
+      left: 0.5rem; /* Closer to edge */
+    }
+    .scroll-btn.right {
+      right: 0.5rem; /* Closer to edge */
     }
     .scroll-btn i {
-      font-size: 1rem;
+      font-size: 1.1rem; /* Icon size */
       color: var(--text-color);
     }
+    /* Hide scroll buttons on very small screens where they might overlap */
+    @media (max-width: 480px) {
+        .scroll-btn {
+            display: none;
+        }
+    }
+
 
     .skeleton-card {
       opacity: 1 !important;
@@ -462,6 +638,14 @@
       font-size: 0.75rem;
       font-weight: 500;
       margin-bottom: 0.5rem;
+    }
+
+    /* Dark Mode Headline Fix */
+    body.dark-mode .news-card h3 a {
+      color: white; /* Ensure headlines are white in dark mode for contrast */
+    }
+    body.dark-mode .news-card h3 a:hover {
+      color: #93c5fd; /* Light blue on hover for dark mode */
     }
   </style>
 </head>
@@ -544,7 +728,12 @@
 
     <!-- Search Results Dropdown -->
     <div id="search-results" class="hidden">
-      <input id="search-input" type="search" placeholder="Search news..." aria-label="Search news articles" />
+      <div class="search-input-wrapper">
+          <input id="search-input" type="search" placeholder="Search news..." aria-label="Search news articles" />
+          <button id="clear-search-btn" class="clear-search-btn hidden" aria-label="Clear search input">
+              <i class="fas fa-times-circle"></i>
+          </button>
+      </div>
       <div id="search-results-list">
         <div class="search-result-card skeleton-card">
           <div class="skeleton skeleton-text w-full h-5 mb-2"></div>
@@ -768,34 +957,18 @@
       </aside>
     </main>
 
-    <!-- Bottom Navigation for Mobile and Tablet -->
-    <nav class="bottom-nav">
-      <a href="index.html">
-        <i class="fas fa-house"></i>
-        <span>Home</span>
-      </a>
-      <a href="live.html">
-        <i class="fas fa-tower-broadcast"></i>
-        <span>Live</span>
-      </a>
-      <a href="quick.html">
-        <i class="fas fa-bolt"></i>
-        <span>Quick</span>
-      </a>
-      <a href="trending.html">
-        <i class="fas fa-fire"></i>
-        <span>Trending</span>
-      </a>
-      <a href="cricket.html">
-        <i class="fas fa-baseball-ball"></i>
-        <span>Cricket</span>
-      </a>
-      <!-- New XO Game Link for Bottom Nav -->
-      <a href="XOgame.html">
-        <i class="fas fa-gamepad"></i>
-        <span>Game</span>
-      </a>
-    </nav>
+    <!-- New Quick News Fixed Button -->
+    <div class="quick-news-fixed-btn-container">
+        <a href="quick.html" class="quick-news-fixed-btn">
+            <i class="fas fa-bolt"></i>
+            <span>Quick</span>
+        </a>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scroll-to-top-btn" aria-label="Scroll to top of page">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <!-- Footer -->
     <footer class="gradient-bg text-white py-10">
@@ -1032,8 +1205,9 @@
           status: row[6]?.trim() || 'Active'
         }));
 
+        // Filter players to ensure they have a valid image URL
         topPlayers = allPlayers
-          .filter(player => player.image && !player.image.includes('via.placeholder.com'))
+          .filter(player => player.image && player.image.startsWith('http') && !player.image.includes('via.placeholder.com'))
           .sort((a, b) => b.rank - a.rank);
 
         displayTopPlayers();
@@ -1051,7 +1225,8 @@
       function renderPlayers() {
         const start = currentIndex % topPlayers.length;
         const selectedPlayers = [];
-        for (let i = 0; i < 3; i++) {
+        // Ensure we don't try to access players beyond the array length
+        for (let i = 0; i < Math.min(3, topPlayers.length); i++) {
           const index = (start + i) % topPlayers.length;
           if (topPlayers[index]) {
             selectedPlayers.push(topPlayers[index]);
@@ -1062,7 +1237,7 @@
           ? selectedPlayers.map(item => `
               <div class="player-card flex items-center space-x-3">
                 <a href="playerbio.html?player=${encodeURIComponent(item.playerName)}">
-                  <img src="${item.image}" alt="${item.playerName} Profile Image" class="player-image w-12 h-12" loading="lazy">
+                  <img src="${item.image}" alt="${item.playerName} Profile Image" class="player-image w-12 h-12" loading="lazy" decoding="async">
                 </a>
                 <div class="flex-1">
                   <h4 class="text-sm font-semibold hover:text-blue-600 transition">
@@ -1072,14 +1247,20 @@
                 </div>
               </div>
             `).join('')
-          : '<p class="text-gray-600 text-sm">No top players available.</p>';
+          : '<p class="text-gray-600 text-sm">No top players available with images.</p>'; // Updated message
 
         topPlayersDiv.innerHTML = playersHTML;
-        currentIndex = (currentIndex + 3) % topPlayers.length;
+        if (topPlayers.length > 0) {
+            currentIndex = (currentIndex + 1) % topPlayers.length; // Rotate one by one
+        }
       }
 
+      // Initial render immediately
       renderPlayers();
-      setInterval(renderPlayers, PLAYER_ROTATION_INTERVAL);
+      // Set interval only if there are players to rotate
+      if (topPlayers.length > 0) {
+          setInterval(renderPlayers, PLAYER_ROTATION_INTERVAL);
+      }
     }
 
     // Display featured news in the sidebar
@@ -1089,9 +1270,11 @@
         ? featuredNews.map(item => `
             <article class="featured-news-card">
               <a href="opennews.html?headline=${encodeURIComponent(item.headline)}" onclick="addRecentlyViewed({headline: '${escapeHtml(item.headline)}', link: 'opennews.html?headline=${encodeURIComponent(item.headline)}'})">
-                <img src="${item.image}" alt="${item.headline}" class="w-full h-24 mb-2" loading="lazy">
-                <h4 class="text-sm font-semibold text-gray-800 hover:text-blue-600 transition">${item.headline}</h4>
-                <p class="text-xs text-gray-600 mt-1">${item.source}</p>
+                <img src="${item.image}" alt="${item.headline}" loading="lazy" decoding="async">
+                <div class="card-content">
+                    <h4 class="text-gray-800 hover:text-blue-600 transition">${item.headline}</h4>
+                    <p class="text-gray-600">${item.source}</p>
+                </div>
               </a>
             </article>
           `).join('')
@@ -1104,11 +1287,11 @@
       const scrollRightBtn = document.getElementById('scroll-right-btn');
 
       scrollLeftBtn.addEventListener('click', () => {
-        scrollContainer.scrollBy({ left: -150, behavior: 'smooth' });
+        scrollContainer.scrollBy({ left: -180, behavior: 'smooth' }); // Adjusted for wider cards
       });
 
       scrollRightBtn.addEventListener('click', () => {
-        scrollContainer.scrollBy({ left: 150, behavior: 'smooth' });
+        scrollContainer.scrollBy({ left: 180, behavior: 'smooth' }); // Adjusted for wider cards
       });
     }
 
@@ -1273,7 +1456,7 @@
 
       const newsHTML = newsToDisplay.map(item => `
         <article class="news-card bg-white p-4 rounded-xl shadow-md flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
-          <img src="${item.image}" alt="${item.headline}" class="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg flex-shrink-0" loading="lazy">
+          <img src="${item.image}" alt="${item.headline}" class="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg flex-shrink-0" loading="lazy" decoding="async">
           <div class="flex-1 w-full">
             <span class="category-badge ${
               categoryColors[item.category] || categoryColors['default']
@@ -1463,15 +1646,38 @@
       const searchResults = document.getElementById('search-results');
       const searchInput = document.getElementById('search-input');
       const searchResultsList = document.getElementById('search-results-list');
+      const clearSearchBtn = document.getElementById('clear-search-btn');
+
 
       searchToggle.addEventListener('click', () => {
         searchResults.classList.toggle('hidden');
         if (!searchResults.classList.contains('hidden')) {
           searchInput.focus();
+          // Show clear button if input has value on open
+          if (searchInput.value.length > 0) {
+            clearSearchBtn.classList.remove('hidden');
+          }
+        } else {
+          clearSearchBtn.classList.add('hidden'); // Hide on close
         }
       });
 
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+        searchResultsList.innerHTML = ''; // Clear results
+        searchInput.focus();
+        debouncedSearch(''); // Trigger search with empty query
+      });
+
+
       const debouncedSearch = debounce((query) => {
+        if (query.length > 0) {
+            clearSearchBtn.classList.remove('hidden');
+        } else {
+            clearSearchBtn.classList.add('hidden');
+        }
+
         const results = news.filter(item =>
           item.headline.toLowerCase().includes(query) ||
           item.description.toLowerCase().includes(query) ||
@@ -1503,8 +1709,10 @@
 
       // Hide search results when clicking outside
       document.addEventListener('click', (e) => {
-        if (!searchResults.contains(e.target) && e.target !== searchToggle && !searchToggle.contains(e.target)) {
+        // Check if the click is outside searchResults, searchToggle, and the searchInput itself
+        if (!searchResults.contains(e.target) && !searchToggle.contains(e.target) && e.target !== searchInput) {
           searchResults.classList.add('hidden');
+          clearSearchBtn.classList.add('hidden'); // Also hide clear button on outside click
         }
       });
 
@@ -1512,15 +1720,16 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           searchResults.classList.add('hidden');
+          clearSearchBtn.classList.add('hidden'); // Hide clear button on Esc
         }
       });
     }
 
     // Highlight Active Navigation Link
     function highlightActiveNav() {
-      const navLinks = document.querySelectorAll('#nav-menu a, #nav-panel a, .bottom-nav a');
-      const currentPathname = window.location.pathname.split('/').pop(); // Get filename from path
-      const cleanedCurrentPath = currentPathname === '' ? 'index.html' : currentPathname; // Handle root being index.html
+      const navLinks = document.querySelectorAll('#nav-menu a, #nav-panel a');
+      const currentPathname = window.location.pathname.split('/').pop();
+      const cleanedCurrentPath = currentPathname === '' ? 'index.html' : currentPathname;
 
       navLinks.forEach(link => {
         const linkPathname = link.href.split('/').pop();
@@ -1532,6 +1741,15 @@
           link.classList.remove('nav-active');
         }
       });
+      // Handle active state for the fixed Quick News button if current page is quick.html
+      const quickNewsBtn = document.querySelector('.quick-news-fixed-btn');
+      if (quickNewsBtn) {
+          if (cleanedCurrentPath === 'quick.html') {
+              quickNewsBtn.classList.add('nav-active');
+          } else {
+              quickNewsBtn.classList.remove('nav-active');
+          }
+      }
     }
 
     // Navigation Panel Toggle
@@ -1654,6 +1872,24 @@
     }
     // --- End Trending Topics Logic ---
 
+    // --- Scroll to Top Button Logic ---
+    const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 200) { // Show button after scrolling 200px down
+            scrollToTopBtn.classList.add('show');
+        } else {
+            scrollToTopBtn.classList.remove('show');
+        }
+    });
+
+    scrollToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth' // Smooth scroll to top
+        });
+    });
+    // --- End Scroll to Top Button Logic ---
 
     // Initialize date and time and update every second
     updateDateTime();
