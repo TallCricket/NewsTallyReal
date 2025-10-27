@@ -3,224 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indr.ai - The Next-Gen AI Assistant</title>
-    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font --><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <title>Indr.ai - Expressive AI Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs (compat version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
     <style>
+        /* Base Body and Transitions for Smooth M3 Feel */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #ffffff;
-            color: #1f2937;
+            background-color: #f5f7fa; /* Light mode base surface color */
+            color: #1a1c1e; /* Darkest gray */
+            overflow-x: hidden; 
+            transition: background-color 0.4s, color 0.4s; /* Expressive transition */
         }
-        /* The entire chat container is now full width and handles scrolling */
+
+        /* --- Dark Mode Styles --- */
+        .dark {
+            background-color: #1a1c1e; /* Deepest dark mode background */
+            color: #e3e3e3;
+        }
+        .dark header, .dark .input-footer {
+            background-color: #1a1c1e;
+            border-color: #374151;
+        }
+        .dark .ai-content-text {
+            color: #f3f4f6;
+        }
+        .dark .ai-response-content-wrapper pre {
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            color: #f3f4f6;
+        }
+        .dark .user-message {
+            background-color: #60a5fa; /* Vibrant blue container */
+            color: #1a1c1e; /* Dark text on vibrant container */
+            box-shadow: 0 4px 10px rgba(96, 165, 250, 0.4);
+        }
+        .dark .input-bar-container {
+            background-color: #2c3e50;
+            color: #f3f4f6;
+            border-color: #4b5563;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); /* Elevated shadow */
+        }
+        .dark #prompt-input {
+            background-color: #2c3e50;
+            color: #f3f4f6;
+        }
+        .dark .text-blue-700 {
+            color: #93c5fd; /* Lighter blue in dark mode */
+        }
+        .dark .text-gray-900 {
+             color: #f3f4f6; 
+        }
+        .dark .user-message .text-content { 
+            color: #1a1c1e; 
+        }
+        .dark .ai-content-text p, .dark .ai-content-text strong, .dark .ai-content-text li { 
+            color: #e3e3e3;
+        }
+        .dark #prompt-input::placeholder {
+            color: #94a3b8; /* Lighter gray for dark mode */
+        }
+        /* --- End Dark Mode Styles --- */
+
+        /* Expressive Chat Layout */
         .chat-container {
             height: calc(100vh - 12rem); 
             max-height: calc(100vh - 12rem);
             overflow-y: auto;
             scroll-behavior: smooth;
+            padding-top: 1.5rem; 
         }
         
-        /* New AI message styling: stretches full width of the viewport */
-        .ai-response-block {
-            width: 100vw;
-            position: relative; 
-            left: 50%;
-            right: 50%;
-            margin-left: -50vw; 
-            margin-right: -50vw;
-            
-            background-color: #f8fafc; /* Subtle light gray background */
-            border-top: 1px solid #f1f5f9;
-            border-bottom: 1px solid #f1f5f9;
-            padding: 0.5rem 0; /* Vertical padding */
-            margin-bottom: 1.5rem;
-        }
-
-        /* Container to center the AI content (text, icon) inside the full-width block */
-        .ai-response-content-container {
-            max-width: 48rem; /* max-w-3xl equivalent */
+        /* AI message styling (Minimal, left-aligned) */
+        .ai-message-wrapper { 
+            max-width: 48rem;
             margin-left: auto;
             margin-right: auto;
-            padding: 0 1rem; /* Horizontal padding for mobile/desktop edges */
+            padding: 0 1rem;
+            margin-bottom: 2rem; 
             display: flex;
             align-items: flex-start;
         }
         
-        /* User message styling: remains centered and constrained */
+        /* User message styling (Expressive Rounding) */
         .user-message {
-            background-color: #e0f2fe; /* Light Blue-100 */
+            background-color: #e0f7fa; 
             color: #1f2937;
-            border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+            border-radius: 1.5rem 1.5rem 0.5rem 1.5rem; 
             max-width: 90%;
             word-wrap: break-word;
-            padding: 0.75rem 1rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            padding: 1rem 1.25rem;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08); 
+            transition: background-color 0.3s;
         }
 
-        /* Wrapper for user messages to center them in the flow */
+        /* Wrapper for user messages */
         .user-message-wrapper {
-            max-width: 48rem; /* max-w-3xl equivalent */
+            max-width: 48rem; 
             margin-left: auto;
             margin-right: auto;
-            padding: 0 1rem; /* Horizontal padding for edges */
+            padding: 0 1rem; 
+            display: flex;
+            justify-content: flex-end; 
         }
         
         .ai-response-content-wrapper {
-            padding-left: 1rem; 
-            line-height: 1.6;
-            width: 100%; /* Ensure it takes the remaining space next to the icon */
+            padding-left: 0.75rem; 
+            line-height: 1.7; 
+            width: 100%;
         }
 
-        /* Custom Scrollbar */
-        .chat-container::-webkit-scrollbar { width: 8px; }
-        .chat-container::-webkit-scrollbar-thumb { background-color: #9ca3af; border-radius: 10px; }
-        .chat-container::-webkit-scrollbar-track { background-color: transparent; }
-
-        /* Typing Indicator CSS - Blue */
-        .dot {
-            width: 8px;
-            height: 8px;
-            margin: 0 2px;
-            background-color: #1d4ed8; 
-            border-radius: 50%;
-            display: inline-block;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-        
-        .ai-response-content-wrapper pre {
-            background-color: #e2e8f0; /* Slightly darker background for code */
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin-top: 0.75rem;
-            font-size: 0.875rem;
-            border: 1px solid #cbd5e1;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .file-input-hidden { display: none; }
-        
-        /* Indr.ai Symbol (replacing the generic AI icon) */
+        /* Indr.ai Symbol (Vibrant M3 Look) */
         .indrai-symbol {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%; /* Make it round */
-            background-color: #2563eb; /* Blue background */
-            color: white; /* Icon color */
+            width: 2.25rem; 
+            height: 2.25rem;
+            border-radius: 0.75rem; 
+            background: linear-gradient(45deg, #1e3a8a, #3b82f6); 
+            color: white; 
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.5); 
+        }
+        
+        /* Button Press Effect (Expressive Feedback) */
+        .btn-icon:active, .input-bar-container button:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+            transition: transform 0.1s;
         }
 
-        /* Modal Styles for Modes Selector */
-        .mode-overlay {
-            position: fixed;
-            bottom: 6rem; 
-            right: 1.5rem;
-            z-index: 50;
-            transform: translateY(10px);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+        /* Typing Indicator Styles */
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #2563eb; /* Tailwind blue-600 */
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+            margin: 0 1px;
         }
 
-        .mode-overlay.open {
-            opacity: 1;
-            transform: translateY(0);
-            visibility: visible;
+        .file-input-hidden { display: none; }
+        
+        /* Placeholder Text Styling */
+        #prompt-input::placeholder {
+            color: #9ca3af; 
+            opacity: 1; 
+        }
+        .dark #prompt-input::placeholder {
+            color: #94a3b8; 
         }
 
-        .mode-button-item:hover {
-            background-color: #f3f4f6;
-            color: #1e40af; 
-        }
     </style>
 </head>
 <body class="flex flex-col h-screen antialiased">
 
-    <!-- Header --><header class="p-4 bg-white border-b border-gray-100 shadow-sm flex items-center justify-center sticky top-0 z-10">
-        <div class="flex items-center space-x-2">
-            <!-- Indr.ai Icon/Logo in Header --><svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1v-3.25M7 11h10M17 11V7a2 2 0 00-2-2H9a2 2 0 00-2 2v4m10 0v2m0 4h-2m-4 0h-4m2 0v2" />
-            </svg>
-            <h1 class="text-2xl font-extrabold tracking-tight text-gray-900">Indr.<span class="text-blue-600">ai</span></h1>
+    <!-- Header (Elevated Surface) -->
+    <header class="p-4 bg-white border-b border-gray-100 shadow-xl sticky top-0 z-20 flex items-center justify-between transition-all duration-400">
+        
+        <!-- Auth Status and Clear Chat Buttons -->
+        <div id="auth-container" class="flex items-center space-x-2">
+            <!-- Sign In Button (Visible when logged out) -->
+            <button id="sign-in-button" onclick="signInWithGoogle()" class="px-3 py-1.5 bg-blue-600 text-white font-medium text-sm rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform active:scale-95" title="Google से साइन इन करें">
+                Sign In
+            </button>
+            
+            <!-- User Avatar and Menu (Visible when logged in) -->
+            <div id="user-avatar-container" class="hidden relative">
+                <img id="user-avatar" src="https://placehold.co/40x40/93c5fd/ffffff?text=U" alt="User Avatar" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-600 shadow-lg ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-300" onclick="showAuthMenu()">
+                
+                <!-- Auth Menu Overlay -->
+                <div id="auth-menu" class="absolute right-0 mt-3 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 hidden z-50 transition-all duration-300 transform origin-top-right">
+                    <p id="user-name-display" class="p-3 text-sm font-semibold text-gray-900 dark:text-gray-100 border-b dark:border-gray-700 truncate"></p>
+                    <button onclick="clearChat(); hideAuthMenu();" class="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 transition duration-150">
+                        <svg class="w-4 h-4 inline mr-2 align-text-bottom" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        चैट साफ करें
+                    </button>
+                    <button onclick="signOut(); hideAuthMenu();" class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150 rounded-b-xl">
+                        <svg class="w-4 h-4 inline mr-2 align-text-bottom" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        साइन आउट
+                    </button>
+                </div>
+            </div>
         </div>
+
+        <div class="flex items-center space-x-2">
+            <!-- Indr.ai Icon/Logo in Header -->
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-md" style="background: linear-gradient(45deg, #1e3a8a, #3b82f6);">
+                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 transition-colors duration-400">Indr.<span class="text-blue-600">ai</span></h1>
+        </div>
+
+        <!-- Dark Mode Toggle Button -->
+        <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="btn-icon p-2 text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300" title="डार्क मोड टॉगल करें (Toggle Dark Mode)">
+             <svg id="dark-mode-icon" class="w-6 h-6 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        </button>
     </header>
 
-    <!-- Main Chat Area --><main class="flex-grow flex flex-col justify-start bg-gray-50">
+    <!-- Main Chat Area -->
+    <main class="flex-grow flex flex-col justify-start dark:bg-gray-800">
         <div id="chat-container" class="chat-container w-full">
-            <!-- Initial Welcome Message (wrapped in the new AI container structure) --><div class="ai-response-block">
-                <div class="ai-response-content-container">
-                    <div class="indrai-symbol">
-                        <!-- Indr.ai Symbol SVG --><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/>
-                        </svg>
-                    </div>
-                    <div class="ai-response-content-wrapper">
-                        <p class="font-bold text-blue-700 mb-2">Indr.ai (Search Mode)</p>
-                        <div id="initial-message-content">
-                            <p>Hello! I am Indr.ai, powered by Gemini. My **Search** mode uses Google to find up-to-date information. I prioritize grammatically flawless responses. Ask me anything!</p>
-                        </div>
+            
+            <!-- Initial Welcome Message (Minimal Style) -->
+            <div class="ai-message-wrapper">
+                <div class="indrai-symbol">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/>
+                    </svg>
+                </div>
+                <div class="ai-response-content-wrapper">
+                    <p id="initial-message-header" class="font-bold text-blue-700 mb-2 transition-colors duration-400">Indr.ai (Search Mode)</p>
+                    <div id="initial-message-content" class="ai-content-text text-gray-700 dark:text-gray-300 transition-colors duration-400">
+                        <p>नमस्ते! मैं जेमिनी द्वारा संचालित **Indr.ai** हूँ। मैं वर्तमान में **Search Mode** में हूँ। **जारी रखने के लिए कृपया साइन इन करें।**</p>
                     </div>
                 </div>
             </div>
-            <!-- Messages will be injected here --></div>
+            <!-- Messages will be injected here -->
+        </div>
     </main>
     
-    <!-- Modes Selector Overlay (Hidden by default) --><div id="mode-overlay" class="mode-overlay">
-        <div class="bg-white p-2 rounded-xl shadow-2xl border border-gray-100 min-w-[10rem]">
-            <button class="mode-button-item px-4 py-2 w-full text-left rounded-lg text-sm font-medium transition duration-150 text-blue-600" data-mode="search" onclick="setMode('search')">🌐 Search</button>
-            <button class="mode-button-item px-4 py-2 w-full text-left rounded-lg text-sm font-medium transition duration-150 text-gray-700" data-mode="creative" onclick="setMode('creative')">✨ Creative</button>
-            <button class="mode-button-item px-4 py-2 w-full text-left rounded-lg text-sm font-medium transition duration-150 text-gray-700" data-mode="code" onclick="setMode('code')">💻 Code</button>
-        </div>
-    </div>
-
-
-    <!-- Input Area (Sticky Footer - Raised for mobile comfort) --><div class="p-6 pt-4 bg-white border-t border-gray-100 shadow-xl sticky bottom-0 z-20 flex justify-center">
+    <!-- Input Area (Expressive, Elevated Footer) -->
+    <div class="input-footer p-4 bg-white border-t border-gray-100 shadow-2xl sticky bottom-0 z-30 flex justify-center dark:bg-gray-800 dark:border-gray-700 transition-all duration-400">
         <div class="w-full max-w-3xl flex flex-col space-y-3">
             
-            <!-- Image Preview Area --><div id="image-preview-container" class="hidden relative p-3 border border-gray-300 rounded-xl bg-gray-50 shadow-inner">
-                <img id="image-preview" class="max-h-32 rounded-lg object-contain" src="" alt="Uploaded image preview">
-                <button onclick="removeImage()" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-150">
+            <!-- Image Preview Area (Subtle Elevation) -->
+            <div id="image-preview-container" class="hidden relative p-3 border border-blue-300 rounded-xl bg-blue-50 shadow-md dark:bg-gray-700 dark:border-blue-700 transition-colors duration-400">
+                <img id="image-preview" class="max-h-32 rounded-lg object-contain w-full" src="" alt="Uploaded image preview">
+                <button onclick="removeImage()" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300 shadow-lg" title="इमेज हटाएँ (Remove image)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
-                <span id="image-filename" class="text-xs text-gray-600 mt-2 block truncate w-40"></span>
+                <span id="image-filename" class="text-xs text-blue-700 font-medium mt-2 block truncate w-40 dark:text-blue-300 transition-colors duration-400"></span>
             </div>
 
-            <!-- Input Bar (The main interaction area) --><div class="flex items-end p-2 border border-gray-200 rounded-3xl shadow-md bg-white transition duration-300 hover:shadow-lg focus-within:shadow-lg focus-within:ring-1 focus-within:ring-blue-500">
+            <!-- Input Bar (Expressive Rounded Edges, Strong Elevation) -->
+            <div class="input-bar-container flex items-end p-3 border border-gray-300 rounded-[2rem] shadow-xl bg-white transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
                 
-                <!-- 1. Hamburger Menu (Modes Toggle) --><button onclick="toggleModeSelector()" 
-                        class="p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100 transition duration-200"
-                        title="Select Mode">
-                    <!-- Three-line dot / Hamburger Icon --><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-
-                <!-- 2. Plus Sign (Image Upload) --><input type="file" id="file-upload" class="file-input-hidden" accept="image/jpeg, image/png" onchange="handleFileSelect(event)">
-                <button onclick="document.getElementById('file-upload').click()" 
-                        class="p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center text-gray-500 rounded-full hover:bg-gray-100 transition duration-200"
-                        title="Upload Image">
-                    <!-- Plus Sign Icon --><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16"></path></svg>
+                <!-- 1. Plus Sign (Image Upload) -->
+                <input type="file" id="file-upload" class="file-input-hidden" accept="image/jpeg, image/png" onchange="handleFileSelect(event)">
+                <button id="upload-button" onclick="document.getElementById('file-upload').click()" 
+                        class="btn-icon p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="इमेज अपलोड करें (Upload Image)" disabled>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-3"></path></svg>
                 </button>
                 
-                <!-- 3. Textarea --><textarea id="prompt-input" rows="1" class="flex-grow p-1 text-gray-700 bg-white border-none focus:ring-0 resize-none outline-none" placeholder="Enter your prompt here..."></textarea>
+                <!-- 2. Textarea (Now looks like a single line) -->
+                <textarea id="prompt-input" rows="1" class="flex-grow p-1 text-gray-800 border-none focus:ring-0 resize-none outline-none overflow-hidden dark:bg-gray-700 dark:text-gray-100 transition-colors duration-300" placeholder="Sign in to chat..." disabled></textarea>
                 
-                <!-- 4. Send Button --><button id="send-button" onclick="sendMessage()" class="p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center text-white bg-blue-600 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    <!-- Send Icon SVG --><svg id="send-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <!-- 3. Send Button (Vibrant, Prominent) -->
+                <button id="send-button" onclick="sendMessage()" class="btn-icon p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center text-white bg-blue-600 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 disabled:opacity-40 disabled:cursor-not-allowed ml-2" disabled>
+                    <svg id="send-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- Click handler to close modal when clicking outside --><div id="modal-backdrop" class="fixed inset-0 z-10 hidden" onclick="toggleModeSelector()"></div>
+    <!-- Modal for custom messages -->
+    <div id="modal-backdrop" class="fixed inset-0 z-20 hidden"></div>
 
     <script>
         // Global Constants
-        const API_KEY = "AIzaSyDStpVJpqJjfi8kdsGcYlBMfOD4ByKcagY"; // User provided API Key
+        const API_KEY = ""; 
         const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
         const TYPING_DELAY = 15;
@@ -229,138 +288,224 @@
         const chatContainer = document.getElementById('chat-container');
         const promptInput = document.getElementById('prompt-input');
         const sendButton = document.getElementById('send-button');
+        const uploadButton = document.getElementById('upload-button');
         const imagePreviewContainer = document.getElementById('image-preview-container');
         const imagePreview = document.getElementById('image-preview');
         const imageFilename = document.getElementById('image-filename');
-        const modeOverlay = document.getElementById('mode-overlay');
-        const modalBackdrop = document.getElementById('modal-backdrop');
+        const darkModeIcon = document.getElementById('dark-mode-icon');
+        const bodyElement = document.body;
+        const signInButton = document.getElementById('sign-in-button');
+        const userAvatarContainer = document.getElementById('user-avatar-container');
+        const userAvatar = document.getElementById('user-avatar');
+        const authMenu = document.getElementById('auth-menu');
+        const userNameDisplay = document.getElementById('user-name-display');
 
         // State Variables
         let chatHistory = [];
         let isTyping = false;
         let currentMode = 'search';
         let uploadedFile = null;
+        let userLoggedIn = false; // New state variable
 
-        // --- Mode Configuration ---
+        // --- Firebase Initialization (V8 Compat) ---
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4zw5cZqxLwzkTy2e5NiHz-tGKqk1KGdI",
+            authDomain: "newstally-df03c.firebaseapp.com",
+            databaseURL: "https://newstally-df03c-default-rtdb.firebaseio.com",
+            projectId: "newstally-df03c",
+            storageBucket: "newstally-df03c.firebasestorage.app",
+            messagingSenderId: "506893212961",
+            appId: "1:506893212961:web:63882290195da992207260",
+            measurementId: "G-54QER193B3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore(); // Initialized as requested, though not used for chat history here.
+
         const MODE_CONFIGS = {
             search: {
                 label: "Search",
-                placeholder: "Ask me anything (powered by Google)...",
+                placeholder: "Type your prompt here...",
                 instruction: "You are a world-class research assistant. Provide concise, accurate, and up-to-date answers. Use Google Search grounding. Ensure all your output is grammatically flawless and coherent.",
                 tools: [{ "google_search": {} }],
-            },
-            creative: {
-                label: "Creative",
-                placeholder: "Write a poem, story, or script...",
-                instruction: "You are a professional author and storyteller. Respond with imagination and flair, focusing on engaging and well-structured narratives. Ensure all your output is grammatically flawless and coherent.",
-                tools: null,
-            },
-            code: {
-                label: "Code",
-                placeholder: "Ask for a code snippet, explain a concept, or debug...",
-                instruction: "You are an expert software developer. Provide clear, well-commented, and efficient code snippets or technical explanations. Ensure all your output is grammatically flawless and coherent.",
-                tools: null,
             }
         };
 
-        // --- UI & Utility Functions ---
+        // --- Auth Functions ---
 
-        /**
-         * Toggles the visibility of the Mode Selector overlay.
-         */
-        function toggleModeSelector() {
-            const isOpen = modeOverlay.classList.toggle('open');
-            modalBackdrop.classList.toggle('hidden', !isOpen);
+        /** Toggles the auth menu visibility. */
+        function showAuthMenu() {
+            authMenu.classList.toggle('hidden');
         }
 
-        /**
-         * Sets the current operating mode of the AI and updates the UI.
-         */
-        function setMode(mode) {
-            currentMode = mode;
-            const config = MODE_CONFIGS[mode];
-            
-            promptInput.placeholder = config.placeholder;
-            
-            document.querySelectorAll('.mode-button-item').forEach(btn => {
-                const btnMode = btn.dataset.mode;
-                if (btnMode === mode) {
-                    btn.classList.add('text-blue-600', 'font-bold');
-                    btn.classList.remove('text-gray-700', 'font-medium');
-                } else {
-                    btn.classList.remove('text-blue-600', 'font-bold');
-                    btn.classList.add('text-gray-700', 'font-medium');
-                }
+        function hideAuthMenu() {
+            authMenu.classList.add('hidden');
+        }
+
+        /** Google Sign-In function */
+        function signInWithGoogle() {
+            hideAuthMenu();
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch((error) => {
+                    console.error('Sign-in error:', error);
+                    showCustomMessage(`Sign-in failed: ${error.message}`, 'error');
+                });
+        }
+
+        /** Sign out function */
+        function signOut() {
+            hideAuthMenu();
+            auth.signOut().then(() => {
+                showCustomMessage('You have been signed out successfully.', 'info');
+            }).catch((error) => {
+                console.error('Sign-out error:', error);
+                showCustomMessage(`Sign-out failed: ${error.message}`, 'error');
             });
+        }
+        
+        /** Listens for authentication state changes to update the UI. */
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                userLoggedIn = true;
+                signInButton.classList.add('hidden');
+                userAvatarContainer.classList.remove('hidden');
+                userAvatar.src = user.photoURL || "https://placehold.co/40x40/93c5fd/ffffff?text=U";
+                userNameDisplay.textContent = user.displayName || user.email;
+
+                promptInput.placeholder = MODE_CONFIGS[currentMode].placeholder;
+                promptInput.disabled = false;
+                
+                // Clear chat history on login to avoid mixing sessions
+                clearChat(true); 
+
+            } else {
+                // User is signed out
+                userLoggedIn = false;
+                signInButton.classList.remove('hidden');
+                userAvatarContainer.classList.add('hidden');
+                hideAuthMenu();
+
+                promptInput.placeholder = "Sign in to chat...";
+                promptInput.disabled = true;
+            }
+            // Update all button states based on new login status
+            updateSendButtonState();
+        });
+
+
+        // --- UI & Logic Functions ---
+
+        /** Updates the disabled state of the send and upload buttons based on all relevant inputs and login status. */
+        function updateSendButtonState() {
+            const isInputEmpty = promptInput.value.trim() === '';
+            const isFileEmpty = uploadedFile === null;
             
-            toggleModeSelector();
+            const isSendDisabled = isTyping || !userLoggedIn || (isInputEmpty && isFileEmpty);
+
+            sendButton.disabled = isSendDisabled;
+            uploadButton.disabled = !userLoggedIn || isTyping; 
+        }
+
+        function clearChat(suppressMessage = false) {
+            chatHistory = [];
             
-            if (!isTyping) {
-                 sendButton.disabled = promptInput.value.trim() === '';
+            const messages = chatContainer.querySelectorAll('.ai-message-wrapper, .user-message-wrapper');
+            for(let i = 1; i < messages.length; i++) {
+                messages[i].remove();
+            }
+            
+            const initialMessage = document.querySelector('.ai-message-wrapper:first-child');
+            if (initialMessage) {
+                initialMessage.style.display = 'flex'; 
+            }
+
+            if (!suppressMessage) {
+                 showCustomMessage("चैट इतिहास साफ हो गया है। आप एक नई बातचीत शुरू कर सकते हैं।", 'success');
             }
         }
 
-        /**
-         * Converts basic markdown (bold, lists, code blocks) to HTML.
-         */
+        function toggleDarkMode() {
+            bodyElement.classList.toggle('dark');
+            const isDark = bodyElement.classList.contains('dark');
+            
+            if (isDark) {
+                darkModeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+            } else {
+                darkModeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            }
+        }
+
         function renderMarkdown(text) {
             let html = text;
             
-            // 1. Handle code blocks (triple backticks)
+            // 1. Handle code blocks 
             html = html.replace(/```(\w+)?\n([\s\S]*?)\n```/g, function(match, lang, code) {
                 const escapedCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                return `<pre><code>${escapedCode}</code></pre>`;
+                const languageLabel = lang ? `<span class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">${lang.toUpperCase()}</span>` : '';
+                return `<pre>${languageLabel}<code>${escapedCode}</code></pre>`;
             });
 
             // 2. Convert double newlines to paragraphs
             html = html.replace(/\n\s*\n/g, '</p><p>'); 
             
-            // 3. Convert single newlines to line breaks
-            html = html.replace(/\n/g, '<br>');
+            // 3. Convert single newlines to line breaks 
+            html = html.replace(/(?<!\<\/p\>)(?<!\>)\n(?![\*\-]\s)(?!<)/g, '<br>');
 
             // 4. Simple bolding (**text**)
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
             // 5. Wrap in initial paragraph
-            if (html.trim().length > 0 && !html.startsWith('<p>') && !html.startsWith('<pre>')) {
+            if (html.trim().length > 0 && !html.startsWith('<p>') && !html.startsWith('<pre>') && !html.startsWith('<ul>') && !html.startsWith('<li>') && !html.startsWith('<ol>')) {
                  html = '<p>' + html + '</p>';
             }
-
+            
+            // 6. Basic List handling
+            html = html.replace(/<p>([\s\S]*?)<\/p>/g, function(match, content) {
+                if (content.match(/^(?:[\*\-]\s)/m)) {
+                    let listHtml = '<ul>';
+                    content.split('\n').forEach(line => {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.startsWith('* ') || trimmedLine.startsWith('- ')) {
+                            listHtml += `<li>${trimmedLine.substring(2).trim()}</li>`;
+                        } else if (trimmedLine.length > 0) {
+                            listHtml = listHtml === '<ul>' ? content : listHtml; 
+                        }
+                    });
+                    return listHtml.endsWith('<ul>') ? match : listHtml + '</ul>';
+                }
+                return match;
+            });
+            
             return html;
         }
 
-        /** Simple auto-resizing for the textarea. */
         function resizeTextarea() {
             promptInput.style.height = 'auto';
-            promptInput.style.height = promptInput.scrollHeight + 'px';
+            promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + 'px'; 
         }
 
-        /** Scrolls the chat container to the bottom. */
         function scrollToBottom() {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        /** Toggles the UI state for loading/sending. */
         function setUILoading(isLoading) {
             isTyping = isLoading;
-            promptInput.disabled = isLoading;
-            document.getElementById('file-upload').disabled = isLoading;
-            sendButton.disabled = isLoading || (promptInput.value.trim() === '' && uploadedFile === null); 
+            promptInput.disabled = isLoading || !userLoggedIn;
+            document.getElementById('file-upload').disabled = isLoading || !userLoggedIn;
+            
+            updateSendButtonState();
         }
 
-        /** Creates and appends the AI message structure. */
         function addModelMessageStructure() {
             const modeLabel = MODE_CONFIGS[currentMode].label;
             
-            // 1. Full-width block that breaks out of the centered area
             const messageWrapper = document.createElement('div');
-            messageWrapper.className = 'ai-response-block';
+            messageWrapper.className = 'ai-message-wrapper'; 
 
-            // 2. Centered content container (max-w-3xl)
-            const contentContainer = document.createElement('div');
-            contentContainer.className = 'ai-response-content-container';
-            
-            // Indr.ai Symbol (SVG)
             const symbolDiv = document.createElement('div');
             symbolDiv.className = 'indrai-symbol';
             symbolDiv.innerHTML = `
@@ -368,72 +513,71 @@
                     <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/>
                 </svg>
             `;
-            contentContainer.appendChild(symbolDiv);
+            messageWrapper.appendChild(symbolDiv);
             
-            // AI Response Content Wrapper
             const contentWrapper = document.createElement('div');
             contentWrapper.className = 'ai-response-content-wrapper';
             
-            // Header (Screen reader only, but can be made visible for debugging/branding)
             const header = document.createElement('p');
-            header.className = 'font-bold text-blue-700 mb-2 sr-only'; 
-            header.textContent = `Indr.ai (${modeLabel})`;
+            header.className = 'font-bold text-blue-700 mb-2 transition-colors duration-300'; 
+            header.textContent = `Indr.ai (${modeLabel} Mode)`;
             contentWrapper.appendChild(header);
 
-            // Content Element (for dots/text)
             const contentElement = document.createElement('div');
-            contentElement.className = 'ai-response-content';
+            contentElement.className = 'ai-content-text text-gray-800 dark:text-gray-100 transition-colors duration-300';
             
-            // Add typing dots initially
             contentElement.innerHTML = `
-                <div class="dot-container flex space-x-1 items-center h-5">
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot-container flex space-x-1 items-center h-5 mt-2">
+                    <div class="dot" style="animation-delay: 0s;"></div>
+                    <div class="dot" style="animation-delay: 0.16s;"></div>
+                    <div class="dot" style="animation-delay: 0.32s;"></div>
                 </div>
             `;
             
             contentWrapper.appendChild(contentElement);
-            contentContainer.appendChild(contentWrapper);
-            messageWrapper.appendChild(contentContainer);
+            messageWrapper.appendChild(contentWrapper);
             chatContainer.appendChild(messageWrapper);
             scrollToBottom();
 
             return { contentElement };
         }
 
-        /** Simulates fast typing of the response. */
         function simulateTyping(fullText, targetElement) {
             targetElement.innerHTML = ''; 
 
-            let index = 0;
-            const rawText = fullText.replace(/<br>/g, '\n').replace(/<[^>]*>?/gm, "");
+            const renderedHtml = renderMarkdown(fullText);
+            const rawText = renderedHtml.replace(/<[^>]*>?/gm, "").replace(/\n/g, ' ');
 
+            let index = 0;
+            const tempDiv = document.createElement('div');
+            
             function type() {
                 if (index < rawText.length) {
-                    targetElement.textContent += rawText.charAt(index);
+                    tempDiv.textContent += rawText.charAt(index);
+                    targetElement.innerHTML = `<p>${tempDiv.textContent}</p>`;
                     index++;
                     scrollToBottom();
                     setTimeout(type, TYPING_DELAY);
                 } else {
-                    targetElement.innerHTML = renderMarkdown(fullText);
+                    targetElement.innerHTML = renderedHtml;
                     setUILoading(false);
+                    scrollToBottom();
                 }
             }
             type();
         }
 
-        /** Implements exponential backoff for API retries. */
         const exponentialBackoff = async (attempt) => {
             const delay = Math.pow(2, attempt) * 1000 + Math.random() * 500;
             return new Promise(resolve => setTimeout(resolve, delay));
         };
         
-        /** Handles image file selection and conversion to Base64. */
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             if (file.size > 5 * 1024 * 1024) { 
-                alert('File size exceeds 5MB. Please choose a smaller image.');
+                showCustomMessage('Error: File size exceeds 5MB. Please choose a smaller image.', 'error');
                 removeImage();
                 return;
             }
@@ -448,30 +592,66 @@
                 imagePreview.src = e.target.result;
                 imageFilename.textContent = file.name;
                 imagePreviewContainer.classList.remove('hidden');
-                sendButton.disabled = (promptInput.value.trim() === '' && uploadedFile === null);
+                updateSendButtonState();
+                resizeTextarea(); 
                 scrollToBottom();
             };
             reader.readAsDataURL(file);
         }
 
-        /** Removes the uploaded image from the state and UI. */
+        function showCustomMessage(message, type = 'info') {
+            const existingModal = document.getElementById('custom-message-modal');
+            if (existingModal) existingModal.remove();
+
+            let buttonColor = 'bg-blue-600 hover:bg-blue-700';
+            let messageColor = 'text-gray-700 dark:text-gray-200';
+            let modalBg = 'bg-white dark:bg-gray-700';
+
+            if (type === 'success') {
+                buttonColor = 'bg-green-600 hover:bg-green-700';
+            } else if (type === 'error') {
+                buttonColor = 'bg-red-600 hover:bg-red-700';
+            }
+
+            const modal = document.createElement('div');
+            modal.id = 'custom-message-modal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 transition-opacity duration-300';
+            modal.innerHTML = `
+                <div class="${modalBg} p-6 rounded-3xl shadow-2xl max-w-sm w-full transition-all duration-300 transform scale-100">
+                    <p class="${messageColor} font-medium mb-6">${message}</p>
+                    <button onclick="document.getElementById('custom-message-modal').remove()" 
+                            class="w-full py-3 ${buttonColor} text-white font-semibold rounded-xl transition duration-300 hover:shadow-lg">
+                        Dismiss
+                    </button>
+                </div>
+            `;
+            bodyElement.appendChild(modal);
+        }
+
         function removeImage() {
             uploadedFile = null;
             imagePreview.src = '';
             imageFilename.textContent = '';
             imagePreviewContainer.classList.add('hidden');
             document.getElementById('file-upload').value = null;
-            sendButton.disabled = (promptInput.value.trim() === '' && uploadedFile === null);
+            updateSendButtonState();
         }
 
-        // --- Core Application Logic ---
-
-        /** Sends the user's message (and image, if available) to the Gemini API. */
         async function sendMessage() {
+            if (!userLoggedIn) {
+                showCustomMessage("कृपया चैट करने के लिए पहले साइन इन करें।", 'info');
+                return;
+            }
+            
             const userQuery = promptInput.value.trim();
-            if (!userQuery && !uploadedFile) return;
+            if (!userQuery && !uploadedFile) return; 
             if (isTyping) return;
 
+            const initialMessage = document.querySelector('.ai-message-wrapper:first-child');
+            if (initialMessage) {
+                initialMessage.style.display = 'none';
+            }
+            
             let currentContentParts = [];
             if (userQuery) { currentContentParts.push({ text: userQuery }); }
             
@@ -481,13 +661,11 @@
                 });
             }
 
-            // 2. Display User Message & Image Preview
             addMessageToChat(userQuery, 'user', uploadedFile);
             
-            // 3. Clear input/image and update history/UI state
             promptInput.value = '';
             resizeTextarea();
-            removeImage();
+            removeImage(); 
             setUILoading(true);
             
             chatHistory.push({ role: 'user', parts: currentContentParts });
@@ -500,10 +678,9 @@
                 systemInstruction: { parts: [{ text: config.instruction }] },
             };
 
-            // 4. Add AI message structure with typing indicator
             const { contentElement } = addModelMessageStructure();
             
-            let responseText = "Sorry, I encountered an issue and couldn't process your request. Please check your network connection and try again.";
+            let responseText = "क्षमा करें, मुझे एक समस्या का सामना करना पड़ा और मैं आपके अनुरोध को संसाधित नहीं कर सका। कृपया अपना नेटवर्क कनेक्शन जांचें और पुनः प्रयास करें।";
             let success = false;
             let finalAttempt = 0;
 
@@ -525,7 +702,7 @@
                             success = true;
                             break; 
                         } else {
-                            responseText = "I received an empty or unreadable response from the AI model.";
+                            responseText = "मुझे AI मॉडल से एक खाली या अपठनीय प्रतिक्रिया मिली।";
                             throw new Error('Invalid AI response structure');
                         }
                     } else if (response.status === 429 || response.status >= 500) {
@@ -539,38 +716,33 @@
             } catch (error) {
                 console.error(`AI call failed after ${finalAttempt} attempts:`, error);
             } finally {
-                // 5. Display Model Message using typing simulation
                 simulateTyping(responseText, contentElement);
-
-                // 6. Update history (only if successful)
                 if (success) {
                     chatHistory.push({ role: 'model', parts: [{ text: responseText }] });
                 } else {
-                    chatHistory.pop();
+                    setUILoading(false);
                 }
             }
         }
 
-        /** Adds a static message to the chat (used only for user messages). */
         function addMessageToChat(text, role, fileData) {
             const messageWrapper = document.createElement('div');
             
-            messageWrapper.className = `user-message-wrapper mb-6 flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+            messageWrapper.className = `user-message-wrapper mb-4 flex justify-end`;
 
             const messageDiv = document.createElement('div');
             messageDiv.className = `user-message flex flex-col space-y-3`;
 
-            // Add Image Preview if present
             if (fileData) {
                 const img = document.createElement('img');
                 img.src = `data:${fileData.mimeType};base64,${fileData.base64}`;
-                img.className = 'w-full max-h-48 object-cover rounded-lg shadow-md';
+                img.className = 'w-full max-h-48 object-cover rounded-2xl shadow-md';
                 messageDiv.appendChild(img);
             }
 
-            // Add Text only if prompt exists
             if (text) {
                 const textContent = document.createElement('div');
+                textContent.className = 'text-content text-gray-900 dark:text-gray-100'; 
                 textContent.innerHTML = renderMarkdown(text);
                 messageDiv.appendChild(textContent);
             }
@@ -582,15 +754,11 @@
 
         // --- Event Listeners and Initialization ---
 
-        // Input change listener
         promptInput.addEventListener('input', () => {
-            if (!isTyping) {
-                sendButton.disabled = (promptInput.value.trim() === '' && uploadedFile === null);
-            }
+            updateSendButtonState();
             resizeTextarea();
         });
 
-        // Enter key listener
         promptInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -600,10 +768,14 @@
             }
         });
         
-        // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
-            setMode('search'); // Initialize to Search mode
-            sendButton.disabled = true; 
+            // Check system preference for dark mode and apply if needed
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                 toggleDarkMode();
+            } else {
+                 darkModeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            }
+            updateSendButtonState(); 
         });
 
     </script>
