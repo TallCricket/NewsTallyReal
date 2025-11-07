@@ -84,9 +84,12 @@
             background-color: #1e3a8a;
             color: #93c5fd;
         }
-        .dark #chat-search-input {
+        .dark #chat-search-input, .dark #model-select-dropdown {
             background-color: #2c3e50; /* dark:bg-gray-700 */
             border-color: #4b5563; /* dark:border-gray-600 */
+        }
+        .dark .ai-btn.speaking svg {
+            color: #60a5fa; /* dark:text-blue-400 */
         }
         /* --- End Dark Mode Styles --- */
 
@@ -222,19 +225,20 @@
             position: relative; /* Needed for copy button positioning */
         }
 
-        /* Indr.ai Symbol (Vibrant M3 Look) */
+        /* --- MODIFIED: Indr.ai Symbol (Vibrant M3 Look) --- */
         .indrai-symbol {
             width: 2.25rem; 
             height: 2.25rem;
-            border-radius: 0.75rem; 
-            background: linear-gradient(45deg, #1e3a8a, #3b82f6); 
+            border-radius: 9999px; /* Make it circular */
+            background: none; /* Remove gradient */
             color: white; 
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.5); 
+            box-shadow: none; /* Remove shadow */
             transition: all 0.3s;
+            overflow: hidden; /* Clip the image */
         }
         
         /* Button Press Effect (Expressive Feedback) */
@@ -322,19 +326,55 @@
             color: #93c5fd;
         }
         
-        /* --- Copy Button Style --- */
-        .copy-btn {
+        /* --- AI Message Button Styles --- */
+        .ai-btn-container {
             position: absolute;
             top: 0;
             right: 0;
-            margin-top: -0.25rem; /* Pull up slightly */
-            margin-right: -0.25rem; /* Pull right slightly */
+            margin-top: -0.25rem;
+            margin-right: -0.25rem;
+            display: flex;
             opacity: 0.5;
             transition: opacity 0.2s;
         }
-        .ai-response-content-wrapper:hover .copy-btn {
+        .ai-response-content-wrapper:hover .ai-btn-container {
             opacity: 1;
         }
+        .ai-btn {
+            display: block;
+            padding: 0.375rem; /* p-1.5 */
+            border-radius: 9999px; /* rounded-full */
+            color: #6b7280; /* text-gray-500 */
+        }
+        .ai-btn:hover {
+            background-color: #f3f4f6; /* hover:bg-gray-100 */
+        }
+        .dark .ai-btn {
+            color: #9ca3af; /* dark:text-gray-400 */
+        }
+        .dark .ai-btn:hover {
+            background-color: #374151; /* dark:hover:bg-gray-700 */
+        }
+        .ai-btn.speaking svg {
+            color: #2563eb; /* text-blue-600 */
+        }
+        
+        /* --- NEW: Model Select Dropdown Style --- */
+        #model-select-dropdown {
+            /* Mimics the chat search input style */
+            width: 100%;
+            padding: 0.5rem 0.75rem; /* px-3 py-2 */
+            font-size: 0.875rem; /* text-sm */
+            border: 1px solid #D1D5DB; /* border-gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        #model-select-dropdown:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            border-color: #2563eb; /* focus:border-blue-600 */
+            box-shadow: 0 0 0 2px #BFDBFE; /* focus:ring-2 focus:ring-blue-300 */
+        }
+
 
     </style>
 </head>
@@ -369,6 +409,12 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                 <span>New Chat (Save & Clear)</span>
             </div>
+            
+            <!-- NEW: Export Chat -->
+            <div onclick="exportChat(); closeSidebar()" class="menu-item flex items-center space-x-3 text-blue-600 border-b dark:border-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Export Current Chat</span>
+            </div>
 
             <!-- AI Modes -->
             <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2">AI Modes</h3>
@@ -400,8 +446,14 @@
                 </div>
             </div>
 
+            <!-- NEW: Model Selector -->
+            <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2">Select Model</h3>
+            <div id="model-selector-container" class="px-3 pb-2">
+                <p class="text-sm text-gray-400">Loading models...</p>
+            </div>
+
             <!-- Recent Chats -->
-            <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2">Recent Chats</h3>
+            <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2 border-t dark:border-gray-700 mt-4">Recent Chats</h3>
             <!-- NEW: Search Chats Input -->
             <div class="px-3 pb-2">
                 <input type="text" id="chat-search-input" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Search chats...">
@@ -444,11 +496,9 @@
         </button>
 
         <div class="flex items-center space-x-2">
-            <!-- Indr.ai Icon/Logo in Header -->
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-md" style="background: linear-gradient(45deg, #1e3a8a, #3b82f6);">
-                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/>
-                </svg>
+            <!-- MODIFIED: Indr.ai Icon/Logo in Header -->
+            <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md overflow-hidden">
+                 <img src="1000012844.jpg" alt="Indr.ai Logo" class="w-full h-full object-cover">
             </div>
             <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 transition-colors duration-400">Indr.<span class="text-blue-600">ai</span></h1>
         </div>
@@ -473,10 +523,9 @@
                 
                 <!-- Initial Welcome Message (Minimal Style) -->
                 <div class="ai-message-wrapper" id="initial-message-wrapper">
+                    <!-- MODIFIED: Indr.ai Symbol -->
                     <div class="indrai-symbol">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/>
-                        </svg>
+                        <img src="1000012844.jpg" alt="Logo" class="w-full h-full object-cover">
                     </div>
                     <div class="ai-response-content-wrapper">
                         <p class="font-bold text-blue-700 mb-2 transition-colors duration-400" id="current-mode-display">Indr.ai (Research Mode)</p>
@@ -541,7 +590,7 @@
     <!-- 
       ==================================================================
       MAIN APPLICATION SCRIPT (MODULAR)
-      ==================================================================
+      ================================A==================================
     -->
     <script type="module">
         // --- Firebase v12.5.0 Modular Imports ---
@@ -561,7 +610,8 @@
             addDoc, 
             updateDoc, 
             getDoc, 
-            getDocs, 
+            getDocs,
+            deleteDoc, // NEW: Import deleteDoc
             query, 
             // orderBy, // Removed to avoid index errors
             limit, 
@@ -591,8 +641,10 @@
         // Global Constants
         // API KEY PROVIDED BY USER: AIzaSyDStpVJpqJjfi8kdsGcYlBMfOD4ByKcagY
         const API_KEY = "AIzaSyDStpVJpqJjfi8kdsGcYlBMfOD4ByKcagY"; 
-        const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+        
+        // --- REMOVED: const MODEL_NAME = ...
+        // --- REMOVED: const API_URL = ...
+        
         const TYPING_DELAY = 15;
         
         // --- DOM Elements ---
@@ -617,7 +669,8 @@
         const headerSignInButton = document.getElementById('header-sign-in-button');
         const headerUserAvatar = document.getElementById('header-user-avatar');
         const recentChatsList = document.getElementById('recent-chats-list');
-        const chatSearchInput = document.getElementById('chat-search-input'); // NEW
+        const chatSearchInput = document.getElementById('chat-search-input');
+        const modelSelectorContainer = document.getElementById('model-selector-container'); // NEW
         
         // --- Simplified DOM Elements (Browse Removed) ---
         const micButton = document.getElementById('mic-button');
@@ -633,6 +686,12 @@
         // --- New State Variables ---
         let isListening = false;
         let recognition;
+        let abortController = null; // For stopping generation
+        let currentSpeech = null; // For Text-to-Speech
+        
+        // --- NEW: Model State ---
+        let currentModelName = 'gemini-2.5-flash-preview-09-2025'; // Default fallback
+        let availableModels = [];
 
 
         // --- Sidebar Functions ---
@@ -838,11 +897,13 @@
         
         /**
          * --- NEW: Generates a title and saves the VERY FIRST chat ---
-         * This is called only once per new chat, after the first model response.
          */
         async function generateAndSaveFirstChat() {
             if (!currentUser || chatHistory.length < 3 || currentChatId !== null) return; // Must be a new chat
-
+            
+            // DYNAMIC_API_URL for title generation
+            const DYNAMIC_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${currentModelName}:generateContent?key=${API_KEY}`;
+            
             // 1. Generate Title
             const titlePrompt = `Analyze the following conversation and provide a very short, concise chat title (5 words or less). Example: 'History of Rome'. Do not add any other text. Title:\n\nUser: ${chatHistory[1].parts[0].text}\nModel: ${chatHistory[2].parts[0].text}`;
             let chatTitle = null;
@@ -852,9 +913,8 @@
                     contents: [{ parts: [{ text: titlePrompt }] }],
                     systemInstruction: { parts: [{ text: "You are a title generation assistant. You provide only the title text, no quotes, no labels." }] }
                 };
-                // Note: This fetch call uses exponentialBackoff implicitly if it were in a retry loop.
-                // For a simple, non-critical call, we'll do one attempt.
-                const response = await fetch(API_URL, { 
+                
+                const response = await fetch(DYNAMIC_API_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify(payload) 
@@ -896,7 +956,6 @@
          */
         async function saveChat() {
             // This function now ONLY updates existing chats.
-            // New chats are created by generateAndSaveFirstChat()
             if (!currentUser || !currentChatId || chatHistory.length <= 1) return;
 
             try {
@@ -910,7 +969,6 @@
                 loadRecentChats(); // Refresh sidebar
             } catch (error) {
                 console.error("Error updating chat:", error);
-                showCustomMessage("Error saving chat update.", 'error');
             }
         }
 
@@ -939,18 +997,34 @@
                     <span class="truncate">${chat.title}</span>
                 `;
                 
+                // --- NEW: Button Container ---
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'flex-shrink-0 flex items-center z-10'; // z-10 to be clickable
+
                 const renameButton = document.createElement('button');
-                renameButton.className = 'p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex-shrink-0 z-10'; // z-10 to be clickable
+                renameButton.className = 'p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600';
                 renameButton.title = "Rename chat";
                 renameButton.innerHTML = `
                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path></svg>
                 `;
                 
-                // Attach click handler to rename
-                renameButton.onclick = (event) => window.renameChat(event, chat.id, chat.title);
+                // NEW: Delete Button
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900';
+                deleteButton.title = "Delete chat";
+                deleteButton.innerHTML = `
+                    <svg class="w-4 h-4 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                `;
 
+                // Attach click handlers
+                renameButton.onclick = (event) => window.renameChat(event, chat.id, chat.title);
+                deleteButton.onclick = (event) => window.deleteChat(event, chat.id, chat.title);
+
+                buttonContainer.appendChild(renameButton);
+                buttonContainer.appendChild(deleteButton);
+                
                 chatElement.appendChild(titleWrapper);
-                chatElement.appendChild(renameButton);
+                chatElement.appendChild(buttonContainer);
                 recentChatsList.appendChild(chatElement);
             });
         }
@@ -1011,6 +1085,46 @@
             inputField.focus();
             inputField.select();
         }
+
+        /**
+         * --- NEW: Confirmation Modal ---
+         */
+        function showConfirmationModal(title, message, onConfirm) {
+            const existingModal = document.getElementById('confirmation-modal');
+            if (existingModal) existingModal.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'confirmation-modal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 transition-opacity duration-300';
+            
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-700 p-6 rounded-3xl shadow-2xl max-w-sm w-full transition-all duration-300 transform scale-100">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">${title}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">${message}</p>
+                    <div class="flex justify-end space-x-3">
+                        <button id="confirm-modal-cancel" class="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-xl hover:bg-gray-300 transition duration-300">
+                            Cancel
+                        </button>
+                        <button id="confirm-modal-ok" class="px-5 py-2 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition duration-300">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+            bodyElement.appendChild(modal);
+
+            const confirmButton = document.getElementById('confirm-modal-ok');
+            const cancelButton = document.getElementById('confirm-modal-cancel');
+            
+            const closeModal = () => modal.remove();
+
+            confirmButton.onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+            cancelButton.onclick = closeModal;
+        }
+
         
         /** Renames a chat in Firestore */
         window.renameChat = async function(event, chatId, oldTitle) {
@@ -1027,6 +1141,35 @@
                 } catch (error) {
                     console.error("Error renaming chat:", error);
                     showCustomMessage("Error renaming chat.", 'error');
+                }
+            });
+        }
+        
+        /**
+         * --- NEW: Deletes a chat from Firestore ---
+         */
+        window.deleteChat = async function(event, chatId, chatTitle) {
+            event.stopPropagation(); // Stop the click from loading the chat
+            
+            const safeTitle = chatTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            showConfirmationModal("Delete Chat?", `Are you sure you want to delete '${safeTitle}'? This cannot be undone.`, async () => {
+                if (!currentUser) return;
+                
+                const docRef = doc(db, 'users', currentUser.uid, 'recent_chats', chatId);
+                try {
+                    await deleteDoc(docRef);
+                    showCustomMessage("Chat deleted successfully.", 'success');
+                    
+                    // If the deleted chat is the one currently open, load a new chat
+                    if (currentChatId === chatId) {
+                        newChat(true); // true = suppress message
+                    }
+                    
+                    loadRecentChats(); // Refresh the sidebar
+                } catch (error) {
+                    console.error("Error deleting chat:", error);
+                    showCustomMessage("Error deleting chat.", 'error');
                 }
             });
         }
@@ -1147,7 +1290,8 @@
 
             const symbolDiv = document.createElement('div');
             symbolDiv.className = 'indrai-symbol';
-            symbolDiv.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/></svg>`;
+            // MODIFIED: Use img tag for logo
+            symbolDiv.innerHTML = `<img src="1000012844.jpg" alt="Logo" class="w-full h-full object-cover">`;
             messageWrapper.appendChild(symbolDiv);
             
             const contentWrapper = document.createElement('div');
@@ -1163,7 +1307,7 @@
             contentElement.innerHTML = renderMarkdown(text);
             
             contentWrapper.appendChild(contentElement);
-            addCopyButton(contentWrapper, text); // --- ADDED COPY BUTTON ---
+            addAiButtons(contentWrapper, text); // --- MODIFIED: Add button container ---
             messageWrapper.appendChild(contentWrapper);
             chatContainer.appendChild(messageWrapper);
         }
@@ -1208,6 +1352,32 @@
                  newChat(true); // Clear chat history state
             }
         }
+        
+        /**
+         * --- NEW: Sets the current AI model ---
+         */
+        window.setModel = function(modelName) {
+            if (isTyping) {
+                 showCustomMessage("Please wait for the current response to finish.", 'error');
+                 // Revert dropdown
+                 document.getElementById('model-select-dropdown').value = currentModelName;
+                 return;
+            }
+            if (modelName === currentModelName) return;
+            
+            // Save current chat before switching
+            if (currentChatId && chatHistory.length > 1 && currentUser) {
+                saveChat();
+            }
+
+            const model = availableModels.find(m => m.name === modelName);
+            currentModelName = modelName;
+            
+            showCustomMessage(`Model switched to ${model.displayName}.`, 'success');
+            newChat(true); // Start new chat
+            closeSidebar();
+        }
+
 
         /** Firebase Auth State Listener (v9+) */
         onAuthStateChanged(auth, updateAuthUI);
@@ -1219,12 +1389,14 @@
             const isInputEmpty = promptInput.value.trim() === '';
             const isFileEmpty = uploadedFile === null;
             
-            const isSendDisabled = isTyping || (isInputEmpty && isFileEmpty);
+            // Do not disable send button if isTyping, as it's the "Stop" button
+            const isSendDisabled = !isTyping && (isInputEmpty && isFileEmpty);
 
             sendButton.disabled = isSendDisabled;
             uploadButton.disabled = isTyping; 
             micButton.disabled = isTyping;
         }
+
 
         window.newChat = async function(suppressMessage = false) {
             // 1. Save current chat if it has messages
@@ -1271,8 +1443,56 @@
         }
 
         /**
-         * --- NEW FUNCTION ---
-         * Copies text to the clipboard using the document.execCommand fallback.
+         * --- NEW: Text-to-Speech Function ---
+         */
+        window.readAloud = function(text, buttonElement) {
+            if (!'speechSynthesis' in window) {
+                showCustomMessage("Sorry, your browser doesn't support Text-to-Speech.", 'error');
+                return;
+            }
+
+            // Stop any currently playing speech
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                // If the same button was clicked, just stop.
+                if (currentSpeech && currentSpeech.text === text) {
+                    return;
+                }
+            }
+            
+            // Reset all speaker icons
+            document.querySelectorAll('.speaker-btn').forEach(btn => {
+                btn.classList.remove('speaking');
+                btn.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .89-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                `;
+            });
+
+            // Create new utterance
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // You can make this dynamic later
+            currentSpeech = utterance;
+
+            // Highlight the clicked button
+            buttonElement.classList.add('speaking');
+            buttonElement.innerHTML = `
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 10.086V13.914a1 1 0 001.707.707L11 10.334V5.414L6.707 9.379A1 1 0 005 10.086zM13 5v14c0 .89-1.077 1.337-1.707.707L6.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h2.586l4.707-4.707C11.923 3.663 13 4.109 13 5zM17 6a1 1 0 00-1 1v10a1 1 0 002 0V7a1 1 0 00-1-1zM21 6a1 1 0 00-1 1v10a1 1 0 002 0V7a1 1 0 00-1-1z"></path></svg>
+            `; // Changed to a "pause" like icon
+
+            // Cleanup when speech ends
+            utterance.onend = () => {
+                buttonElement.classList.remove('speaking');
+                buttonElement.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .89-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                `;
+                currentSpeech = null;
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /**
+         * --- MODIFIED: Copies text to clipboard ---
          */
         function copyToClipboard(text, buttonElement) {
             const textarea = document.createElement('textarea');
@@ -1289,6 +1509,7 @@
                 
                 // Visual feedback
                 if(buttonElement) {
+                    const originalIcon = buttonElement.innerHTML;
                     buttonElement.innerHTML = `
                         <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -1297,11 +1518,7 @@
                     buttonElement.title = 'Copied!';
                     
                     setTimeout(() => {
-                        buttonElement.innerHTML = `
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 4h8a2 2 0 012 2v8a2 2 0 01-2 2h-8a2 2 0 01-2-2v-8a2 2 0 012-2z"></path>
-                            </svg>
-                        `;
+                        buttonElement.innerHTML = originalIcon;
                         buttonElement.title = 'Copy text';
                     }, 2000);
                 }
@@ -1315,28 +1532,43 @@
         }
 
         /**
-         * --- NEW FUNCTION ---
-         * Adds a copy button to the AI message wrapper.
+         * --- MODIFIED: Adds Copy and Speak buttons ---
          */
-        function addCopyButton(contentWrapper, textToCopy) {
-            if (contentWrapper.querySelector('.copy-btn')) return;
+        function addAiButtons(contentWrapper, textToCopy) {
+            if (contentWrapper.querySelector('.ai-btn-container')) return;
 
-            const button = document.createElement('button');
-            button.className = 'copy-btn btn-icon p-1.5 text-gray-500 rounded-full hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-all duration-200';
-            button.title = 'Copy text';
-            button.innerHTML = `
+            const container = document.createElement('div');
+            container.className = 'ai-btn-container';
+
+            // 1. Add Speaker Button
+            const speakerButton = document.createElement('button');
+            speakerButton.className = 'ai-btn speaker-btn';
+            speakerButton.title = 'Read aloud';
+            speakerButton.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .89-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+            `;
+            speakerButton.onclick = (e) => {
+                e.stopPropagation();
+                readAloud(textToCopy, speakerButton);
+            };
+
+            // 2. Add Copy Button
+            const copyButton = document.createElement('button');
+            copyButton.className = 'ai-btn copy-btn';
+            copyButton.title = 'Copy text';
+            copyButton.innerHTML = `
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 4h8a2 2 0 012 2v8a2 2 0 01-2 2h-8a2 2 0 01-2-2v-8a2 2 0 012-2z"></path>
                 </svg>
             `;
-            
-            button.onclick = (e) => {
+            copyButton.onclick = (e) => {
                 e.stopPropagation();
-                copyToClipboard(textToCopy, button);
+                copyToClipboard(textToCopy, copyButton);
             };
 
-            // contentWrapper already has position: relative from CSS
-            contentWrapper.appendChild(button);
+            container.appendChild(speakerButton);
+            container.appendChild(copyButton);
+            contentWrapper.appendChild(container);
         }
 
 
@@ -1396,16 +1628,52 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
+        /**
+         * --- MODIFIED: Handles "Stop Generation" button ---
+         */
         function setUILoading(isLoading) {
             isTyping = isLoading;
             promptInput.disabled = isLoading;
             document.getElementById('file-upload').disabled = isLoading;
+            micButton.disabled = isLoading;
+
+            const sendIcon = document.getElementById('send-icon');
             
             if (isLoading) {
                 promptInput.blur(); // --- ADDED: Blur input on send ---
+                sendIcon.innerHTML = `
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/>
+                    </svg>
+                `;
+                sendButton.onclick = window.stopGeneration;
+                sendButton.disabled = false; // Must be clickable to stop
+            } else {
+                sendIcon.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                `;
+                sendButton.onclick = window.sendMessage;
+                updateSendButtonState(); // Will correctly disable if inputs are empty
             }
-            
-            updateSendButtonState();
+        }
+        
+        /**
+         * --- NEW: Stops the fetch request ---
+         */
+        window.stopGeneration = function() {
+            if (abortController) {
+                abortController.abort();
+                abortController = null;
+            }
+            // Stop any typing simulation
+            setUILoading(false); // Reset button
+            // Find the last typing indicator and remove it
+            const dots = chatContainer.querySelector('.dot-container');
+            if (dots) {
+                dots.closest('.ai-message-wrapper').remove();
+            }
         }
 
         function addModelMessageStructure() {
@@ -1416,10 +1684,9 @@
 
             const symbolDiv = document.createElement('div');
             symbolDiv.className = 'indrai-symbol';
+            // MODIFIED: Use img tag for logo
             symbolDiv.innerHTML = `
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-12h2v6h-2zm0 7h2v2h-2z"/>
-                </svg>
+                <img src="1000012844.jpg" alt="Logo" class="w-full h-full object-cover">
             `;
             messageWrapper.appendChild(symbolDiv);
             
@@ -1450,9 +1717,18 @@
             return { contentElement };
         }
 
+        /**
+         * --- MODIFIED: Handles Abort Signal ---
+         */
         function simulateTyping(fullText, targetElement) {
+            // NEW: Handle abort signal
+            if (fullText === "ABORT_SIGNAL") {
+                targetElement.closest('.ai-message-wrapper').remove();
+                setUILoading(false);
+                return;
+            }
+            
             targetElement.innerHTML = ''; 
-
             const renderedHtml = renderMarkdown(fullText);
             
             // Check if content is mainly code
@@ -1460,7 +1736,7 @@
                 targetElement.innerHTML = renderedHtml;
                 setUILoading(false);
                 scrollToBottom();
-                addCopyButton(targetElement.parentElement, fullText); // --- ADDED COPY BUTTON ---
+                addAiButtons(targetElement.parentElement, fullText); // --- MODIFIED: Add button container ---
                 return;
             }
             
@@ -1488,11 +1764,65 @@
                     targetElement.innerHTML = renderedHtml;
                     setUILoading(false);
                     scrollToBottom();
-                    addCopyButton(targetElement.parentElement, fullText); // --- ADDED COPY BUTTON ---
+                    addAiButtons(targetElement.parentElement, fullText); // --- MODIFIED: Add button container ---
                 }
             }
             type();
         }
+        
+        /**
+         * --- NEW: Export Chat Function ---
+         */
+        window.exportChat = function() {
+            if (chatHistory.length <= 1) {
+                showCustomMessage("There is no chat history to export.", 'info');
+                return;
+            }
+            
+            let fileContent = `# Indr.ai Chat Export\n\n`;
+            fileContent += `**Mode:** ${MODE_CONFIGS[currentMode].label}\n`;
+            const model = availableModels.find(m => m.name === currentModelName);
+            fileContent += `**Model:** ${model ? model.displayName : currentModelName}\n`;
+            fileContent += `**Date:** ${new Date().toLocaleString()}\n\n---\n\n`;
+
+            chatHistory.slice(1).forEach(msg => {
+                const textPart = msg.parts.find(p => p.text)?.text || "";
+                const filePart = msg.parts.find(p => p.inlineData);
+
+                if (msg.role === 'user') {
+                    fileContent += `## 👤 User\n\n`;
+                } else {
+                    fileContent += `## 🤖 Indr.ai\n\n`;
+                }
+                
+                if (filePart) {
+                    fileContent += `[Image Uploaded: ${filePart.inlineData.mimeType}]\n\n`;
+                }
+                if (textPart) {
+                    fileContent += textPart + "\n\n";
+                }
+            });
+
+            const blob = new Blob([fileContent], { type: 'text/markdown;charset=utf-8' });
+            
+            // Create a filename
+            const firstTitle = chatHistory[1]?.parts.find(p => p.text)?.text.substring(0, 20) || "chat";
+            const safeTitle = firstTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const fileName = `indr-ai_${safeTitle}.md`;
+
+            // Create download link
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(link.href);
+            showCustomMessage("Chat exported successfully!", 'success');
+        }
+
 
         const exponentialBackoff = async (attempt) => {
             const delay = Math.pow(2, attempt) * 1000 + Math.random() * 500;
@@ -1588,9 +1918,15 @@
             promptInput.value = '';
             // resizeTextarea(); // REMOVED
             removeImage(); 
-            setUILoading(true); // This will also blur the input
+            setUILoading(true); // This will also blur the input and change button
             
             chatHistory.push({ role: 'user', parts: currentContentParts });
+
+            // --- NEW: AbortController ---
+            abortController = new AbortController();
+            
+            // --- NEW: Dynamic API URL ---
+            const DYNAMIC_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${currentModelName}:generateContent?key=${API_KEY}`;
 
             const config = MODE_CONFIGS[currentMode];
             
@@ -1609,10 +1945,11 @@
             try {
                 for (let attempt = 0; attempt < 5; attempt++) {
                     finalAttempt = attempt + 1;
-                    const response = await fetch(API_URL, {
+                    const response = await fetch(DYNAMIC_API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(payload),
+                        signal: abortController.signal // NEW: Pass signal
                     });
 
                     if (response.ok) {
@@ -1638,9 +1975,17 @@
                     }
                 }
             } catch (error) {
-                console.error(`AI call failed after ${finalAttempt} attempts:`, error);
-                responseText = `Network or fetch error. Please check console for details.`;
+                // NEW: Handle AbortError
+                if (error.name === 'AbortError') {
+                    console.log("Generation stopped by user.");
+                    responseText = "ABORT_SIGNAL"; // Special signal for simulateTyping
+                    success = false;
+                } else {
+                    console.error(`AI call failed after ${finalAttempt} attempts:`, error);
+                    responseText = `Network or fetch error. Please check console for details.`;
+                }
             } finally {
+                abortController = null; // Clear the controller
                 simulateTyping(responseText, contentElement);
                 if (success) {
                     chatHistory.push({ role: 'model', parts: [{ text: responseText }] });
@@ -1648,9 +1993,12 @@
                     // --- NEW: Check if this is the first message to create the chat ---
                     if (currentChatId === null && currentUser) {
                         generateAndSaveFirstChat();
+                    } else if (currentChatId && currentUser) {
+                        // Save updates to existing chat
+                        saveChat();
                     }
-                } else {
-                    setUILoading(false);
+                } else if (responseText !== "ABORT_SIGNAL") {
+                    setUILoading(false); // Reset UI if it was a normal error
                 }
             }
         }
@@ -1681,6 +2029,93 @@
             chatContainer.appendChild(messageWrapper);
             scrollToBottom();
         }
+        
+        // --- NEW: Model Fetching Functions ---
+        
+        /**
+         * Renders the model selector in the sidebar
+         */
+        function renderModelSelector() {
+            if (availableModels.length === 0) {
+                modelSelectorContainer.innerHTML = `<p class="text-sm text-red-400">No compatible text models found.</p>`;
+                return;
+            }
+            
+            // Set a default model if the current one isn't in the list
+            if (!availableModels.some(m => m.name === currentModelName)) {
+                currentModelName = availableModels[0].name;
+            }
+
+            if (availableModels.length === 1) {
+                // Only one model, just display its name
+                modelSelectorContainer.innerHTML = `<p class="text-sm text-gray-400 dark:text-gray-300 truncate" title="${availableModels[0].displayName}">${availableModels[0].displayName}</p>`;
+            } else {
+                // Multiple models, create a dropdown
+                const options = availableModels.map(model => 
+                    `<option value="${model.name}" ${model.name === currentModelName ? 'selected' : ''}>
+                        ${model.displayName}
+                    </option>`
+                ).join('');
+                
+                modelSelectorContainer.innerHTML = `
+                    <select id="model-select-dropdown" class="dark:text-white" onchange="setModel(this.value)">
+                        ${options}
+                    </select>
+                `;
+            }
+        }
+
+        /**
+         * Fetches available text models from the API
+         */
+        async function fetchAvailableModels() {
+            const MODELS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+            
+            try {
+                const response = await fetch(MODELS_API_URL);
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                const result = await response.json();
+                
+                if (result.models) {
+                    availableModels = result.models
+                        .filter(m => 
+                            m.name.includes('gemini') && // Must be a Gemini model
+                            m.supportedGenerationMethods.includes('generateContent') && // Must support this method
+                            !m.name.includes('image') && // Exclude image-only models
+                            !m.name.includes('tts') // Exclude TTS-only models
+                        )
+                        .map(m => ({
+                            name: m.name.replace('models/', ''), // Strip the "models/" prefix
+                            displayName: m.displayName
+                        }))
+                        // Ensure 'flash' is prioritized if available
+                        .sort((a, b) => {
+                            if (a.name.includes('flash')) return -1;
+                            if (b.name.includes('flash')) return 1;
+                            return 0;
+                        });
+
+                    if (availableModels.length > 0) {
+                        // Set default model to flash if it exists, otherwise first in list
+                        const flashModel = availableModels.find(m => m.name.includes('flash'));
+                        currentModelName = flashModel ? flashModel.name : availableModels[0].name;
+                    } else {
+                        // Fallback if filter is too aggressive
+                        currentModelName = 'gemini-2.5-flash-preview-09-2025';
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching models:", error);
+                modelSelectorContainer.innerHTML = `<p class="text-sm text-red-400">Failed to load models.</p>`;
+                // Use fallback
+                availableModels = [{ name: currentModelName, displayName: "Gemini Flash (Default)" }];
+            }
+            
+            renderModelSelector();
+        }
+
 
         // --- Event Listeners and Initialization ---
 
@@ -1715,6 +2150,9 @@
         
         // New Init
         setupSpeechRecognition();
+        
+        // NEW: Fetch models on load
+        fetchAvailableModels();
 
     </script>
 </body>
