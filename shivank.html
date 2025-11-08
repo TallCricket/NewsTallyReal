@@ -375,17 +375,49 @@
             box-shadow: 0 0 0 2px #BFDBFE; /* focus:ring-2 focus:ring-blue-300 */
         }
 
+        /* --- NEW: Profile Panel (Right) Styles --- */
+        .profile-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%; /* Full width on mobile */
+            max-width: 300px; /* Max width on desktop */
+            height: 100vh;
+            z-index: 50; 
+            background-color: #ffffff;
+            border-left: 1px solid #e5e7eb;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .profile-panel.open {
+            transform: translateX(0);
+        }
+        .dark .profile-panel {
+            background-color: #1a1c1e;
+            border-left-color: #374151;
+        }
+        /* Backdrop for the profile panel (can reuse menu-backdrop class if z-index is same) */
+        #profile-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 49; /* Below profile panel */
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.3s;
+        }
+
 
     </style>
 </head>
 <body class="flex flex-col h-screen antialiased">
 
-    <!-- Sidebar Drawer -->
+    <!-- Sidebar Drawer (Left) -->
     <div id="sidebar-drawer" class="sidebar-drawer flex flex-col">
         <!-- Profile/Header Section -->
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col">
             <h2 class="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">Menu</h2>
             
+            <!-- This section is now managed from the Right Profile Panel -->
             <div id="profile-section" class="flex items-center space-x-3 hidden">
                 <img id="menu-user-avatar" class="w-10 h-10 rounded-full border-2 border-blue-500" src="" alt="Profile Avatar">
                 <div class="flex flex-col">
@@ -394,7 +426,7 @@
                 </div>
             </div>
             
-            <!-- Sign In Button -->
+            <!-- This button is now managed from the Right Profile Panel -->
             <button id="menu-sign-in-button" onclick="signInWithGoogle(); closeSidebar()" class="px-3 py-1.5 bg-blue-600 text-white font-medium text-sm rounded-lg shadow-md hover:bg-blue-700 transition duration-300 transform active:scale-95">
                 Sign In with Google
             </button>
@@ -421,27 +453,32 @@
             <div id="ai-modes-section">
                 <!-- Research/Search Mode (Default) -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="search" onclick="setMode('search'); closeSidebar()">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <!-- UPDATED ICON: book-open solid -->
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 5a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
                     <span>Research/Search Mode</span>
                 </div>
                 <!-- Creative Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="creative" onclick="setMode('creative'); closeSidebar()">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 01-1.03-.984l-4.253-8.507a.75.75 0 00-1.352 0l-4.253 8.507a2 2 0 01-1.03.984l-.843.422a.75.75 0 00-.376 1.35l4.636 2.529a2.25 2.25 0 002.396 0l4.636-2.529a.75.75 0 00-.376-1.35l-.843-.422z"></path></svg>
+                    <!-- UPDATED ICON: sparkles solid -->
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 9a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM9 2a1 1 0 011 1v1h1a1 1 0 110 2H10v1a1 1 0 11-2 0V6H7a1 1 0 110-2h1V3a1 1 0 011-1zm3.5 1.5a1 1 0 011-1.414L16 2.586a1 1 0 011.414 0l.5.5a1 1 0 010 1.414l-2.5 2.5a1 1 0 01-1.414 0l-.5-.5a1 1 0 01-1.414-1l2.5-2.5zM11 13a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H8a1 1 0 110-2h1v-1a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
                     <span>Creative Mode (Text)</span>
                 </div>
                  <!-- Code Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="code" onclick="setMode('code'); closeSidebar()">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                    <!-- UPDATED ICON: command-line solid -->
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M2 5a3 3 0 013-3h10a3 3 0 013 3v10a3 3 0 01-3 3H5a3 3 0 01-3-3V5zm3.5 4.5a.5.5 0 00-.5.5v.5a.5.5 0 00.5.5h.5a.5.5 0 00.5-.5v-.5a.5.5 0 00-.5-.5h-.5zM6 10a.5.5 0 01.5-.5h4.5a.5.5 0 010 1H6.5a.5.5 0 01-.5-.5zm.5 2.5a.5.5 0 00-.5.5v.5a.5.5 0 00.5.5h.5a.5.5 0 00.5-.5v-.5a.5.5 0 00-.5-.5h-.5z" clip-rule="evenodd"></path></svg>
                     <span>Code/Dev Mode</span>
                 </div>
                  <!-- Image Prompter Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="image_prompter" onclick="setMode('image_prompter'); closeSidebar()">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-3"></path></svg>
+                    <!-- UPDATED ICON: photo solid -->
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M1 5.25A2.25 2.25 0 013.25 3h13.5A2.25 2.25 0 0119 5.25v9.5A2.25 2.25 0 0116.75 17H3.25A2.25 2.25 0 011 14.75v-9.5zm1.5 0v9.5c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75v-9.5a.75.75 0 00-.75-.75H3.25a.75.75 0 00-.75.75zM8.25 9.75a.75.75 0 01.75-.75h2a.75.75 0 01.75.75v.008a.75.75 0 01-1.5 0V9.75H9a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 00-1.5 0v.008a.75.75 0 001.5 0v-.008zM11.25 9a.75.75 0 01.75.75v.008a.75.75 0 01-1.5 0V9.75a.75.75 0 01.75-.75zm.75 2.25a.75.75 0 00-1.5 0v.008a.75.75 0 001.5 0v-.008zM13 9.75a.75.75 0 01.75-.75h.008a.75.75 0 010 1.5H13.75a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 00-1.5 0v.008a.75.75 0 001.5 0v-.008z" clip-rule="evenodd"></path></svg>
                     <span>Image Prompter</span>
                 </div>
                  <!-- Video Idea Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="video_idea" onclick="setMode('video_idea'); closeSidebar()">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M12 21V3"></path></svg>
+                    <!-- UPDATED ICON: video-camera solid -->
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M15 5.25a.75.75 0 01.75.75v8.5a.75.75 0 01-1.5 0V6a.75.75 0 01.75-.75zM10.75 5.25a.75.75 0 01.75.75v8.5a.75.75 0 01-1.5 0V6A.75.75 0 0110.75 5.25zM7.5 5.25a.75.75 0 01.75.75v8.5a.75.75 0 01-1.5 0V6A.75.75 0 017.5 5.25zM4.25 5.25a.75.75 0 01.75.75v8.5a.75.75 0 01-1.5 0V6A.75.75 0 014.25 5.25z"></path></svg>
                     <span>Video Idea Generator</span>
                 </div>
             </div>
@@ -462,35 +499,21 @@
                 <p class="px-4 text-sm text-gray-400">Sign in to view recent chats.</p>
             </div>
             
-            <!-- Settings -->
-            <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2 border-t dark:border-gray-700 mt-4">Settings</h3>
-            <div class="menu-item flex items-center justify-between">
-                <span>Dark Mode</span>
-                <!-- Dark Mode Toggle within Menu -->
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="menu-dark-mode-toggle-checkbox" value="" class="sr-only peer" onclick="toggleDarkMode(true)">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                </label>
-            </div>
+            <!-- MOVED: Settings and Sign Out moved to Profile Panel (Right) -->
 
         </nav>
         
-        <!-- Footer / Sign Out Section (Visible when logged in) -->
-        <div id="sign-out-section" class="p-4 border-t dark:border-gray-700 hidden">
-             <button onclick="signOutUser(); closeSidebar()" class="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 transition duration-150 rounded-lg">
-                <svg class="w-4 h-4 inline mr-2 align-text-bottom" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                Sign Out
-            </button>
-        </div>
+        <!-- MOVED: This section is now in the Profile Panel (Right) -->
+        <!-- <div id="sign-out-section" class="p-4 border-t dark:border-gray-700 hidden"> ... </div> -->
     </div>
     
-    <!-- Menu Backdrop -->
+    <!-- Menu Backdrop (Left) -->
     <div id="drawer-backdrop" class="menu-backdrop hidden" onclick="closeSidebar()"></div>
 
     <!-- Header (Elevated Surface) - THINNER -->
     <header class="p-3 bg-white border-b border-gray-100 shadow-xl sticky top-0 z-20 flex items-center justify-between transition-all duration-400" style="height: 3.5rem;">
         
-        <!-- Menu Toggle Button -->
+        <!-- Menu Toggle Button (Left) -->
         <button onclick="openSidebar()" class="btn-icon p-2 text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 transform active:scale-95" title="Open Menu">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
@@ -510,7 +533,8 @@
                 Sign In
             </button>
             <!-- User Avatar (Small, visible when logged in) -->
-            <img id="header-user-avatar" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-600 shadow-lg ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-300 hidden" onclick="openSidebar()" src="https://placehold.co/40x40/93c5fd/ffffff?text=U" alt="User Avatar">
+            <!-- UPDATED: onclick now opens the new profile panel -->
+            <img id="header-user-avatar" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-600 shadow-lg ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-300 hidden" onclick="openProfilePanel()" src="https://placehold.co/40x40/93c5fd/ffffff?text=U" alt="User Avatar">
         </div>
     </header>
 
@@ -583,6 +607,58 @@
         </div>
         
     </main>
+
+    <!-- NEW: Profile Panel (Right Side) -->
+    <div id="profile-backdrop" class="hidden" onclick="closeProfilePanel()"></div>
+    <div id="profile-panel" class="profile-panel flex flex-col">
+        
+        <!-- Header -->
+        <div class="p-4 border-b dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Profile & Settings</h2>
+            <button onclick="closeProfilePanel()" class="btn-icon p-2 text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Close Profile">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <!-- Logged In State -->
+        <div id="profile-panel-loggedin" class="hidden flex-grow flex flex-col">
+            <!-- User Info -->
+            <div class="p-6 flex flex-col items-center border-b dark:border-gray-700">
+                <img id="profile-panel-avatar" class="w-20 h-20 rounded-full border-4 border-blue-500" src="https.placehold.co/80x80/93c5fd/ffffff?text=U" alt="Profile Avatar">
+                <span id="profile-panel-name" class="mt-3 text-lg font-semibold text-gray-900 dark:text-gray-100 text-center truncate w-full"></span>
+                <span id="profile-panel-email" class="text-sm text-gray-500 dark:text-gray-400 text-center truncate w-full"></span>
+            </div>
+
+            <!-- Settings -->
+            <nav class="flex-grow overflow-y-auto">
+                <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2">Settings</h3>
+                <div class="menu-item flex items-center justify-between">
+                    <span>Dark Mode</span>
+                    <!-- Dark Mode Toggle (MOVED from left sidebar) -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="profile-dark-mode-toggle-checkbox" value="" class="sr-only peer" onclick="toggleDarkMode(true)">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+            </nav>
+
+            <!-- Sign Out (MOVED from left sidebar) -->
+            <div id="profile-sign-out-section" class="p-4 border-t dark:border-gray-700">
+                 <button onclick="signOutUser(); closeProfilePanel()" class="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 transition duration-150 rounded-lg">
+                    <svg class="w-4 h-4 inline mr-2 align-text-bottom" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+
+        <!-- Logged Out State -->
+        <div id="profile-panel-loggedout" class="p-6 flex flex-col items-center justify-center flex-grow hidden">
+            <p class="text-gray-600 dark:text-gray-400 text-center mb-6">Sign in to view your profile and saved chats.</p>
+            <button id="profile-sign-in-button" onclick="signInWithGoogle(); closeProfilePanel()" class="w-full px-4 py-2.5 bg-blue-600 text-white font-medium text-sm rounded-lg shadow-md hover:bg-blue-700 transition duration-300 transform active:scale-95">
+                Sign In with Google
+            </button>
+        </div>
+    </div>
     
     <!-- Modal for custom messages (No changes) -->
     <div id="modal-backdrop" class="fixed inset-0 z-20 hidden"></div>
@@ -642,9 +718,6 @@
         // API KEY PROVIDED BY USER: AIzaSyDStpVJpqJjfi8kdsGcYlBMfOD4ByKcagY
         const API_KEY = "AIzaSyDStpVJpqJjfi8kdsGcYlBMfOD4ByKcagY"; 
         
-        // --- REMOVED: const MODEL_NAME = ...
-        // --- REMOVED: const API_URL = ...
-        
         const TYPING_DELAY = 15;
         
         // --- DOM Elements ---
@@ -660,19 +733,29 @@
         // Sidebar/Auth Elements
         const sidebarDrawer = document.getElementById('sidebar-drawer');
         const drawerBackdrop = document.getElementById('drawer-backdrop');
-        const profileSection = document.getElementById('profile-section');
-        const menuSignInButton = document.getElementById('menu-sign-in-button');
-        const menuUserAvatar = document.getElementById('menu-user-avatar');
-        const menuUserName = document.getElementById('menu-user-name');
-        const signOutSection = document.getElementById('sign-out-section');
-        const darkModeCheckbox = document.getElementById('menu-dark-mode-toggle-checkbox');
+        // --- MOVED: These are now general auth UI elements
+        const profileSection = document.getElementById('profile-section'); // (Left sidebar, now hidden)
+        const menuSignInButton = document.getElementById('menu-sign-in-button'); // (Left sidebar, now hidden)
+        const menuUserAvatar = document.getElementById('menu-user-avatar'); // (Left sidebar, now hidden)
+        const menuUserName = document.getElementById('menu-user-name'); // (Left sidebar, now hidden)
+        // const signOutSection = document.getElementById('sign-out-section'); // (MOVED)
+        const darkModeCheckbox = document.getElementById('profile-dark-mode-toggle-checkbox'); // UPDATED ID
+        // ---
         const headerSignInButton = document.getElementById('header-sign-in-button');
         const headerUserAvatar = document.getElementById('header-user-avatar');
         const recentChatsList = document.getElementById('recent-chats-list');
         const chatSearchInput = document.getElementById('chat-search-input');
-        const modelSelectorContainer = document.getElementById('model-selector-container'); // NEW
+        const modelSelectorContainer = document.getElementById('model-selector-container');
         
-        // --- Simplified DOM Elements (Browse Removed) ---
+        // --- NEW: Profile Panel (Right) Elements ---
+        const profilePanel = document.getElementById('profile-panel');
+        const profileBackdrop = document.getElementById('profile-backdrop');
+        const profilePanelLoggedIn = document.getElementById('profile-panel-loggedin');
+        const profilePanelLoggedOut = document.getElementById('profile-panel-loggedout');
+        const profilePanelAvatar = document.getElementById('profile-panel-avatar');
+        const profilePanelName = document.getElementById('profile-panel-name');
+        const profilePanelEmail = document.getElementById('profile-panel-email');
+        
         const micButton = document.getElementById('mic-button');
 
         // --- State Variables ---
@@ -694,7 +777,7 @@
         let availableModels = [];
 
 
-        // --- Sidebar Functions ---
+        // --- Sidebar (Left) Functions ---
         window.openSidebar = function() {
             if (sidebarDrawer && drawerBackdrop) {
                 sidebarDrawer.classList.add('open');
@@ -706,6 +789,34 @@
             if (sidebarDrawer && drawerBackdrop) {
                 sidebarDrawer.classList.remove('open');
                 drawerBackdrop.classList.add('hidden');
+            }
+        }
+        
+        // --- NEW: Profile Panel (Right) Functions ---
+        window.openProfilePanel = function() {
+            if (profilePanel && profileBackdrop) {
+                // Populate data based on auth state
+                if (currentUser) {
+                    profilePanelAvatar.src = currentUser.photoURL || "https://placehold.co/80x80/3b82f6/ffffff?text=U";
+                    profilePanelName.textContent = currentUser.displayName || "User";
+                    profilePanelEmail.textContent = currentUser.email || "No email provided";
+                    
+                    profilePanelLoggedIn.classList.remove('hidden');
+                    profilePanelLoggedOut.classList.add('hidden');
+                } else {
+                    profilePanelLoggedIn.classList.add('hidden');
+                    profilePanelLoggedOut.classList.remove('hidden');
+                }
+                
+                profilePanel.classList.add('open');
+                profileBackdrop.classList.remove('hidden');
+            }
+        }
+
+        window.closeProfilePanel = function() {
+            if (profilePanel && profileBackdrop) {
+                profilePanel.classList.remove('open');
+                profileBackdrop.classList.add('hidden');
             }
         }
         
@@ -749,7 +860,6 @@
                 const transcript = event.results[0][0].transcript;
                 promptInput.value += (promptInput.value.trim() ? ' ' : '') + transcript;
                 updateSendButtonState();
-                // resizeTextarea(); // REMOVED
             };
 
             recognition.onerror = (event) => {
@@ -834,10 +944,10 @@
         function updateAuthUI(user) {
             currentUser = user;
             if (user) {
-                // Logged In - Sidebar
+                // Logged In - Sidebar (Legacy, now hidden but we update for consistency)
                 menuSignInButton.classList.add('hidden');
                 profileSection.classList.remove('hidden');
-                signOutSection.classList.remove('hidden');
+                // signOutSection.classList.remove('hidden'); // MOVED
                 
                 // Logged In - Header
                 headerSignInButton.classList.add('hidden');
@@ -846,18 +956,21 @@
                 const displayName = user.displayName || "User";
                 const avatarUrl = user.photoURL || "https://placehold.co/40x40/3b82f6/ffffff?text=U";
                 
+                // Update left menu (legacy)
                 menuUserAvatar.src = avatarUrl;
-                headerUserAvatar.src = avatarUrl;
                 menuUserName.textContent = displayName;
+                
+                // Update header avatar
+                headerUserAvatar.src = avatarUrl;
                 
                 // Load recent chats on login
                 loadRecentChats();
 
             } else {
-                // Logged Out - Sidebar
+                // Logged Out - Sidebar (Legacy)
                 menuSignInButton.classList.remove('hidden');
                 profileSection.classList.add('hidden');
-                signOutSection.classList.add('hidden');
+                // signOutSection.classList.add('hidden'); // MOVED
 
                 // Logged Out - Header
                 headerSignInButton.classList.remove('hidden');
@@ -871,6 +984,7 @@
         /** Google Sign-In function (v9+) */
         window.signInWithGoogle = function() {
             closeSidebar();
+            // closeProfilePanel() is handled by the button onclick
             const provider = new GoogleAuthProvider(); // v9
             signInWithPopup(auth, provider) // v9
                 .then((result) => {
@@ -885,6 +999,7 @@
         /** Sign out function (v9+) */
         window.signOutUser = function() {
             closeSidebar();
+            // closeProfilePanel() is handled by the button onclick
             signOut(auth).then(() => { // v9
                 showCustomMessage('You have successfully signed out.', 'info');
                 // Force a new chat to clear session context, but don't save.
@@ -982,7 +1097,8 @@
                 return;
             }
 
-            chats.forEach(chat => {
+            // UPDATED: Added index
+            chats.forEach((chat, index) => {
                 const chatElement = document.createElement('div');
                 chatElement.className = 'menu-item flex items-center justify-between space-x-2 truncate';
                 chatElement.title = chat.title;
@@ -990,10 +1106,13 @@
                 // Click handler to load the chat
                 chatElement.onclick = () => loadChat(chat.id, chat.mode); 
 
+                // UPDATED: Changed class and added number
                 const titleWrapper = document.createElement('div');
-                titleWrapper.className = 'flex items-center space-x-3 truncate flex-grow min-w-0'; // Added min-w-0 for truncation
+                titleWrapper.className = 'flex items-center space-x-2 truncate flex-grow min-w-0'; // Added min-w-0 for truncation
+                
+                // UPDATED: Replaced SVG with number
                 titleWrapper.innerHTML = `
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    <span class="flex-shrink-0 w-5 text-center text-xs font-semibold text-gray-500 dark:text-gray-400">${index + 1}.</span>
                     <span class="truncate">${chat.title}</span>
                 `;
                 
@@ -1199,9 +1318,10 @@
                 });
 
                 // **FIX**: Apply the limit *after* sorting
-                const limitedChats = chats.slice(0, 10);
+                // UPDATED: Removed limit
+                // const limitedChats = chats.slice(0, 10);
 
-                renderRecentChats(limitedChats); // Render the sorted and limited chats
+                renderRecentChats(chats); // Render all sorted chats
             
             } catch (error) {
                 console.error("Error loading recent chats:", error);
@@ -1438,7 +1558,10 @@
                 // Toggled from checkbox, its state is already set.
             } else {
                 // Toggled by system preference, sync the checkbox.
-                darkModeCheckbox.checked = isDark;
+                // UPDATED ID
+                if (darkModeCheckbox) {
+                    darkModeCheckbox.checked = isDark;
+                }
             }
         }
 
@@ -1621,8 +1744,6 @@
 
             return html;
         }
-
-        // --- resizeTextarea function REMOVED ---
 
         function scrollToBottom() {
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1850,7 +1971,6 @@
                 document.getElementById('image-filename').textContent = file.name;
                 imagePreviewContainer.classList.remove('hidden');
                 updateSendButtonState();
-                // resizeTextarea(); // REMOVED
                 scrollToBottom();
             };
             reader.readAsDataURL(file);
@@ -1916,7 +2036,6 @@
             addMessageToChat(userQuery, 'user', uploadedFile);
             
             promptInput.value = '';
-            // resizeTextarea(); // REMOVED
             removeImage(); 
             setUILoading(true); // This will also blur the input and change button
             
@@ -2121,7 +2240,6 @@
 
         promptInput.addEventListener('input', () => {
             updateSendButtonState();
-            // resizeTextarea(); // REMOVED
         });
 
         promptInput.addEventListener('keydown', (e) => {
