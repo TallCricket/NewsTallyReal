@@ -17,6 +17,10 @@
             color: #1a1c1e; /* Darkest gray */
             overflow-x: hidden; 
             transition: background-color 0.4s, color 0.4s; /* Expressive transition */
+            /* --- NEW: Prevent text selection during long press --- */
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
         }
 
         /* --- Dark Mode Styles --- */
@@ -28,7 +32,6 @@
             background-color: #1a1c1e;
             border-color: #374151;
         }
-        /* Remove dark background from input-footer */
         .dark .input-footer {
             background-color: transparent;
             border-color: #374151;
@@ -46,7 +49,6 @@
             color: #1a1c1e; /* Dark text on vibrant container */
             box-shadow: 0 4px 10px rgba(96, 165, 250, 0.4);
         }
-        /* --- Frosted Glass Input Bar (Dark) --- */
         .dark .input-bar-container {
             background-color: rgba(26, 28, 30, 0.7); /* dark:bg-gray-900/70 */
             -webkit-backdrop-filter: blur(12px);
@@ -95,8 +97,6 @@
 
         /* --- New Layout Styles (Simplified) --- */
         main {
-            /* 100vh - header (3.5rem) */
-            /* MODIFICATION: Use dvh (dynamic viewport height) for mobile keyboard */
             height: calc(100dvh - 3.5rem); 
         }
 
@@ -135,14 +135,13 @@
         /* --- Floating Input Footer --- */
         .input-footer {
             position: absolute;
-            /* Added 0.5rem buffer for mobile navigation */
             bottom: 0.5rem; /* 8px buffer */ 
             left: 0;
             right: 0;
             z-index: 30;
-            background-color: transparent; /* Make footer transparent */
-            border-top: none; /* Remove border */
-            box-shadow: none; /* Remove shadow */
+            background-color: transparent;
+            border-top: none;
+            box-shadow: none;
         }
         
         /* --- Frosted Glass Input Bar --- */
@@ -157,11 +156,11 @@
         
         /* --- Single Line Textarea --- */
         #prompt-input {
-            background-color: transparent; /* Make textarea transparent */
-            overflow: hidden; /* Hide scrollbar */
-            white-space: nowrap; /* Keep text on one line */
-            height: 2.5rem; /* Match button height */
-            padding-top: 0.625rem; /* Adjust vertical alignment */
+            background-color: transparent;
+            overflow: hidden;
+            white-space: nowrap;
+            height: 2.5rem;
+            padding-top: 0.625rem;
             padding-bottom: 0.625rem;
         }
 
@@ -216,7 +215,7 @@
             display: flex;
             justify-content: flex-end; 
             transition: all 0.3s;
-            position: relative; /* NEW: For edit button */
+            position: relative; /* For edit button */
         }
         
         .ai-response-content-wrapper {
@@ -244,21 +243,20 @@
              background-color: #93c5fd; /* dark:text-blue-400 */
         }
 
-
-        /* --- MODIFIED: Indr.ai Symbol (Vibrant M3 Look) --- */
+        /* --- Indr.ai Symbol --- */
         .indrai-symbol {
             width: 2.25rem; 
             height: 2.25rem;
-            border-radius: 9999px; /* Make it circular */
-            background: none; /* Remove gradient */
+            border-radius: 9999px;
+            background: none;
             color: white; 
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: none; /* Remove shadow */
+            box-shadow: none;
             transition: all 0.3s;
-            overflow: hidden; /* Clip the image */
+            overflow: hidden;
         }
         
         /* Button Press Effect (Expressive Feedback) */
@@ -285,7 +283,7 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: #2563eb; /* Tailwind blue-600 */
+            background-color: #2563eb;
             display: inline-block;
             animation: bounce 1.4s infinite ease-in-out both;
             margin: 0 1px;
@@ -354,10 +352,9 @@
             margin-top: -0.25rem;
             margin-right: -0.25rem;
             display: flex;
-            opacity: 0; /* --- MODIFIED: Start hidden --- */
+            opacity: 0;
             transition: opacity 0.2s;
         }
-        /* --- MODIFIED: Show on hover OR when stream is done --- */
         .ai-response-content-wrapper:hover .ai-btn-container,
         .ai-response-content-wrapper.stream-done .ai-btn-container {
             opacity: 1;
@@ -381,7 +378,7 @@
             color: #2563eb; /* text-blue-600 */
         }
         
-        /* --- NEW: User Message Button Styles --- */
+        /* --- User Message Button Styles --- */
         .user-message-wrapper .user-btn-container {
             position: absolute;
             top: 50%;
@@ -402,9 +399,8 @@
             background-color: #374151; /* dark:bg-gray-700 */
         }
         
-        /* --- NEW: Model Select Dropdown Style --- */
+        /* --- Model Select Dropdown Style --- */
         #model-select-dropdown {
-            /* Mimics the chat search input style */
             width: 100%;
             padding: 0.5rem 0.75rem; /* px-3 py-2 */
             font-size: 0.875rem; /* text-sm */
@@ -417,47 +413,8 @@
             border-color: #2563eb; /* focus:border-blue-600 */
             box-shadow: 0 0 0 2px #BFDBFE; /* focus:ring-2 focus:ring-blue-300 */
         }
-
-        /* --- NEW: Folder & Chat List Styles --- */
-        .folder-item {
-            padding: 0.5rem 0.75rem; /* py-2 px-3 */
-            margin: 0.25rem 0; /* my-1 */
-            border-radius: 0.5rem; /* rounded-lg */
-            cursor: pointer;
-            transition: background-color 0.15s, color 0.15s;
-            font-size: 0.875rem; /* text-sm */
-            font-weight: 500; /* medium */
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .folder-item:hover {
-            background-color: #f3f4f6; /* hover:bg-gray-100 */
-        }
-        .dark .folder-item:hover {
-            background-color: #374151; /* dark:hover:bg-gray-700 */
-        }
-        .folder-item.active {
-            background-color: #e0f2fe; /* bg-blue-100 */
-            color: #2563eb; /* text-blue-600 */
-            font-weight: 600; /* semibold */
-        }
-        .dark .folder-item.active {
-            background-color: #1e3a8a; /* dark:bg-blue-900 */
-            color: #93c5fd; /* dark:text-blue-300 */
-        }
-        /* Pin button styling */
-        .pin-btn.pinned svg {
-            fill: #fbbf24; /* yellow-400 */
-            color: #f59e0b; /* yellow-500 */
-        }
-        .chat-options-btn {
-            display: none; /* Hide by default */
-        }
-        .menu-item:hover .chat-options-btn {
-            display: block; /* Show on hover */
-        }
-
+        
+        /* --- REMOVED: Folder & Chat List Styles --- */
 
     </style>
 </head>
@@ -493,7 +450,7 @@
                 <span>New Chat (Save & Clear)</span>
             </div>
             
-            <!-- NEW: Export Chat -->
+            <!-- Export Chat -->
             <div onclick="exportChat(); closeSidebar()" class="menu-item flex items-center space-x-3 text-blue-600 border-b dark:border-gray-700">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 <span>Export Current Chat</span>
@@ -502,47 +459,41 @@
             <!-- AI Modes -->
             <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2">AI Modes</h3>
             <div id="ai-modes-section">
-                <!-- Research/Search Mode (Default) -->
+                <!-- Modes will be rendered here -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="search" onclick="setMode('search'); closeSidebar()">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <span>Research/Search Mode</span>
                 </div>
-                <!-- Creative Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="creative" onclick="setMode('creative'); closeSidebar()">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 01-1.03-.984l-4.253-8.507a.75.75 0 00-1.352 0l-4.253 8.507a2 2 0 01-1.03.984l-.843.422a.75.75 0 00-.376 1.35l4.636 2.529a2.25 2.25 0 002.396 0l4.636-2.529a.75.75 0 00-.376-1.35l-.843-.422z"></path></svg>
                     <span>Creative Mode (Text)</span>
                 </div>
-                 <!-- Code Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="code" onclick="setMode('code'); closeSidebar()">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                     <span>Code/Dev Mode</span>
                 </div>
-                 <!-- Image Prompter Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="image_prompter" onclick="setMode('image_prompter'); closeSidebar()">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-3"></path></svg>
                     <span>Image Prompter</span>
                 </div>
-                 <!-- Video Idea Mode -->
                 <div class="menu-item mode-selector flex items-center space-x-3" data-mode="video_idea" onclick="setMode('video_idea'); closeSidebar()">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M12 21V3"></path></svg>
                     <span>Video Idea Generator</span>
                 </div>
             </div>
 
-            <!-- NEW: Model Selector -->
+            <!-- Model Selector -->
             <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2">Select Model</h3>
             <div id="model-selector-container" class="px-3 pb-2">
                 <p class="text-sm text-gray-400">Loading models...</p>
             </div>
 
-            <!-- MODIFIED: Chats & Folders Section -->
+            <!-- MODIFIED: Chats Section (Simplified) -->
             <div class="border-t dark:border-gray-700 mt-4 pt-4 px-3">
                 <!-- Section Header -->
                 <div class="flex items-center justify-between mb-2 px-1">
                     <h3 class="text-xs font-semibold uppercase text-gray-500">My Chats</h3>
-                    <button id="new-folder-btn" onclick="createNewFolder()" class="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600" title="New Folder">
-                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
-                    </button>
+                    <!-- REMOVED: New Folder Button -->
                 </div>
                 
                 <!-- Search Chats Input -->
@@ -550,13 +501,10 @@
                     <input type="text" id="chat-search-input" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Search chats...">
                 </div>
                 
-                <!-- Folders List -->
-                <div id="folders-list" class="mb-2">
-                    <!-- Folders will be rendered here -->
-                </div>
+                <!-- REMOVED: Folders List -->
                 
                 <!-- Recent Chats List -->
-                <div id="recent-chats-list" class="overflow-y-auto" style="max-height: 200px;">
+                <div id="recent-chats-list" class="overflow-y-auto" style="max-height: 250px;">
                     <p class="px-4 text-sm text-gray-400">Sign in to view recent chats.</p>
                 </div>
             </div>
@@ -565,7 +513,6 @@
             <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2 border-t dark:border-gray-700 mt-4">Settings</h3>
             <div class="menu-item flex items-center justify-between">
                 <span>Dark Mode</span>
-                <!-- Dark Mode Toggle within Menu -->
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="menu-dark-mode-toggle-checkbox" value="" class="sr-only peer" onclick="toggleDarkMode(true)">
                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
@@ -595,7 +542,7 @@
         </button>
 
         <div class="flex items-center space-x-2">
-            <!-- MODIFIED: Indr.ai Icon/Logo in Header -->
+            <!-- Indr.ai Icon/Logo in Header -->
             <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-md overflow-hidden">
                  <img src="1000012844.jpg" alt="Indr.ai Logo" class="w-full h-full object-cover">
             </div>
@@ -622,7 +569,6 @@
                 
                 <!-- Initial Welcome Message (Minimal Style) -->
                 <div class="ai-message-wrapper" id="initial-message-wrapper">
-                    <!-- MODIFIED: Indr.ai Symbol -->
                     <div class="indrai-symbol">
                         <img src="1000012844.jpg" alt="Logo" class="w-full h-full object-cover">
                     </div>
@@ -658,7 +604,6 @@
                         <button id="upload-button" onclick="document.getElementById('file-upload').click()" 
                                 class="btn-icon p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
                                 title="Upload Image">
-                            <!-- NEW Plus Icon SVG -->
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         </button>
 
@@ -683,27 +628,33 @@
         
     </main>
     
-    <!-- Modal for custom messages -->
+    <!-- Modal Backdrop -->
     <div id="modal-backdrop" class="fixed inset-0 z-40 bg-black bg-opacity-50 hidden"></div>
     
-    <!-- MODIFIED: Input Modal (z-50) -->
+    <!-- Input Modal (z-50) -->
     <div id="input-modal-container" class="fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 hidden">
          <!-- Modal content will be injected here -->
     </div>
     
-    <!-- MODIFIED: Confirmation Modal (z-50) -->
+    <!-- Confirmation Modal (z-50) -->
     <div id="confirmation-modal-container" class="fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 hidden">
         <!-- Modal content will be injected here -->
     </div>
 
-    <!-- MODIFIED: List/Move Modal (z-50) -->
-    <div id="list-modal-container" class="fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 hidden">
+    <!-- REMOVED: List/Move Modal -->
+    
+    <!-- Custom Message Modal (z-50) -->
+    <div id="message-modal-container" class="fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 hidden">
         <!-- Modal content will be injected here -->
     </div>
     
-    <!-- MODIFIED: Custom Message Modal (z-50) -->
-    <div id="message-modal-container" class="fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 hidden">
-        <!-- Modal content will be injected here -->
+    <!-- NEW: Context Menu Modal (z-50) -->
+    <div id="context-menu-modal" class="fixed inset-0 flex items-center justify-center z-50 p-4 transition-opacity duration-300 hidden">
+        <div class="bg-white dark:bg-gray-700 p-4 rounded-2xl shadow-2xl max-w-xs w-full transition-all duration-300 transform scale-100">
+            <div id="context-menu-content" class="flex flex-col space-y-2">
+                <!-- Buttons will be injected here -->
+            </div>
+        </div>
     </div>
 
 
@@ -733,7 +684,7 @@
             getDocs,
             deleteDoc,
             query, 
-            where, // --- NEW: Import where ---
+            // REMOVED: where
             limit, 
             serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
@@ -759,7 +710,6 @@
         // --- Core Application Logic (English) ---
 
         // Global Constants
-        // API KEY PROVIDED BY USER: AIzaSyDStpVJpqJjfi8kdsGcYlBMfOD4ByKcagY
         const API_KEY = "AIzaSyDStpVJpqJjfi8kdsGcYlBMfOD4ByKcagY"; 
         
         // --- DOM Elements ---
@@ -786,16 +736,17 @@
         const chatSearchInput = document.getElementById('chat-search-input');
         const modelSelectorContainer = document.getElementById('model-selector-container');
         
-        // --- NEW: Folders & Chats Elements ---
-        const foldersList = document.getElementById('folders-list');
+        // --- MODIFIED: Simplified Chat List Elements ---
         const recentChatsList = document.getElementById('recent-chats-list');
         const modalBackdrop = document.getElementById('modal-backdrop');
         const inputModalContainer = document.getElementById('input-modal-container');
         const confirmationModalContainer = document.getElementById('confirmation-modal-container');
-        const listModalContainer = document.getElementById('list-modal-container');
         const messageModalContainer = document.getElementById('message-modal-container');
         
-        // --- Simplified DOM Elements (Browse Removed) ---
+        // --- NEW: Context Menu Modal ---
+        const contextMenuModal = document.getElementById('context-menu-modal');
+        const contextMenuContent = document.getElementById('context-menu-content');
+        
         const micButton = document.getElementById('mic-button');
 
         // --- State Variables ---
@@ -816,17 +767,19 @@
         let currentModelName = 'gemini-2.5-flash-preview-09-2025'; // Default fallback
         let availableModels = [];
         
-        // --- NEW: Folder State ---
-        let currentFolderId = null; // null = "All Chats"
-        let allFolders = []; // To cache folders list for "Move" modal
+        // --- REMOVED: Folder State ---
+        
+        // --- NEW: Long Press State ---
+        let pressTimer = null;
+        let isLongPress = false;
 
 
         // --- Sidebar Functions ---
         window.openSidebar = function() {
             if (sidebarDrawer && drawerBackdrop) {
                 sidebarDrawer.classList.add('open');
-                drawerBackdrop.classList.remove('hidden');
-                modalBackdrop.classList.remove('hidden'); // Also show modal backdrop
+                drawerBackdrop.classList.remove('hidden'); 
+                modalBackdrop.classList.remove('hidden');
             }
         }
 
@@ -834,11 +787,11 @@
             if (sidebarDrawer && drawerBackdrop) {
                 sidebarDrawer.classList.remove('open');
                 drawerBackdrop.classList.add('hidden');
-                modalBackdrop.classList.add('hidden'); // Hide modal backdrop
+                modalBackdrop.classList.add('hidden');
             }
         }
         
-        // --- NEW: Filter Recent Chats ---
+        // --- MODIFIED: Filter Recent Chats (simpler) ---
         function filterRecentChats() {
             const searchTerm = chatSearchInput.value.toLowerCase();
             // Filter chat items
@@ -847,13 +800,7 @@
                 const title = item.title.toLowerCase();
                 item.style.display = title.includes(searchTerm) ? 'flex' : 'none';
             });
-            
-            // Filter folder items
-            const folderItems = foldersList.querySelectorAll('.folder-item');
-            folderItems.forEach(item => {
-                const title = item.dataset.name.toLowerCase();
-                item.style.display = title.includes(searchTerm) ? 'flex' : 'none';
-            });
+            // REMOVED: Folder filtering
         }
 
         // --- Speech Recognition Logic (No changes) ---
@@ -867,8 +814,8 @@
             }
             
             recognition = new SpeechRecognition();
-            recognition.continuous = false; // Stop after a pause
-            recognition.interimResults = false; // We only want final results
+            recognition.continuous = false;
+            recognition.interimResults = false;
             recognition.lang = 'en-US';
 
             recognition.onstart = () => {
@@ -978,8 +925,8 @@
                 headerUserAvatar.src = avatarUrl;
                 menuUserName.textContent = displayName;
                 
-                // --- MODIFIED: Load folders first, then chats ---
-                loadFolders(); // This will call loadRecentChats
+                // --- MODIFIED: Load chats directly ---
+                loadRecentChats();
 
             } else {
                 // Logged Out
@@ -990,7 +937,6 @@
                 headerUserAvatar.classList.add('hidden');
 
                 // Clear sidebar
-                foldersList.innerHTML = '';
                 recentChatsList.innerHTML = '<p class="px-4 text-sm text-gray-400">Sign in to view recent chats.</p>';
             }
         }
@@ -998,8 +944,8 @@
         /** Google Sign-In function (v9+) */
         window.signInWithGoogle = function() {
             closeSidebar();
-            const provider = new GoogleAuthProvider(); // v9
-            signInWithPopup(auth, provider) // v9
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider)
                 .then((result) => {
                     showCustomMessage(`Welcome, ${result.user.displayName || 'User'}!`, 'success');
                 })
@@ -1012,7 +958,7 @@
         /** Sign out function (v9+) */
         window.signOutUser = function() {
             closeSidebar();
-            signOut(auth).then(() => { // v9
+            signOut(auth).then(() => {
                 showCustomMessage('You have successfully signed out.', 'info');
                 newChat(true); 
             }).catch((error) => {
@@ -1025,7 +971,7 @@
          * --- MODIFIED: Generates title and saves first chat ---
          */
         async function generateAndSaveFirstChat() {
-            // --- MODIFIED: Added folderId and isPinned ---
+            // --- REMOVED: folderId ---
             if (!currentUser || chatHistory.length < 3 || currentChatId !== null) return;
             
             const DYNAMIC_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${currentModelName}:generateContent?key=${API_KEY}`;
@@ -1067,12 +1013,12 @@
                     mode: currentMode,
                     messages: JSON.stringify(chatHistory),
                     timestamp: serverTimestamp(),
-                    folderId: currentFolderId, // --- NEW ---
-                    isPinned: false // --- NEW ---
+                    isPinned: false // --- Stays ---
+                    // REMOVED: folderId
                 };
                 const collectionRef = collection(db, 'users', currentUser.uid, 'recent_chats');
                 const newDoc = await addDoc(collectionRef, chatData);
-                currentChatId = newDoc.id; // Set the ID for future updates
+                currentChatId = newDoc.id;
                 loadRecentChats(); // Refresh sidebar
             } catch (error) {
                 console.error("Error saving new chat:", error);
@@ -1087,124 +1033,19 @@
 
             try {
                 const chatRef = doc(db, 'users', currentUser.uid, 'recent_chats', currentChatId);
-                // --- MODIFIED: Added folderId and isPinned (though they aren't changed here) ---
                 await updateDoc(chatRef, {
                     messages: JSON.stringify(chatHistory),
                     timestamp: serverTimestamp(),
                     mode: currentMode 
-                    // folderId and isPinned are updated by other functions
                 });
-                // Do a lightweight refresh, don't reload all folders
                 loadRecentChats();
             } catch (error) {
                 console.error("Error updating chat:", error);
             }
         }
         
-        // --- NEW: Folder and Chat List Logic ---
-
-        /**
-         * --- NEW: Creates a new folder ---
-         */
-        window.createNewFolder = function() {
-            showInputModal("New Folder", "Untitled Folder", async (folderName) => {
-                if (!folderName || !currentUser) return;
-                
-                try {
-                    const collectionRef = collection(db, 'users', currentUser.uid, 'folders');
-                    await addDoc(collectionRef, {
-                        name: folderName,
-                        timestamp: serverTimestamp()
-                    });
-                    showCustomMessage("Folder created!", 'success');
-                    loadFolders(); // Refresh folder list
-                } catch (error) {
-                    console.error("Error creating folder:", error);
-                    showCustomMessage("Error creating folder.", 'error');
-                }
-            });
-        }
-
-        /**
-         * --- NEW: Fetches and renders the folder list ---
-         */
-        async function loadFolders() {
-            if (!currentUser) return;
-            
-            foldersList.innerHTML = ''; // Clear
-            
-            // 1. Add "All Chats" (uncategorized)
-            const allChatsFolder = document.createElement('div');
-            allChatsFolder.className = 'folder-item';
-            allChatsFolder.dataset.name = "All Chats";
-            allChatsFolder.innerHTML = `
-                <span class="flex items-center space-x-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                    <span>All Chats</span>
-                </span>
-            `;
-            allChatsFolder.onclick = () => selectFolder(null);
-            foldersList.appendChild(allChatsFolder);
-
-            // 2. Fetch and add user-created folders
-            try {
-                const collectionRef = collection(db, 'users', currentUser.uid, 'folders');
-                const snapshot = await getDocs(collectionRef); // No sorting needed yet
-
-                allFolders = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    name: doc.data().name,
-                    ...doc.data()
-                }));
-                
-                // Sort folders by name (A-Z)
-                allFolders.sort((a, b) => a.name.localeCompare(b.name));
-
-                allFolders.forEach(folder => {
-                    const folderElement = document.createElement('div');
-                    folderElement.className = 'folder-item';
-                    folderElement.dataset.name = folder.name;
-                    folderElement.innerHTML = `
-                        <span class="flex items-center space-x-3 truncate">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                            <span class="truncate">${folder.name}</span>
-                        </span>
-                        <!-- Add folder options (rename/delete) later if needed -->
-                    `;
-                    folderElement.onclick = () => selectFolder(folder.id);
-                    foldersList.appendChild(folderElement);
-                });
-
-            } catch (error) {
-                console.error("Error loading folders:", error);
-            }
-            
-            // 3. Select the currently active folder and load its chats
-            selectFolder(currentFolderId);
-        }
-
-        /**
-         * --- NEW: Selects a folder and reloads the chat list ---
-         */
-        window.selectFolder = function(folderId) {
-            currentFolderId = folderId;
-            
-            // Update active state
-            document.querySelectorAll('#folders-list .folder-item').forEach((el, index) => {
-                // `index === 0` is "All Chats"
-                if (folderId === null && index === 0) {
-                    el.classList.add('active');
-                } else if (el.dataset.id === folderId) {
-                    el.classList.add('active');
-                } else {
-                    el.classList.remove('active');
-                }
-            });
-            
-            // Reload chats for this folder
-            loadRecentChats();
-            closeSidebar(); // Close sidebar on selection
-        }
+        // --- REMOVED: Folder and Chat List Logic ---
+        // (createNewFolder, loadFolders, selectFolder)
 
         /** Renders the list of recent chats in the sidebar */
         function renderRecentChats(chats) {
@@ -1218,19 +1059,21 @@
 
             chats.forEach(chat => {
                 const chatElement = document.createElement('div');
-                // --- MODIFIED: Use menu-item class ---
                 chatElement.className = 'menu-item flex items-center justify-between space-x-2 truncate';
                 chatElement.title = chat.title;
                 
-                // Click handler to load the chat
-                chatElement.onclick = () => loadChat(chat.id, chat.mode); 
-
-                const titleWrapper = document.createElement('div');
-                titleWrapper.className = 'flex items-center space-x-3 truncate flex-grow min-w-0'; // Added min-w-0 for truncation
+                // --- NEW: Long Press and Click Handlers ---
+                chatElement.addEventListener('mousedown', (e) => handlePressStart(e, chat));
+                chatElement.addEventListener('touchstart', (e) => handlePressStart(e, chat));
+                chatElement.addEventListener('mouseup', (e) => handlePressEnd(e, chat));
+                chatElement.addEventListener('touchend', (e) => handlePressEnd(e, chat));
+                chatElement.addEventListener('contextmenu', (e) => e.preventDefault()); // Disable right-click menu
                 
-                // --- NEW: Add Pin icon if pinned ---
+                const titleWrapper = document.createElement('div');
+                titleWrapper.className = 'flex items-center space-x-3 truncate flex-grow min-w-0';
+                
                 const pinIcon = chat.isPinned 
-                    ? `<svg class="w-4 h-4 text-yellow-500 fill-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.152 1.02a.5.5 0 01.696 0l2.25 2.999a.5.5 0 01-.348.85H7.25a.5.5 0 01-.348-.85l2.25-2.999A.5.5 0 0110 1.02V1zM11 11.554V18.5a.5.5 0 01-1 0v-6.946L8.03 14.12a.5.5 0 01-.66-.748L10 10.118l2.63 3.254a.5.5 0 01-.66.748L11 11.554zM5.23 7.21a.5.5 0 01.707 0L10 11.283l4.06-4.073a.5.5 0 01.708.707L10.707 12 10 12.707l-.707-.707-4.062-4.06a.5.5 0 010-.707z"></path></svg>`
+                    ? `<svg class="w-4 h-4 text-yellow-500 fill-yellow-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.152 1.02a.5.5 0 01.696 0l2.25 2.999a.5.5 0 01-.348.85H7.25a.5.5 0 01-.348-.85l2.25-2.999A.5.5 0 0110 1.02V1zM11 11.554V18.5a.5.5 0 01-1 0v-6.946L8.03 14.12a.5.5 0 01-.66-.748L10 10.118l2.63 3.254a.5.5 0 01-.66.748L11 11.554zM5.23 7.21a.5.5 0 01.707 0L10 11.283l4.06-4.073a.5.5 0 01.708.707L10.707 12 10 12.707l-.707-.707-4.062-4.06a.5.5 0 010-.707z" clip-rule="evenodd"></path></svg>`
                     : `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>`;
                     
                 titleWrapper.innerHTML = `
@@ -1238,74 +1081,78 @@
                     <span class="truncate">${chat.title}</span>
                 `;
                 
-                // --- MODIFIED: Button Container (now with Pin/Move) ---
-                const buttonContainer = document.createElement('div');
-                buttonContainer.className = 'chat-options-btn flex-shrink-0 flex items-center z-10'; // z-10
-
-                // --- NEW: Pin Button ---
-                const pinButton = document.createElement('button');
-                pinButton.className = `pin-btn ai-btn ${chat.isPinned ? 'pinned' : ''}`;
-                pinButton.title = chat.isPinned ? "Unpin chat" : "Pin chat";
-                pinButton.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 12 2s10 4.477 10 10z"></path></svg>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10.152 1.02a.5.5 0 01.696 0l2.25 2.999a.5.5 0 01-.348.85H7.25a.5.5 0 01-.348-.85l2.25-2.999A.5.5 0 0110 1.02V1zM11 11.554V18.5a.5.5 0 01-1 0v-6.946L8.03 14.12a.5.5 0 01-.66-.748L10 10.118l2.63 3.254a.5.5 0 01-.66.748L11 11.554zM5.23 7.21a.5.5 0 01.707 0L10 11.283l4.06-4.073a.5.5 0 01.708.707L10.707 12 10 12.707l-.707-.707-4.062-4.06a.5.5 0 010-.707z" clip-rule="evenodd"></path></svg>
-                `;
-                // Use a different icon for pin
-                pinButton.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8a6 6 0 01-12 0 6 6 0 0112 0zm-6 6v6m0 0v-6m0 0h.01M6.67 19.33l-1.41 1.41M1.05 12H3.1M6.67 4.67l-1.41-1.41M12 1.05V3.1M17.33 4.67l1.41-1.41M22.95 12H20.9m-1.72 7.33l1.41 1.41M12 22.95V20.9"></path></svg>
-                `;
-                 pinButton.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414M12 4v.01M16 4h.01M4 16v.01M4 12h.01M4 8h.01M8 4h.01"></path></svg>
-                `;
-                pinButton.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18v.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>`;
-                // Let's use a simple pin
-                pinButton.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.586 3.586a2 2 0 00-2.828 0L3 13.172V17h3.828l9.586-9.586a2 2 0 000-2.828l-1.414-1.414zM11 13l6-6"></path></svg>`;
-                // A better pin icon
-                pinButton.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M11.03 2.1a.5.5 0 01.94 0l1.764 5.43c.045.138.14.248.267.31l5.43 1.764a.5.5 0 010 .94l-5.43 1.764c-.127.062-.222.172-.267.31l-1.764 5.43a.5.5 0 01-.94 0l-1.764-5.43a.498.498 0 00-.267-.31L2.1 11.03a.5.5 0 010-.94l5.43-1.764a.498.498 0 00.267-.31L9.56 2.1H9.56a.5.5 0 011.47 0z"></path></svg>`;
-                // Final pin icon
-                pinButton.innerHTML = `<svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.152 1.02a.5.5 0 01.696 0l2.25 2.999a.5.5 0 01-.348.85H7.25a.5.5 0 01-.348-.85l2.25-2.999A.5.5 0 0110 1.02V1zM11 11.554V18.5a.5.5 0 01-1 0v-6.946L8.03 14.12a.5.5 0 01-.66-.748L10 10.118l2.63 3.254a.5.5 0 01-.66.748L11 11.554zM5.23 7.21a.5.5 0 01.707 0L10 11.283l4.06-4.073a.5.5 0 01.708.707L10.707 12 10 12.707l-.707-.707-4.062-4.06a.5.5 0 010-.707z" clip-rule="evenodd"></path></svg>`;
-
-                // --- NEW: Move Button ---
-                const moveButton = document.createElement('button');
-                moveButton.className = 'ai-btn';
-                moveButton.title = "Move to folder";
-                moveButton.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
-                `;
-                
-                // Rename Button
-                const renameButton = document.createElement('button');
-                renameButton.className = 'ai-btn';
-                renameButton.title = "Rename chat";
-                renameButton.innerHTML = `
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path></svg>
-                `;
-                
-                // Delete Button
-                const deleteButton = document.createElement('button');
-                deleteButton.className = 'ai-btn';
-                deleteButton.title = "Delete chat";
-                deleteButton.innerHTML = `
-                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                `;
-
-                // Attach click handlers
-                pinButton.onclick = (event) => window.togglePin(event, chat.id, !chat.isPinned);
-                moveButton.onclick = (event) => window.showMoveModal(event, chat.id);
-                renameButton.onclick = (event) => window.renameChat(event, chat.id, chat.title);
-                deleteButton.onclick = (event) => window.deleteChat(event, chat.id, chat.title);
-
-                buttonContainer.appendChild(pinButton);
-                buttonContainer.appendChild(moveButton);
-                buttonContainer.appendChild(renameButton);
-                buttonContainer.appendChild(deleteButton);
+                // --- REMOVED: Button Container ---
                 
                 chatElement.appendChild(titleWrapper);
-                chatElement.appendChild(buttonContainer);
                 recentChatsList.appendChild(chatElement);
             });
         }
         
+        // --- NEW: Long Press Handlers ---
+        
+        function handlePressStart(e, chat) {
+            e.preventDefault(); // Prevent text selection
+            isLongPress = false; // Reset flag
+            
+            pressTimer = setTimeout(() => {
+                isLongPress = true;
+                // Vibrate for feedback on mobile
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                showPinMenu(chat);
+            }, 500); // 500ms for long press
+        }
+        
+        function handlePressEnd(e, chat) {
+            clearTimeout(pressTimer);
+            if (!isLongPress) {
+                // This was a short press (click)
+                loadChat(chat.id, chat.mode);
+            }
+            // Reset flag
+            isLongPress = false;
+        }
+
+        // --- NEW: Context Menu for Pin/Rename/Delete ---
+        
+        function showPinMenu(chat) {
+            const pinText = chat.isPinned ? "Unpin Chat 📍" : "Pin Chat 📌";
+            
+            contextMenuContent.innerHTML = `
+                <p class="font-semibold text-center text-sm truncate mb-2 px-2 text-gray-800 dark:text-gray-100">${chat.title}</p>
+                <button id="context-pin" class="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">${pinText}</button>
+                <button id="context-rename" class="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">Rename</button>
+                <button id="context-delete" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900">Delete</button>
+                <hr class="my-1 border-gray-200 dark:border-gray-600">
+                <button id="context-cancel" class="w-full text-left px-4 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600">Cancel</button>
+            `;
+            
+            modalBackdrop.classList.remove('hidden');
+            contextMenuModal.classList.remove('hidden');
+            
+            const closeModal = () => {
+                modalBackdrop.classList.add('hidden');
+                contextMenuModal.classList.add('hidden');
+            };
+
+            document.getElementById('context-pin').onclick = () => {
+                togglePin(chat.id, !chat.isPinned);
+                closeModal();
+            };
+            document.getElementById('context-rename').onclick = () => {
+                closeModal();
+                // Delay to allow modal to close
+                setTimeout(() => renameChat(chat.id, chat.title), 100);
+            };
+            document.getElementById('context-delete').onclick = () => {
+                closeModal();
+                // Delay to allow modal to close
+                setTimeout(() => deleteChat(chat.id, chat.title), 100);
+            };
+            document.getElementById('context-cancel').onclick = closeModal;
+        }
+
         /**
          * --- MODIFIED: Modal Functions now use containers ---
          */
@@ -1385,93 +1232,18 @@
             cancelButton.onclick = closeModal;
         }
         
-        /**
-         * --- NEW: Modal for moving chats ---
-         */
-        window.showMoveModal = function(event, chatId) {
-            event.stopPropagation();
-            
-            let folderButtons = `
-                <button class="w-full text-left folder-item" data-folder-id="null">
-                    <span class="flex items-center space-x-3">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                        <span>All Chats (Uncategorized)</span>
-                    </span>
-                </button>
-            `;
-            
-            allFolders.forEach(folder => {
-                folderButtons += `
-                    <button class="w-full text-left folder-item" data-folder-id="${folder.id}">
-                        <span class="flex items-center space-x-3 truncate">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                            <span class="truncate">${folder.name}</span>
-                        </span>
-                    </button>
-                `;
-            });
-
-            listModalContainer.innerHTML = `
-                <div class="bg-white dark:bg-gray-700 p-6 rounded-3xl shadow-2xl max-w-sm w-full transition-all duration-300 transform scale-100">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Move to...</h3>
-                    <div class="max-h-60 overflow-y-auto space-y-1">
-                        ${folderButtons}
-                    </div>
-                    <div class="flex justify-end mt-6">
-                        <button id="list-modal-cancel" class="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-xl hover:bg-gray-300 transition duration-300">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            modalBackdrop.classList.remove('hidden');
-            listModalContainer.classList.remove('hidden');
-
-            const closeModal = () => {
-                modalBackdrop.classList.add('hidden');
-                listModalContainer.classList.add('hidden');
-                listModalContainer.innerHTML = '';
-            };
-            
-            document.getElementById('list-modal-cancel').onclick = closeModal;
-            
-            listModalContainer.querySelectorAll('.folder-item').forEach(btn => {
-                btn.onclick = async () => {
-                    const folderId = btn.dataset.folderId === "null" ? null : btn.dataset.folderId;
-                    await moveChatToFolder(chatId, folderId);
-                    closeModal();
-                };
-            });
-        }
+        // --- REMOVED: showMoveModal, moveChatToFolder ---
         
         /**
-         * --- NEW: Firestore logic to move chat ---
+         * --- MODIFIED: Toggles the pin state of a chat ---
          */
-        async function moveChatToFolder(chatId, folderId) {
-            if (!currentUser) return;
-            const docRef = doc(db, 'users', currentUser.uid, 'recent_chats', chatId);
-            try {
-                await updateDoc(docRef, { folderId: folderId });
-                showCustomMessage("Chat moved!", 'success');
-                loadRecentChats(); // Refresh list
-            } catch (error) {
-                console.error("Error moving chat:", error);
-                showCustomMessage("Error moving chat.", 'error');
-            }
-        }
-        
-        /**
-         * --- NEW: Toggles the pin state of a chat ---
-         */
-        window.togglePin = async function(event, chatId, newPinState) {
-            event.stopPropagation();
+        window.togglePin = async function(chatId, newPinState) {
+            // REMOVED: event.stopPropagation();
             if (!currentUser) return;
             
             const docRef = doc(db, 'users', currentUser.uid, 'recent_chats', chatId);
             try {
                 await updateDoc(docRef, { isPinned: newPinState });
-                // No message needed, it's a quick action
                 loadRecentChats(); // Refresh list to re-sort
             } catch (error) {
                 console.error("Error toggling pin:", error);
@@ -1481,9 +1253,8 @@
 
         
         /** Renames a chat in Firestore */
-        window.renameChat = async function(event, chatId, oldTitle) {
-            event.stopPropagation(); // Stop the click from loading the chat
-            
+        window.renameChat = async function(chatId, oldTitle) {
+            // REMOVED: event.stopPropagation();
             showInputModal("Rename Chat", oldTitle, async (newName) => {
                 if (!newName || newName === oldTitle || !currentUser) return;
                 
@@ -1500,11 +1271,10 @@
         }
         
         /**
-         * --- NEW: Deletes a chat from Firestore ---
+         * --- MODIFIED: Deletes a chat from Firestore ---
          */
-        window.deleteChat = async function(event, chatId, chatTitle) {
-            event.stopPropagation(); // Stop the click from loading the chat
-            
+        window.deleteChat = async function(chatId, chatTitle) {
+            // REMOVED: event.stopPropagation();
             const safeTitle = chatTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
             
             showConfirmationModal("Delete Chat?", `Are you sure you want to delete '${safeTitle}'? This cannot be undone.`, async () => {
@@ -1529,7 +1299,7 @@
 
 
         /**
-         * --- MODIFIED: Fetches chats based on currentFolderId ---
+         * --- MODIFIED: Fetches all chats (no folder filter) ---
          */
         async function loadRecentChats() {
             if (!currentUser) return;
@@ -1537,9 +1307,8 @@
             recentChatsList.innerHTML = '<p class="px-4 text-sm text-gray-400">Loading chats...</p>';
 
             try {
-                // --- NEW: Dynamic Query ---
+                // --- MODIFIED: Simplified Query ---
                 let q = collection(db, 'users', currentUser.uid, 'recent_chats');
-                q = query(q, where("folderId", "==", currentFolderId));
                 
                 const snapshot = await getDocs(q);
 
@@ -1549,7 +1318,7 @@
                     ...doc.data()
                 }));
 
-                // --- NEW: Sort by Pin, then Time ---
+                // --- Sort by Pin, then Time ---
                 chats.sort((a, b) => {
                     if (a.isPinned && !b.isPinned) return -1;
                     if (!a.isPinned && b.isPinned) return 1;
@@ -1576,29 +1345,24 @@
             closeSidebar();
             
             // 1. Save current chat before loading new one
-            if (currentChatId && chatHistory.length > 1) { // Only save if there's an active chat
+            if (currentChatId && chatHistory.length > 1) {
                 await saveChat(); 
             }
             
             try {
-                const docRef = doc(db, 'users', currentUser.uid, 'recent_chats', chatId); // v9
-                const docSnap = await getDoc(docRef); // v9
+                const docRef = doc(db, 'users', currentUser.uid, 'recent_chats', chatId);
+                const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     
-                    // Set current chat ID and mode
                     currentChatId = chatId;
-                    // --- NEW: Set folder context when loading a chat ---
-                    currentFolderId = data.folderId || null;
-                    selectFolder(currentFolderId); // Update sidebar UI
+                    // REMOVED: folderId logic
                     
-                    setMode(data.mode || mode, true); // Set the mode without showing welcome message
+                    setMode(data.mode || mode, true);
 
-                    // Deserialize the full history
                     chatHistory = JSON.parse(data.messages);
                     
-                    // 2. Render the loaded history
                     renderChatHistory(); 
                     showCustomMessage(`Loaded chat: ${data.title}`, 'success');
 
@@ -1613,18 +1377,13 @@
 
         /** Renders the full chat history from the chatHistory array */
         function renderChatHistory() {
-            // Clear all messages from the DOM, except the initial welcome
             const messages = chatContainer.querySelectorAll('.ai-message-wrapper:not(#initial-message-wrapper), .user-message-wrapper');
             messages.forEach(msg => msg.remove());
             
-            initialMessageWrapper.style.display = 'none'; // Hide welcome message
+            initialMessageWrapper.style.display = 'none';
             
-            // Render stored messages
             chatHistory.forEach((message, index) => {
-                if (index === 0) {
-                    // This is the welcome message. We skip rendering it.
-                    return; 
-                }
+                if (index === 0) return; 
 
                 const isUser = message.role === 'user';
                 const textPart = message.parts.find(p => p.text);
@@ -1659,7 +1418,7 @@
             messageWrapper.appendChild(symbolDiv);
             
             const contentWrapper = document.createElement('div');
-            contentWrapper.className = 'ai-response-content-wrapper stream-done'; // Add stream-done
+            contentWrapper.className = 'ai-response-content-wrapper stream-done';
             
             const header = document.createElement('p');
             header.className = 'font-bold text-blue-700 mb-2 transition-colors duration-300 dark:text-blue-400'; 
@@ -1686,25 +1445,21 @@
             }
             if (modeKey === currentMode && !skipWelcomeMessage) return;
 
-            // 1. Save current chat before switching context
             if (currentChatId && chatHistory.length > 1 && currentUser) {
                 saveChat();
             }
             
             currentMode = modeKey;
             
-            // If we're not just loading an old chat, reset the chat ID
             if (!skipWelcomeMessage) {
                 currentChatId = null; 
             }
             
             const config = MODE_CONFIGS[modeKey];
             
-            // 2. Update Header/Input
             currentModeDisplay.textContent = `Indr.ai (${config.label} Mode)`;
             promptInput.placeholder = config.placeholder;
 
-            // 3. Update Sidebar Active State
             document.querySelectorAll('.mode-selector').forEach(item => {
                 if (item.dataset.mode === modeKey) {
                     item.classList.add('menu-item-active');
@@ -1713,9 +1468,8 @@
                 }
             });
 
-            // 4. Start New Chat (Clear UI)
             if (!skipWelcomeMessage) {
-                 newChat(true); // Clear chat history state
+                 newChat(true);
             }
         }
         
@@ -1748,7 +1502,6 @@
         
         // --- UI & Utility Functions ---
 
-        /** Updates the disabled state of the send and upload buttons. */
         function updateSendButtonState() {
             const isInputEmpty = promptInput.value.trim() === '';
             const isFileEmpty = uploadedFile === null;
@@ -1762,31 +1515,25 @@
 
 
         window.newChat = async function(suppressMessage = false) {
-            // 1. Save current chat if it has messages
             if (currentChatId && chatHistory.length > 1 && currentUser) {
                 await saveChat(); 
             }
             
-            // 2. Reset Chat History State
             const config = MODE_CONFIGS[currentMode];
             const welcomeText = `Hello! I am **Indr.ai**, powered by Gemini. I am currently in **${config.label} Mode**. Feel free to ask me anything!\n\nSign in is optional. Click the **Menu** button in the top left corner for settings and sign-in options.`;
             chatHistory = [{
                 role: 'model',
                 parts: [{ text: welcomeText }]
             }];
-            currentChatId = null; // This is now a new chat
+            currentChatId = null;
             
-            // --- NEW: Keep the current folder selected ---
-            // currentFolderId remains unchanged
+            // REMOVED: folderId logic
 
-            // 3. Clear DOM messages
             const messages = chatContainer.querySelectorAll('.ai-message-wrapper:not(#initial-message-wrapper), .user-message-wrapper');
             messages.forEach(msg => msg.remove());
             
-            // 4. Re-add the initial message structure dynamically
             document.getElementById('initial-message-content').innerHTML = renderMarkdown(welcomeText);
             initialMessageWrapper.style.display = 'flex';
-
 
             if (!suppressMessage) {
                  showCustomMessage("New chat started.", 'success');
@@ -1801,16 +1548,12 @@
             const isDark = bodyElement.classList.contains('dark');
             
             if (fromMenu) {
-                // Toggled from checkbox, its state is already set.
+                // Toggled from checkbox
             } else {
-                // Toggled by system preference, sync the checkbox.
                 darkModeCheckbox.checked = isDark;
             }
         }
 
-        /**
-         * --- NEW: Text-to-Speech Function ---
-         */
         window.readAloud = function(text, buttonElement) {
             if (!'speechSynthesis' in window) {
                 showCustomMessage("Sorry, your browser doesn't support Text-to-Speech.", 'error');
@@ -1851,23 +1594,19 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        /**
-         * --- MODIFIED: Copies text to clipboard ---
-         */
         function copyToClipboard(text, buttonElement) {
             const textarea = document.createElement('textarea');
             textarea.value = text;
             textarea.style.position = 'absolute';
-            textarea.style.left = '-9999px'; // Move it off-screen
+            textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
             
             textarea.select();
-            textarea.setSelectionRange(0, 99999); // For mobile
+            textarea.setSelectionRange(0, 99999);
             
             try {
                 document.execCommand('copy');
                 
-                // Visual feedback
                 if(buttonElement) {
                     const originalIcon = buttonElement.innerHTML;
                     buttonElement.innerHTML = `
@@ -1891,16 +1630,12 @@
             document.body.removeChild(textarea);
         }
 
-        /**
-         * --- MODIFIED: Adds Copy, Speak, and Regenerate buttons ---
-         */
         function addAiButtons(contentWrapper, textToCopy, isLastMessage = false) {
             if (contentWrapper.querySelector('.ai-btn-container')) return;
 
             const container = document.createElement('div');
             container.className = 'ai-btn-container';
 
-            // 1. Add Speaker Button
             const speakerButton = document.createElement('button');
             speakerButton.className = 'ai-btn speaker-btn';
             speakerButton.title = 'Read aloud';
@@ -1912,7 +1647,6 @@
                 readAloud(textToCopy, speakerButton);
             };
 
-            // 2. Add Copy Button
             const copyButton = document.createElement('button');
             copyButton.className = 'ai-btn copy-btn';
             copyButton.title = 'Copy text';
@@ -1926,7 +1660,6 @@
                 copyToClipboard(textToCopy, copyButton);
             };
             
-            // --- NEW: 3. Add Regenerate Button ---
             const regenerateButton = document.createElement('button');
             regenerateButton.className = 'ai-btn regenerate-btn';
             regenerateButton.title = 'Regenerate response';
@@ -1938,7 +1671,6 @@
                 window.regenerateLastResponse();
             };
 
-
             container.appendChild(speakerButton);
             container.appendChild(copyButton);
             if (isLastMessage) {
@@ -1947,12 +1679,9 @@
             contentWrapper.appendChild(container);
         }
         
-        /**
-         * --- NEW: Adds Edit button to user messages ---
-         */
         function addUserMessageButtons(messageWrapper, historyIndex, hasImage) {
             const container = document.createElement('div');
-            container.className = 'user-btn-container'; // Uses new CSS style
+            container.className = 'user-btn-container';
 
             const editButton = document.createElement('button');
             editButton.className = 'ai-btn edit-btn';
@@ -1976,9 +1705,6 @@
             messageWrapper.appendChild(container);
         }
         
-        /**
-         * --- NEW: Edit Prompt Logic ---
-         */
         window.editPrompt = async function(index) {
             if (isTyping) {
                 showCustomMessage("Please wait for the current response to finish.", 'error');
@@ -2006,7 +1732,7 @@
 
             showInputModal("Edit and Resubmit", oldText, async (newText) => {
                 if (newText.trim() === oldText.trim()) {
-                    return; // No changes
+                    return;
                 }
                 
                 chatHistory.splice(index);
@@ -2017,9 +1743,6 @@
             });
         }
         
-        /**
-         * --- NEW: Regenerate Response Logic ---
-         */
         window.regenerateLastResponse = async function() {
             if (isTyping) {
                 showCustomMessage("Please wait for the current response to finish.", 'error');
@@ -2030,13 +1753,13 @@
             }
 
             if (chatHistory.length < 2) {
-                return; // Nothing to regenerate
+                return;
             }
 
             const lastMsg = chatHistory[chatHistory.length - 1];
             if (lastMsg.role !== 'model') {
                 showCustomMessage("No valid AI response to regenerate.", 'info');
-                return; // Last message isn't from the model
+                return;
             }
 
             chatHistory.pop();
@@ -2048,32 +1771,19 @@
             await sendRequestToAI();
         }
 
-        // --- Markdown Renderer (No changes) ---
         function renderMarkdown(text) {
             let html = text;
-            
-            // 1. Handle code blocks 
-            html = html.replace(/```(\w+)?\n([\sS]*?)\n```/g, function(match, lang, code) {
+            html = html.replace(/```(\w+)?\n([\s\S]*?)\n```/g, function(match, lang, code) {
                 const escapedCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 const languageLabel = lang ? `<span class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 block">${lang.toUpperCase()}</span>` : '';
                 return `<pre>${languageLabel}<code>${escapedCode}</code></pre>`;
             });
-
-            // 2. Convert double newlines to paragraphs
             html = html.replace(/\n\s*\n/g, '</p><p>'); 
-            
-            // 3. Convert single newlines to line breaks 
             html = html.replace(/(?<!\<\/p\>)(?<!\>)\n(?![\*\-]\s)(?!<)/g, '<br>');
-
-            // 4. Simple bolding (**text**)
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            
-            // 5. Wrap in initial paragraph
             if (html.trim().length > 0 && !html.startsWith('<p>') && !html.startsWith('<pre>') && !html.startsWith('<ul>') && !html.startsWith('<li>') && !html.startsWith('<ol>')) {
                  html = '<p>' + html + '</p>';
             }
-            
-            // 6. Basic List handling
             html = html.replace(/<p>([\s\S]*?)<\/p>/g, function(match, content) {
                 if (content.match(/^(?:[\*\-]\s)/m)) {
                     let listHtml = '<ul>';
@@ -2089,7 +1799,6 @@
                 }
                 return match;
             });
-            
             html = html.replace(/<li><p>([\s\S]*?)<\/p><\/li>/g, '<li>$1</li>');
             html = html.replace(/<p><ul>([\s\S]*?)<\/ul><\/p>/g, '<ul>$1</ul>');
             return html;
@@ -2099,9 +1808,6 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        /**
-         * --- MODIFIED: Handles "Stop Generation" button ---
-         */
         function setUILoading(isLoading) {
             isTyping = isLoading;
             promptInput.disabled = isLoading;
@@ -2130,9 +1836,6 @@
             }
         }
         
-        /**
-         * --- NEW: Stops the fetch request ---
-         */
         window.stopGeneration = function() {
             if (abortController) {
                 abortController.abort();
@@ -2171,9 +1874,6 @@
             return { contentElement, contentWrapper };
         }
         
-        /**
-         * --- NEW: Export Chat Function ---
-         */
         window.exportChat = function() {
             if (chatHistory.length <= 1) {
                 showCustomMessage("There is no chat history to export.", 'info');
@@ -2222,13 +1922,11 @@
             showCustomMessage("Chat exported successfully!", 'success');
         }
 
-        // --- Exponential Backoff (No changes) ---
         const exponentialBackoff = async (attempt) => {
             const delay = Math.pow(2, attempt) * 1000 + Math.random() * 500;
             return new Promise(resolve => setTimeout(resolve, delay));
         };
         
-        // --- File Handling (No changes) ---
         window.handleFileSelect = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -2255,7 +1953,6 @@
             reader.readAsDataURL(file);
         }
 
-        // --- MODIFIED: Custom Message Modal ---
         function showCustomMessage(message, type = 'info') {
             let buttonColor = 'bg-blue-600 hover:bg-blue-700';
             let messageColor = 'text-gray-700 dark:text-gray-200';
@@ -2296,7 +1993,6 @@
             updateSendButtonState();
         }
 
-        // --- REFACTORED: Real-time streaming function ---
         async function sendRequestToAI() {
             setUILoading(true);
             abortController = new AbortController();
@@ -2313,9 +2009,9 @@
 
             const { contentElement, contentWrapper } = addModelMessageStructure();
             
-            let fullResponseText = ""; // To accumulate text
+            let fullResponseText = "";
             let success = false;
-            let errorText = null; // To store error message
+            let errorText = null;
 
             try {
                 const response = await fetch(DYNAMIC_API_URL, {
@@ -2343,7 +2039,6 @@
                     }
 
                     const { done, value } = await reader.read();
-
                     if (done) {
                         success = true;
                         break; 
@@ -2351,7 +2046,7 @@
 
                     lineBuffer += decoder.decode(value, { stream: true });
                     const lines = lineBuffer.split('\n');
-                    lineBuffer = lines.pop(); // Keep potential partial line
+                    lineBuffer = lines.pop();
 
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
@@ -2367,7 +2062,7 @@
 
                                     if (textPart) {
                                         if (fullResponseText === "") {
-                                            contentElement.innerHTML = ""; // Clear cursor
+                                            contentElement.innerHTML = "";
                                         }
                                         fullResponseText += textPart;
                                         contentElement.innerHTML = renderMarkdown(fullResponseText) + `<span class="streaming-cursor"></span>`;
@@ -2379,16 +2074,16 @@
                             }
                         }
                     }
-                } // --- End of while loop ---
+                }
 
             } catch (error) {
                 if (error.name === 'AbortError' || error.message === 'AbortError') {
                     console.log("Generation stopped by user.");
-                    errorText = "ABORT_SIGNAL"; // Special signal
+                    errorText = "ABORT_SIGNAL";
                 } else {
                     console.error(`Streaming call failed:`, error);
                     errorText = `Sorry, I encountered an issue: ${error.message}`;
-                    fullResponseText = errorText; // Set for history
+                    fullResponseText = errorText;
                 }
             } finally {
                 abortController = null;
@@ -2401,8 +2096,8 @@
                     contentElement.innerHTML = renderMarkdown(errorText);
                 
                 } else if (success) {
-                    contentElement.innerHTML = renderMarkdown(fullResponseText); // Final render (no cursor)
-                    contentWrapper.classList.add('stream-done'); // Show buttons
+                    contentElement.innerHTML = renderMarkdown(fullResponseText);
+                    contentWrapper.classList.add('stream-done');
                     
                     chatHistory.push({ role: 'model', parts: [{ text: fullResponseText }] });
                     addAiButtons(contentElement.parentElement, fullResponseText, true);
@@ -2416,7 +2111,6 @@
             }
         }
 
-        // --- REFACTORED: This handles user input and calls sendRequestToAI ---
         window.sendMessage = async function() {
             const userQuery = promptInput.value.trim();
             if (!userQuery && !uploadedFile) return; 
@@ -2445,11 +2139,8 @@
             await sendRequestToAI();
         }
 
-
-        // --- MODIFIED: Now accepts historyIndex ---
         function addMessageToChat(text, role, fileData, historyIndex) {
             const messageWrapper = document.createElement('div');
-            
             messageWrapper.className = `user-message-wrapper mb-4 flex justify-end group relative`;
 
             const messageDiv = document.createElement('div');
@@ -2479,11 +2170,8 @@
             scrollToBottom();
         }
         
-        // --- NEW: Model Fetching Functions ---
+        // --- Model Fetching Functions (No changes) ---
         
-        /**
-         * Renders the model selector in the sidebar
-         */
         function renderModelSelector() {
             if (availableModels.length === 0) {
                 modelSelectorContainer.innerHTML = `<p class="text-sm text-red-400">No compatible text models found.</p>`;
@@ -2511,9 +2199,6 @@
             }
         }
 
-        /**
-         * Fetches available text models from the API
-         */
         async function fetchAvailableModels() {
             const MODELS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
             
@@ -2557,7 +2242,6 @@
             
             renderModelSelector();
         }
-
 
         // --- Event Listeners and Initialization ---
 
