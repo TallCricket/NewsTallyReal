@@ -59,7 +59,8 @@
             color: #f3f4f6;
         }
         .dark .text-blue-700 {
-            color: #93c5fd; /* Lighter blue in dark mode */
+            /* This class is now unused for gradient text, but kept for fallback */
+            color: #93c5fd; 
         }
         .dark .text-gray-900 {
              color: #f3f4f6; 
@@ -182,6 +183,20 @@
         }
         /* --- End New Layout Styles --- */
 
+        /* --- NEW: Fade-in & Slide-up Animation --- */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .message-animate {
+          animation: fadeInUp 0.4s ease-out;
+        }
         
         /* AI message styling (Minimal, left-aligned) */
         .ai-message-wrapper { 
@@ -241,11 +256,23 @@
             overflow: hidden; /* Clip the image */
         }
         
+        /* --- NEW: Button Hover & Lift Effect --- */
+        .btn-icon {
+            /* Base transition for all effects */
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+        }
+        .btn-icon:hover {
+          transform: scale(1.1);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .dark .btn-icon:hover {
+          box-shadow: 0 4px 10px rgba(96, 165, 250, 0.2);
+        }
         /* Button Press Effect (Expressive Feedback) */
         .btn-icon:active, .input-bar-container button:active {
             transform: scale(0.95);
             opacity: 0.8;
-            transition: transform 0.1s;
+            transition: transform 0.1s; /* Keep the snappy active transition */
         }
         
         /* --- Enhanced Send Button --- */
@@ -256,7 +283,7 @@
              box-shadow: 0 4px 14px rgba(96, 165, 250, 0.5);
         }
 
-        /* Typing Indicator Styles */
+        /* --- OLD Typing Indicator (Dots) --- */
         @keyframes bounce {
             0%, 80%, 100% { transform: scale(0); }
             40% { transform: scale(1); }
@@ -270,6 +297,35 @@
             animation: bounce 1.4s infinite ease-in-out both;
             margin: 0 1px;
         }
+        
+        /* --- NEW: Waveform Typing Indicator --- */
+        .waveform-container { 
+            display: flex; 
+            align-items: flex-end; 
+            height: 20px; 
+            margin-top: 0.5rem; /* Equivalent to mt-2 */
+        }
+        .waveform-bar {
+          width: 4px; 
+          background-color: #2563eb; 
+          margin: 0 2px;
+          border-radius: 2px; 
+          animation: waveform-animation 1.2s infinite ease-in-out;
+        }
+        .dark .waveform-bar {
+            background-color: #60a5fa; /* Lighter blue for dark mode */
+        }
+        .waveform-bar:nth-child(1) { height: 5px; animation-delay: 0.1s; }
+        .waveform-bar:nth-child(2) { height: 10px; animation-delay: 0.2s; }
+        .waveform-bar:nth-child(3) { height: 15px; animation-delay: 0.3s; }
+        .waveform-bar:nth-child(4) { height: 10px; animation-delay: 0.4s; }
+
+        @keyframes waveform-animation {
+          0%, 100% { transform: scaleY(0.3); }
+          50% { transform: scaleY(1.0); }
+        }
+        /* --- End Waveform --- */
+
 
         .file-input-hidden { display: none; }
         
@@ -549,7 +605,8 @@
                      <!-- UPDATED LOGO -->
                      <img src="https://i.postimg.cc/mDGTWBXy/1762542103581.png" alt="Indr.ai Logo" class="w-full h-full object-cover">
                 </div>
-                <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 transition-colors duration-400">Indr.<span class="text-blue-600">ai</span></h1>
+                <!-- UPDATED: Gradient Text -->
+                <h1 class="text-2xl font-extrabold tracking-tight transition-colors duration-400 bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent">Indr.ai</h1>
             </div>
             
             <!-- NEW: Dynamic Chat Title (Hidden by default) -->
@@ -568,7 +625,7 @@
             </button>
             <!-- User Avatar (Small, visible when logged in) -->
             <!-- UPDATED: onclick now opens the new profile panel -->
-            <img id="header-user-avatar" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-600 shadow-lg ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-300 hidden" onclick="openProfilePanel()" src="https://placehold.co/40x40/93c5fd/ffffff?text=U" alt="User Avatar">
+            <img id="header-user-avatar" class="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-600 shadow-lg ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-300 hidden btn-icon" onclick="openProfilePanel()" src="https://placehold.co/40x40/93c5fd/ffffff?text=U" alt="User Avatar">
         </div>
     </header>
 
@@ -587,7 +644,8 @@
                         <img src="https://i.postimg.cc/mDGTWBXy/1762542103581.png" alt="Logo" class="w-full h-full object-cover">
                     </div>
                     <div class="ai-response-content-wrapper">
-                        <p class="font-bold text-blue-700 mb-2 transition-colors duration-400" id="current-mode-display">Indr.ai (Research Mode)</p>
+                        <!-- UPDATED: Gradient Text -->
+                        <p class="font-bold mb-2 transition-colors duration-400 bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400" id="current-mode-display">Indr.ai (Research Mode)</p>
                         <div id="initial-message-content" class="ai-content-text text-gray-700 dark:text-gray-300 transition-colors duration-400">
                             <p>Hello! I am **Indr.ai**, powered by Gemini. I am currently in **Research Mode**, which uses Google to provide up-to-date, grounded information. Feel free to ask me anything!</p>
                             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Sign in is optional. Click the **Menu** button in the top left corner for settings and sign-in options.</p>
@@ -604,7 +662,7 @@
                     <!-- Image Preview Area (Subtle Elevation) -->
                     <div id="image-preview-container" class="hidden relative p-3 border border-blue-300 rounded-xl bg-blue-50 shadow-md dark:bg-gray-700 dark:border-blue-700 transition-colors duration-400">
                         <img id="image-preview" class="max-h-32 rounded-lg object-contain w-full" src="" alt="Uploaded image preview">
-                        <button onclick="removeImage()" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300 shadow-lg" title="Remove Image">
+                        <button onclick="removeImage()" class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition duration-300 shadow-lg btn-icon" title="Remove Image">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
                         <span id="image-filename" class="text-xs text-blue-700 font-medium mt-2 block truncate w-40 dark:text-blue-300 transition-colors duration-400"></span>
@@ -664,6 +722,34 @@
                 <span id="profile-panel-email" class="text-sm text-gray-500 dark:text-gray-400 text-center truncate w-full"></span>
             </div>
 
+            <!-- NEW: Daily Use Shortcuts -->
+            <div class="p-4 border-b dark:border-gray-700">
+                <h3 class="text-xs font-semibold uppercase text-gray-500 mb-3 px-1">Quick Actions</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Shortcut 1: Email Composer -->
+                    <div id="sc-email" class="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1 hover:bg-white dark:hover:bg-gray-700 group">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        <span class="text-xs font-semibold mt-2 text-center text-gray-700 dark:text-gray-300">Email Composer</span>
+                    </div>
+                    <!-- Shortcut 2: Fitness Guru -->
+                    <div id="sc-fitness" class="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1 hover:bg-white dark:hover:bg-gray-700 group">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z" stroke="none" fill="currentColor" opacity="0.1"></path></svg>
+                        <span class="text-xs font-semibold mt-2 text-center text-gray-700 dark:text-gray-300">Fitness Guru</span>
+                    </div>
+                    <!-- Shortcut 3: Recipe Helper -->
+                    <div id="sc-recipe" class="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1 hover:bg-white dark:hover:bg-gray-700 group">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.747 0-3.332.477-4.5 1.253"></path></svg>
+                        <span class="text-xs font-semibold mt-2 text-center text-gray-700 dark:text-gray-300">Recipe Helper</span>
+                    </div>
+                    <!-- Shortcut 4: Travel Planner -->
+                    <div id="sc-travel" class="bg-gray-100 dark:bg-gray-800 p-4 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 ease-in-out hover:shadow-lg hover:-translate-y-1 hover:bg-white dark:hover:bg-gray-700 group">
+                         <svg class="w-6 h-6 text-gray-600 dark:text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        <span class="text-xs font-semibold mt-2 text-center text-gray-700 dark:text-gray-300">Travel Planner</span>
+                    </div>
+                </div>
+            </div>
+
+
             <!-- Settings -->
             <nav class="flex-grow overflow-y-auto">
                 <h3 class="text-xs font-semibold uppercase text-gray-500 px-4 pt-4 pb-2">Settings</h3>
@@ -701,7 +787,7 @@
     <!-- 
       ==================================================================
       MAIN APPLICATION SCRIPT (MODULAR)
-      ================================A==================================
+      ==================================================================
     -->
     <script type="module">
         // --- Firebase v12.5.0 Modular Imports ---
@@ -973,6 +1059,31 @@
                 instruction: "You are a creative video content strategist. Generate compelling and viral-worthy video ideas, including title, hook, key scenes, and target audience, based on the user's request.",
                 tools: null,
                 placeholder: "Ask for a video idea or script concept..."
+            },
+            // --- NEW MODES FOR SHORTCUTS ---
+            email_composer: {
+                label: "Composer",
+                instruction: "You are a professional writing assistant. Based on the user's bullet points, write a clear and well-formatted email, social media post, or professional message. Ask for the tone (formal, casual, urgent) if not provided.",
+                tools: null,
+                placeholder: "e.g., 3 bullet points do, main email bana dunga..."
+            },
+            fitness_guru: {
+                label: "Fitness",
+                instruction: "You are a certified personal trainer and nutritionist. Create a personalized workout plan and meal suggestions based on the user's goals, available time, and dietary preferences.",
+                tools: null,
+                placeholder: "e.g., 'I want to lose weight and have 30 mins/day'..."
+            },
+            recipe_helper: {
+                label: "Recipe",
+                instruction: "You are a master chef. Generate a clear, easy-to-follow recipe based on the user's ingredients, desired cuisine, or meal type. Provide an ingredient list and step-by-step instructions.",
+                tools: null,
+                placeholder: "e.g., 'I have chicken, tomatoes, and rice'..."
+            },
+            travel_planner: {
+                label: "Travel",
+                instruction: "You are an expert travel agent. Create a detailed travel itinerary (day-by-day) based on the user's destination, budget, and interests. Include suggestions for flights, hotels, and activities.",
+                tools: null,
+                placeholder: "e.g., '3-day trip to Goa for a relaxing vacation'..."
             }
         };
 
@@ -1162,7 +1273,7 @@
                 buttonContainer.className = 'flex-shrink-0 flex items-center z-10'; // z-10 to be clickable
 
                 const renameButton = document.createElement('button');
-                renameButton.className = 'p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600';
+                renameButton.className = 'p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 btn-icon';
                 renameButton.title = "Rename chat";
                 renameButton.innerHTML = `
                     <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536l12.232-12.232z"></path></svg>
@@ -1170,7 +1281,7 @@
                 
                 // NEW: Delete Button
                 const deleteButton = document.createElement('button');
-                deleteButton.className = 'p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900';
+                deleteButton.className = 'p-1.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900 btn-icon';
                 deleteButton.title = "Delete chat";
                 deleteButton.innerHTML = `
                     <svg class="w-4 h-4 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -1441,7 +1552,7 @@
                 }
 
                 if (isUser) {
-                    addMessageToChat(textPart?.text || '', 'user', fileData);
+                    addMessageToChat(textPart?.text || '', 'user', fileData, false); // false = don't animate loaded history
                 } else {
                     addModelMessageFromHistory(textPart?.text || '');
                 }
@@ -1454,6 +1565,8 @@
             const modeLabel = MODE_CONFIGS[currentMode].label;
             const messageWrapper = document.createElement('div');
             messageWrapper.className = 'ai-message-wrapper'; 
+            // ADDED: Animate class for loaded messages
+            messageWrapper.classList.add('message-animate');
 
             const symbolDiv = document.createElement('div');
             symbolDiv.className = 'indrai-symbol';
@@ -1466,7 +1579,8 @@
             contentWrapper.className = 'ai-response-content-wrapper';
             
             const header = document.createElement('p');
-            header.className = 'font-bold text-blue-700 mb-2 transition-colors duration-300 dark:text-blue-400'; 
+            // UPDATED: Gradient Text
+            header.className = 'font-bold mb-2 transition-colors duration-400 bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400'; 
             header.textContent = `Indr.ai (${modeLabel} Mode)`;
             contentWrapper.appendChild(header);
 
@@ -1486,7 +1600,8 @@
                  showCustomMessage("Please wait for the current response to finish.", 'error');
                  return;
             }
-            if (modeKey === currentMode && !skipWelcomeMessage) return;
+            // Allow setting the same mode if not skipping welcome (i.e., user clicked shortcut)
+            if (modeKey === currentMode && skipWelcomeMessage) return;
 
             // 1. Save current chat before switching context
             if (currentChatId && chatHistory.length > 1 && currentUser) {
@@ -1502,9 +1617,16 @@
                 updateHeaderText(null);
             }
             
+            // Handle cases where the mode might not be in the sidebar (e.g., shortcuts)
             const config = MODE_CONFIGS[modeKey];
+            if (!config) {
+                console.error(`Invalid mode: ${modeKey}. Defaulting to 'search'.`);
+                currentMode = 'search';
+                config = MODE_CONFIGS[currentMode];
+            }
             
             // 2. Update Header/Input
+            // UPDATED: Gradient Text (Handled by CSS on the ID)
             currentModeDisplay.textContent = `Indr.ai (${config.label} Mode)`;
             promptInput.placeholder = config.placeholder;
 
@@ -1724,7 +1846,7 @@
         }
 
         /**
-         * --- MODIFIED: Adds Copy and Speak buttons ---
+         * --- MODIFIED: Adds Copy, Speak, and Download buttons ---
          */
         function addAiButtons(contentWrapper, textToCopy) {
             if (contentWrapper.querySelector('.ai-btn-container')) return;
@@ -1734,7 +1856,7 @@
 
             // 1. Add Speaker Button
             const speakerButton = document.createElement('button');
-            speakerButton.className = 'ai-btn speaker-btn';
+            speakerButton.className = 'ai-btn speaker-btn btn-icon';
             speakerButton.title = 'Read aloud';
             speakerButton.innerHTML = `
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .89-1.077 1.337-1.707.707L5.586 15z"></path></svg>
@@ -1746,7 +1868,7 @@
 
             // 2. Add Copy Button
             const copyButton = document.createElement('button');
-            copyButton.className = 'ai-btn copy-btn';
+            copyButton.className = 'ai-btn copy-btn btn-icon';
             copyButton.title = 'Copy text';
             copyButton.innerHTML = `
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1757,11 +1879,66 @@
                 e.stopPropagation();
                 copyToClipboard(textToCopy, copyButton);
             };
+            
+            // 3. --- NEW: Add Download Button ---
+            const downloadButton = document.createElement('button');
+            downloadButton.className = 'ai-btn download-btn btn-icon';
+            downloadButton.title = 'Download response';
+            downloadButton.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+            `;
+            downloadButton.onclick = (e) => {
+                e.stopPropagation();
+                window.downloadAiResponse(textToCopy, downloadButton); // Pass button for visual feedback
+            };
+
 
             container.appendChild(speakerButton);
             container.appendChild(copyButton);
+            container.appendChild(downloadButton); // Add new button
             contentWrapper.appendChild(container);
         }
+
+        /**
+         * --- NEW: Downloads the AI response as a Markdown file ---
+         */
+        window.downloadAiResponse = function(text, buttonElement) {
+            const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+            
+            // Create a filename
+            const firstWords = text.substring(0, 20).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const fileName = `indr-ai_${firstWords}.md`;
+
+            // Create download link
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(link.href);
+
+            // Visual feedback
+            if(buttonElement) {
+                const originalIcon = buttonElement.innerHTML;
+                buttonElement.innerHTML = `
+                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                `;
+                buttonElement.title = 'Downloaded!';
+                
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalIcon;
+                    buttonElement.title = 'Download response';
+                }, 2000);
+            }
+        }
+
 
         /**
          * --- NEW: Puts user text into the input box for editing ---
@@ -1871,7 +2048,7 @@
             // Stop any typing simulation
             setUILoading(false); // Reset button
             // Find the last typing indicator and remove it
-            const dots = chatContainer.querySelector('.dot-container');
+            const dots = chatContainer.querySelector('.waveform-container'); // UPDATED: Find waveform
             if (dots) {
                 dots.closest('.ai-message-wrapper').remove();
             }
@@ -1882,6 +2059,8 @@
             
             const messageWrapper = document.createElement('div');
             messageWrapper.className = 'ai-message-wrapper'; 
+            // ADDED: Animate class
+            messageWrapper.classList.add('message-animate');
 
             const symbolDiv = document.createElement('div');
             symbolDiv.className = 'indrai-symbol';
@@ -1894,18 +2073,21 @@
             contentWrapper.className = 'ai-response-content-wrapper';
             
             const header = document.createElement('p');
-            header.className = 'font-bold text-blue-700 mb-2 transition-colors duration-300 dark:text-blue-400'; 
+            // UPDATED: Gradient Text
+            header.className = 'font-bold mb-2 transition-colors duration-400 bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400'; 
             header.textContent = `Indr.ai (${modeLabel} Mode)`;
             contentWrapper.appendChild(header);
 
             const contentElement = document.createElement('div');
             contentElement.className = 'ai-content-text text-gray-800 dark:text-gray-100 transition-colors duration-300';
             
+            // UPDATED: New Waveform HTML
             contentElement.innerHTML = `
-                <div class="dot-container flex space-x-1 items-center h-5 mt-2">
-                    <div class="dot" style="animation-delay: 0s;"></div>
-                    <div class="dot" style="animation-delay: 0.16s;"></div>
-                    <div class="dot" style="animation-delay: 0.32s;"></div>
+                <div class="waveform-container">
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
                 </div>
             `;
             
@@ -2112,7 +2294,7 @@
                 });
             }
 
-            addMessageToChat(userQuery, 'user', uploadedFile);
+            addMessageToChat(userQuery, 'user', uploadedFile, true); // true = animate
             
             promptInput.value = '';
             removeImage(); 
@@ -2202,11 +2384,17 @@
         }
 
         /**
-         * --- UPDATED: To include Edit button for user messages ---
+         * --- UPDATED: To include Edit button and animation flag ---
          */
-        function addMessageToChat(text, role, fileData) {
+        function addMessageToChat(text, role, fileData, animate = true) {
             const messageWrapper = document.createElement('div');
             messageWrapper.className = `user-message-wrapper mb-4 flex justify-end`;
+            
+            // ADDED: Animate class
+            if (animate) {
+                messageWrapper.classList.add('message-animate');
+            }
+
 
             // --- NEW: Add Edit Button for user ---
             if (role === 'user' && text) { // Only add edit for text messages
@@ -2354,6 +2542,17 @@
         
         // NEW: Chat Search Listener
         chatSearchInput.addEventListener('input', filterRecentChats);
+        
+        // --- NEW: Profile Panel Shortcut Listeners ---
+        function handleShortcutClick(modeName) {
+            setMode(modeName, false); // false = do not skip welcome message (it will start a new chat)
+            closeProfilePanel();
+        }
+        
+        document.getElementById('sc-email').onclick = () => handleShortcutClick('email_composer');
+        document.getElementById('sc-fitness').onclick = () => handleShortcutClick('fitness_guru');
+        document.getElementById('sc-recipe').onclick = () => handleShortcutClick('recipe_helper');
+        document.getElementById('sc-travel').onclick = () => handleShortcutClick('travel_planner');
 
 
         // --- Initial DOMContentLoaded ---
