@@ -99,7 +99,7 @@
     .profile-content-section.active { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* Toast Notification - Enhanced from Indr.ai */
+    /* Toast Notification */
     #toast-container {
         position: fixed;
         bottom: 2rem;
@@ -331,11 +331,11 @@
     <div id="toast-container"></div>
   </div>
 
-  <!-- --- MODULAR FIREBASE SCRIPTS (Using Indr.ai Logic) --- -->
+  <!-- --- MODULAR FIREBASE SCRIPTS (v12.5.0 from Indr.ai) --- -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, updateDoc, onSnapshot, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, updateDoc, onSnapshot, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
     // --- Constants ---
     const API_KEY = 'AIzaSyC8D-4bl3GDyj_--BGG1pPdO5Bz63r5iXI';
@@ -374,7 +374,7 @@
     const showLoading = () => $('#loading-bar').classList.remove('hidden');
     const hideLoading = () => $('#loading-bar').classList.add('hidden');
     
-    // Improved Toast from Indr.ai
+    // Improved Toast
     function showToast(message) {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -384,7 +384,7 @@
         setTimeout(() => { toast.remove(); }, 3500);
     }
 
-    // --- Fetching Logic (Original Google Sheets) ---
+    // --- Fetching Logic ---
     async function fetchWithRetry(url, retries = 3) {
         for (let i = 0; i < retries; i++) {
             try {
@@ -584,36 +584,30 @@
         if (unsubscribeSnapshot) unsubscribeSnapshot();
         
         const userRef = doc(db, 'users', user.uid);
-        // Indr.ai uses onSnapshot for realtime updates
         unsubscribeSnapshot = onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 userBookmarks = data.bookmarks || [];
                 userHistory = data.history || [];
                 
-                // Update UI instantly
                 renderProfileContent();
                 renderNewsHeartIcons(); 
                 updateDetailHeart();
             } else {
-                 // Create user doc if it doesn't exist
+                 // Create if doesn't exist (Fix for saving error)
                 setDoc(userRef, { bookmarks: [], history: [] }, { merge: true });
             }
         });
     }
 
-    // Updates hearts on the main feed without reloading everything
     function renderNewsHeartIcons() {
-        $$('.card-bookmark-btn').forEach(btn => {
-            // Logic to match button to headline would go here. 
-            // For now, a full re-render or user-interaction update is sufficient.
-        });
+        // Simple re-render logic not fully implemented here to avoid flicker, 
+        // relies on toggleBookmark for immediate feedback and page reload for full sync visual
     }
     
     function updateDetailHeart() {
         const detailHeadline = $('#detail-headline').innerText;
         if (!detailHeadline) return;
-        
         const isBookmarked = userBookmarks.some(b => b.headline === detailHeadline);
         const heartBtn = $('#detail-bookmark-btn i');
         if (heartBtn) {
@@ -621,32 +615,31 @@
         }
     }
 
-    // Helper for Firestore objects
+    // Helper to ensure NO undefined values
     const createItemObj = (item) => ({
-        headline: item.headline,
-        image: item.image, 
-        category: item.category,
+        headline: item.headline || "Untitled",
+        image: item.image || "https://placehold.co/600x400?text=News",
+        category: item.category || "General",
         date: new Date().toISOString()
     });
 
-    // History Logic (Permanent)
+    // History Logic
     async function addToHistory(item) {
         if (!currentUser) return;
+        const userRef = doc(db, 'users', currentUser.uid);
         
         const newItem = createItemObj(item);
-        // Optimistic update
         userHistory = userHistory.filter(h => h.headline !== item.headline);
         userHistory.unshift(newItem);
         if (userHistory.length > 50) userHistory.pop();
 
-        // Firestore update
-        const userRef = doc(db, 'users', currentUser.uid);
+        // Use setDoc with merge for history too, just in case
         try {
-            await updateDoc(userRef, { history: userHistory });
+            await setDoc(userRef, { history: userHistory }, { merge: true });
         } catch (e) { console.error("History save error", e); }
     }
 
-    // Bookmark Logic (Permanent)
+    // FIXED Bookmark Logic
     window.toggleBookmark = async (encodedHeadline, btnElement) => {
         if (!currentUser) {
             showToast("Please Sign In to Bookmark");
@@ -659,7 +652,6 @@
 
         const userRef = doc(db, 'users', currentUser.uid);
         const isBookmarked = userBookmarks.some(b => b.headline === headline);
-        // Find existing object for removal, or create new one for addition
         const itemObj = userBookmarks.find(b => b.headline === headline) || createItemObj(item);
 
         let icon = btnElement ? btnElement.querySelector('i') : null;
@@ -671,6 +663,7 @@
                     icon.classList.remove('text-red-500');
                 }
                 showToast("Removed from Bookmarks");
+                // updateDoc is fine for removal if we know doc exists
                 await updateDoc(userRef, { bookmarks: arrayRemove(itemObj) });
             } else {
                 if(icon) {
@@ -678,16 +671,22 @@
                     icon.classList.add('text-red-500');
                 }
                 showToast("Added to Bookmarks");
-                await updateDoc(userRef, { bookmarks: arrayUnion(itemObj) });
+                // Use setDoc with merge: true to AUTO-CREATE document if missing
+                await setDoc(userRef, { bookmarks: arrayUnion(itemObj) }, { merge: true });
             }
         } catch (e) {
             console.error("Bookmark Error", e);
-            showToast("Error saving bookmark");
+            // Fallback: If update failed (doc missing), try recreate empty
+             if (isBookmarked && e.code === 'not-found') {
+                 await setDoc(userRef, { bookmarks: [] }, { merge: true });
+                 showToast("Sync fixed. Please try again.");
+            } else {
+                 showToast("Error saving bookmark");
+            }
         }
     };
 
     // --- Detail View Logic ---
-    
     const detailPage = $('#news-detail-page');
     const progressBar = $('#reading-progress-bar-inner');
     
@@ -698,7 +697,7 @@
         progressBar.style.width = `${scrollPercent}%`;
     };
 
-    // TTS Logic (Enhanced from Indr.ai)
+    // TTS Logic (Enhanced)
     const ttsButton = $('#tts-button');
     function setupTTS(textToRead) {
         const icon = ttsButton.querySelector('i');
@@ -714,7 +713,6 @@
                 span.textContent = 'Listen';
             } else {
                 const utterance = new SpeechSynthesisUtterance(textToRead);
-                // Indr.ai simple utterance config
                 utterance.lang = 'en-US';
                 utterance.onstart = () => { icon.className = 'fas fa-stop'; span.textContent = 'Stop'; };
                 utterance.onend = () => { icon.className = 'fas fa-play'; span.textContent = 'Listen'; };
@@ -851,7 +849,6 @@
             $('#profile-email').innerText = user.email;
             $('#profile-photo-lg').src = user.photoURL;
             
-            // Listen to Firestore on login
             setupRealtimeSync(user);
         } else {
             $('#sign-in-button').classList.remove('hidden');
