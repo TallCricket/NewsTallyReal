@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewsTally - Community & News</title>
+  <meta name="description" content="NewsTally - Read, Repost, and Connect." />
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; }
+
+    :root {
+      --bg-primary: #f9fafb; --bg-secondary: #ffffff; --text-primary: #111827;
+      --text-secondary: #4b5563; --border-color: #e5e7eb; --blue-accent: #2563eb;
+      --gradient-start: #1e40af; --gradient-end: #3b82f6;
+    }
+    html.dark {
+      --bg-primary: #111827; --bg-secondary: #1f2937; --text-primary: #f9fafb;
+      --text-secondary: #9ca3af; --border-color: #374151;
+      --gradient-start: #1e3a8a; --gradient-end: #3b82f6;
+    }
+    body { background-color: var(--bg-primary); color: var(--text-primary); transition: 0.3s; }
+    .gradient-bg { background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); }
+
+    /* Sticky Header */
+    .sticky-header { backdrop-filter: blur(12px); background-color: rgba(255,255,255,0.9); }
+    html.dark .sticky-header { background-color: rgba(31,41,55,0.9); }
+    
+    /* News Card */
+    .news-card { 
+      background-color: var(--bg-secondary); border: 1px solid var(--border-color); 
+      transition: transform 0.3s ease, box-shadow 0.3s ease; opacity: 0; transform: translateY(20px);
+      position: relative; display: flex; flex-direction: column;
+    }
+    .news-card.loaded { opacity: 1; transform: translateY(0); }
+    .news-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+
+    /* Repost Card Style */
+    .repost-card {
+        border-left: 4px solid var(--blue-accent);
+        background: var(--bg-secondary);
+    }
+
+    /* Buttons on Card */
+    .card-action-btn {
+        width: 35px; height: 35px; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        transition: transform 0.2s; background: rgba(255,255,255,0.9); color: #6b7280;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    html.dark .card-action-btn { background: rgba(31,41,55,0.9); color: #d1d5db; }
+    .card-action-btn:hover { transform: scale(1.1); color: var(--blue-accent); }
+    
+    /* Carousel */
+    .carousel { position: relative; overflow: hidden; border-radius: 1.25rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); height: 400px; }
+    .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.7s ease-in-out; }
+    .carousel-slide.active { opacity: 1; }
+    .carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+    .carousel-text-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; }
+    
+    /* Modals */
+    #news-detail-page, #profile-page, #username-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-primary); z-index: 80; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow-y: auto; }
+    #news-detail-page.open, #profile-page.open { transform: translateX(0); }
+    #username-modal { z-index: 150; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; transform: scale(0); opacity: 0; transition: all 0.3s; }
+    #username-modal.open { transform: scale(1); opacity: 1; }
+
+    /* Nav Panel */
+    #nav-panel { position: fixed; top: 0; left: 0; height: 100%; width: 256px; background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); transform: translateX(-100%); transition: transform 0.3s ease-in-out; z-index: 90; box-shadow: 2px 0 10px rgba(0,0,0,0.3); }
+    #nav-panel.open { transform: translateX(0); }
+
+    /* Tabs */
+    .profile-tab { cursor: pointer; padding: 10px 20px; border-bottom: 2px solid transparent; color: var(--text-secondary); }
+    .profile-tab.active { border-color: var(--blue-accent); color: var(--blue-accent); font-weight: bold; }
+    .profile-content-section { display: none; }
+    .profile-content-section.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Skeleton */
+    .skeleton { background-color: #e5e7eb; position: relative; overflow: hidden; }
+    html.dark .skeleton { background-color: #374151; }
+    .skeleton::after { content: ''; position: absolute; top: 0; left: -150%; width: 150%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer 1.8s infinite; }
+    @keyframes shimmer { 0% { left: -150%; } 100% { left: 150%; } }
+
+    /* Toast */
+    #toast-container { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+    .toast-message { background-color: #1f2937; color: white; padding: 12px 24px; border-radius: 50px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); font-size: 0.9rem; font-weight: 500; opacity: 0; transform: translateY(20px); animation: toast-in 0.3s forwards, toast-out 0.3s forwards 3s; }
+    @keyframes toast-in { to { opacity: 1; transform: translateY(0); } }
+    @keyframes toast-out { to { opacity: 0; transform: translateY(20px); } }
+  </style>
+</head>
+<body class="font-sans">
+  <div id="root" class="min-h-screen max-md:pb-20">
+    
+    <!-- Top Bar -->
+    <header class="gradient-bg text-white py-3 sticky top-0 z-30 shadow-lg">
+      <div class="container mx-auto px-4 flex justify-between items-center h-10">
+        <button id="menu-toggle" class="md:hidden text-white p-2"><i class="fas fa-bars text-xl"></i></button>
+        
+        <a href="#" onclick="location.reload()" class="flex items-center space-x-2">
+          <img src="https://pbs.twimg.com/media/GqpcfVqWkAA-NTP?format=jpg&name=small" alt="Logo" class="w-8 h-8 rounded-full border-2 border-white">
+          <h1 class="text-2xl font-extrabold tracking-tight">NewsTally</h1>
+        </a>
+
+        <div class="flex space-x-3 items-center">
+          <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-white/20 transition"><i class="fas fa-moon"></i></button>
+          <button id="sign-in-button" class="hidden bg-white text-blue-600 px-3 py-1 rounded-full text-sm font-bold shadow hover:bg-gray-100">Sign In</button>
+          <button id="user-profile-button" class="hidden p-1 rounded-full hover:scale-110 transition"><img id="user-profile-photo" src="" class="w-8 h-8 rounded-full border-2 border-white/50"></button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Loading Bar -->
+    <div id="loading-bar" class="fixed top-16 left-0 w-full h-1 z-50 hidden"><div class="h-full bg-blue-500 animate-[loading-animation_1.5s_infinite]"></div></div>
+
+    <!-- Desktop Nav -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md sticky top-[64px] z-20 hidden md:block">
+      <div class="container mx-auto px-4 py-2">
+        <ul class="flex justify-center space-x-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+          <li><button class="hover:text-blue-600 nav-category active" data-view="home" data-category="All">Home</button></li>
+          <li><button class="hover:text-blue-600 nav-category" data-view="home" data-category="Politics">Politics</button></li>
+          <li><button class="hover:text-blue-600 nav-category" data-view="home" data-category="Technology">Tech</button></li>
+          <!-- NEW: Community Tab -->
+          <li><button class="text-purple-600 dark:text-purple-400 font-bold nav-category" data-view="community"><i class="fas fa-users mr-1"></i>Community</button></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Mobile Sidebar -->
+    <div id="nav-panel">
+      <div class="flex justify-between items-center p-4 border-b border-white/20">
+        <h2 class="text-white text-lg font-bold">Menu</h2>
+        <button id="close-panel" class="p-2 text-white"><i class="fas fa-times text-xl"></i></button>
+      </div>
+      <ul class="p-4 space-y-4 text-white">
+        <li><button class="flex items-center space-x-3 w-full text-left nav-category-mobile" data-view="home" data-category="All"><i class="fas fa-home w-6"></i><span>Home</span></button></li>
+        <li><button class="flex items-center space-x-3 w-full text-left nav-category-mobile" data-view="community"><i class="fas fa-users w-6"></i><span>Community Reposts</span></button></li>
+        <li><button class="flex items-center space-x-3 w-full text-left nav-category-mobile" data-view="home" data-category="Politics"><i class="fas fa-landmark w-6"></i><span>Politics</span></button></li>
+      </ul>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content-wrapper">
+      
+      <!-- HOME VIEW -->
+      <div id="view-home" class="block">
+          <!-- Carousel -->
+          <section class="container mx-auto px-4 pt-6">
+             <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold border-l-4 border-blue-600 pl-3">Top Stories</h2>
+                <p class="text-xs text-gray-500" id="last-updated"></p>
+             </div>
+            <div class="carousel bg-gray-200 dark:bg-gray-700">
+              <div id="carousel-content-wrapper" class="relative w-full h-full">
+                <div class="skeleton w-full h-full absolute inset-0"></div>
+              </div>
+              <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 text-white p-3 rounded-full hover:bg-black/50"><i class="fas fa-chevron-left"></i></button>
+              <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 text-white p-3 rounded-full hover:bg-black/50"><i class="fas fa-chevron-right"></i></button>
+            </div>
+          </section>
+      
+          <!-- Feed -->
+          <main class="container mx-auto px-4 py-8">
+              <div id="mobile-category-scroll" class="md:hidden flex overflow-x-auto gap-2 mb-6 pb-2 scrollbar-hide"></div>
+              <h2 class="text-2xl font-extrabold mb-6 flex items-center gap-2">
+                <span id="section-title">Latest News</span>
+              </h2>
+              <div id="news-feed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Skeletons -->
+                <div class="news-card h-64 rounded-xl p-4"><div class="skeleton w-full h-32 rounded-lg mb-4"></div><div class="skeleton h-4 w-3/4 mb-2"></div></div>
+              </div>
+              <div id="load-more" class="text-center mt-10">
+                <button id="load-more-btn" class="px-8 py-3 rounded-full shadow-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold transition transform hover:scale-105">Load More</button>
+              </div>
+          </main>
+      </div>
+
+      <!-- COMMUNITY VIEW (NEW) -->
+      <div id="view-community" class="hidden container mx-auto px-4 py-6 max-w-3xl">
+          <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-extrabold text-purple-600 dark:text-purple-400"><i class="fas fa-hashtag mr-2"></i>Community Reposts</h2>
+              <div class="text-sm text-gray-500">See what others are reading</div>
+          </div>
+          
+          <!-- Reposts Feed -->
+          <div id="community-feed" class="space-y-6">
+              <div class="text-center py-10 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Loading community feed...</div>
+          </div>
+      </div>
+
+    </div>
+
+    <!-- News Detail Page -->
+    <div id="news-detail-page">
+      <div id="reading-progress-bar" class="sticky top-0 left-0 w-full h-1 bg-gray-200 z-50"><div id="reading-progress-bar-inner" class="h-full bg-blue-600 w-0"></div></div>
+      <div class="container mx-auto p-4 pb-20 max-w-4xl">
+        <button id="back-to-feed-btn" class="mb-6 px-5 py-2 rounded-full bg-white dark:bg-gray-800 shadow-md border dark:border-gray-700 text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-2 hover:bg-gray-50">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+
+        <article class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div class="relative">
+                <img id="detail-image" src="" class="w-full h-56 md:h-[450px] object-cover"/>
+                <div class="absolute top-4 right-4 flex gap-3">
+                    <!-- Repost Button -->
+                    <button id="detail-repost-btn" class="bg-white/90 dark:bg-black/60 w-10 h-10 rounded-full text-green-600 hover:scale-110 transition shadow flex items-center justify-center backdrop-blur-sm" title="Repost to Community">
+                        <i class="fas fa-retweet text-lg"></i>
+                    </button>
+                    <!-- Bookmark Button -->
+                    <button id="detail-bookmark-btn" class="bg-white/90 dark:bg-black/60 w-10 h-10 rounded-full text-gray-500 hover:scale-110 transition shadow flex items-center justify-center backdrop-blur-sm">
+                        <i class="far fa-heart text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 md:p-10">
+                <div class="flex justify-between items-center mb-4">
+                    <span id="detail-category-badge" class="text-white font-bold px-3 py-1 rounded text-sm uppercase bg-blue-600"></span>
+                    <p id="detail-source-date" class="text-sm text-gray-500 font-medium"></p>
+                </div>
+                <h1 id="detail-headline" class="text-2xl md:text-4xl font-extrabold mb-3 text-gray-900 dark:text-white"></h1>
+                
+                <!-- Action Bar -->
+                <div class="flex flex-wrap items-center justify-between border-y border-gray-200 dark:border-gray-700 py-4 mb-8 gap-4">
+                  <button id="tts-button" class="px-4 py-2 rounded-full text-sm font-bold bg-gray-100 dark:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-200"><i class="fas fa-play"></i> Listen</button>
+                  <div class="flex items-center gap-2">
+                    <button id="share-copy" class="share-btn copy"><i class="fas fa-link"></i></button>
+                  </div>
+                </div>
+
+                <div id="detail-article-content" class="prose dark:prose-invert max-w-none text-lg text-gray-700 dark:text-gray-300"></div>
+            </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- Username Setup Modal -->
+    <div id="username-modal">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-11/12 max-w-md text-center relative">
+            <h3 class="text-2xl font-bold mb-2 dark:text-white">Create Username</h3>
+            <p class="text-gray-500 mb-6 text-sm">Set a unique username to repost news.</p>
+            <input type="text" id="new-username-input" placeholder="e.g. news_guru_99" class="w-full p-3 border rounded-lg mb-4 bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 ring-blue-500 outline-none">
+            <button id="save-username-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">Start Reposting</button>
+            <button onclick="$('#username-modal').classList.remove('open')" class="mt-3 text-gray-400 text-sm underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Profile Page (Hidden) -->
+    <div id="profile-page">
+      <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold">My Profile</h2>
+            <button onclick="$('#profile-page').classList.remove('open')" class="p-2"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="text-center mb-6">
+            <img id="profile-photo-lg" class="w-24 h-24 rounded-full mx-auto mb-2 border-4 border-white shadow">
+            <h3 id="profile-name" class="text-xl font-bold"></h3>
+            <p id="profile-username-display" class="text-blue-500 font-mono text-sm">@username</p>
+            <button onclick="auth.signOut(); $('#profile-page').classList.remove('open');" class="mt-4 text-red-500 border border-red-500 px-4 py-1 rounded-full text-sm">Sign Out</button>
+        </div>
+        <div class="flex border-b dark:border-gray-700 mb-4">
+            <div class="profile-tab active w-1/2 text-center" data-target="tab-bookmarks">Bookmarks</div>
+            <div class="profile-tab w-1/2 text-center" data-target="tab-history">History</div>
+        </div>
+        <div id="tab-bookmarks" class="profile-content-section active"><div id="bookmarks-list"></div></div>
+        <div id="tab-history" class="profile-content-section"><div id="history-list"></div></div>
+      </div>
+    </div>
+    
+    <!-- Mobile Bottom Bar -->
+    <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex justify-around py-3 z-40 pb-safe">
+      <button onclick="switchView('home')" class="flex flex-col items-center text-blue-600 text-xs gap-1 nav-btn-mobile active" id="mb-home"><i class="fas fa-home text-lg"></i>Home</button>
+      <button onclick="switchView('community')" class="flex flex-col items-center text-gray-500 dark:text-gray-400 text-xs gap-1 nav-btn-mobile" id="mb-comm"><i class="fas fa-users text-lg"></i>Community</button>
+      <button id="mobile-profile-trigger" class="flex flex-col items-center text-gray-500 dark:text-gray-400 text-xs gap-1"><i class="fas fa-user text-lg"></i>Profile</button>
+    </nav>
+
+    <!-- Toast -->
+    <div id="toast-container"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, updateDoc, getDoc, onSnapshot, arrayUnion, arrayRemove, collection, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    // CONFIGURATION
+    const API_KEY = 'AIzaSyC8D-4bl3GDyj_--BGG1pPdO5Bz63r5iXI';
+    const SHEET_ID = '1Wy6rzaCALqPLFx079nqBCDRP7dk3au5eRO4GuMwQ8Sk';
+    const APP_ID = 'newstally-default';
+    
+    const firebaseConfig = { 
+        apiKey: "AIzaSyA4zw5cZqxLwzkTy2e5NiHz-tGKqk1KGdI", 
+        authDomain: "newstally-df03c.firebaseapp.com", 
+        projectId: "newstally-df03c", 
+        storageBucket: "newstally-df03c.appspot.com", 
+        messagingSenderId: "506893212961", 
+        appId: "1:506893212961:web:63882290195da992207260" 
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // GLOBAL STATE
+    let state = {
+        allNews: [],
+        filteredNews: [],
+        bookmarks: [],
+        user: null,
+        username: null,
+        category: 'All',
+        limit: 12
+    };
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+    const showToast = (msg) => {
+        const d = document.createElement('div'); d.className='toast-message'; d.innerText=msg;
+        $('#toast-container').appendChild(d); setTimeout(()=>d.remove(),3500);
+    };
+
+    // --- PATH HELPERS ---
+    // We use the 'artifacts' path for public data as per rules
+    const getUserRef = (uid) => doc(db, 'users', uid); // Standard user profile
+    const getPublicRepostsCol = () => collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts');
+
+    // --- DATA LOADING ---
+    async function loadNews() {
+        $('#loading-bar').classList.remove('hidden');
+        try {
+            const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`);
+            const json = await res.json();
+            state.allNews = json.values.slice(1).map(r => ({
+                headline: r[1] || 'Untitled', source: r[2]||'News', date: r[3]||'', 
+                description: r[4]||'', category: r[6]||'General', 
+                image: r[7] && r[7].startsWith('http') ? r[7] : `https://placehold.co/600x400?text=News`
+            })).reverse();
+            
+            renderCarousel();
+            filterNews('All');
+        } catch(e) { console.error(e); showToast("Error loading news"); }
+        $('#loading-bar').classList.add('hidden');
+    }
+
+    // --- UI FUNCTIONS ---
+    window.switchView = (viewName) => {
+        $('#view-home').classList.add('hidden');
+        $('#view-community').classList.add('hidden');
+        $(`#view-${viewName}`).classList.remove('hidden');
+        
+        // Update Mobile Nav Active State
+        $$('.nav-btn-mobile').forEach(b => b.classList.remove('text-blue-600', 'active'));
+        if(viewName==='home') $('#mb-home').classList.add('text-blue-600', 'active');
+        if(viewName==='community') $('#mb-comm').classList.add('text-blue-600', 'active');
+
+        if(viewName === 'community') loadCommunityFeed();
+    };
+
+    window.filterCategory = (cat) => {
+        state.category = cat;
+        switchView('home');
+        state.filteredNews = cat==='All' ? state.allNews.filter(n=>n.category!=='Top Story') : state.allNews.filter(n=>n.category===cat);
+        renderFeed();
+        
+        // Nav styling
+        $$('.nav-category').forEach(b => {
+            if(b.dataset.category === cat) b.classList.add('text-blue-600'); else b.classList.remove('text-blue-600');
+        });
+        $('#nav-panel').classList.remove('open');
+    };
+
+    function renderCarousel() {
+        const top = state.allNews.filter(n=>n.category==='Top Story').slice(0,5);
+        if(!top.length) return;
+        $('#carousel-content-wrapper').innerHTML = top.map((n,i) => `
+            <div class="carousel-slide ${i===0?'active':''} cursor-pointer" onclick="window.openDetail('${encodeURIComponent(n.headline)}')">
+                <img src="${n.image}">
+                <div class="carousel-text-container"><span class="bg-blue-600 px-2 py-1 text-xs rounded">${n.category}</span><h3 class="text-xl font-bold">${n.headline}</h3></div>
+            </div>
+        `).join('');
+        setInterval(() => {
+            const c = $('.carousel-slide.active');
+            const n = c.nextElementSibling || $('#carousel-content-wrapper').firstElementChild;
+            c.classList.remove('active'); n.classList.add('active');
+        }, 5000);
+    }
+
+    function renderFeed() {
+        const list = state.filteredNews.slice(0, state.limit);
+        $('#news-feed').innerHTML = list.map(n => `
+            <article class="news-card rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm p-0" onclick="window.openDetail('${encodeURIComponent(n.headline)}')">
+                <div class="h-48 overflow-hidden relative">
+                    <img src="${n.image}" class="w-full h-full object-cover">
+                    <span class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">${n.category}</span>
+                </div>
+                <div class="p-4 relative">
+                    <button class="card-action-btn absolute -top-5 right-4" onclick="event.stopPropagation(); window.openDetail('${encodeURIComponent(n.headline)}')"><i class="fas fa-arrow-right"></i></button>
+                    <h3 class="font-bold text-lg leading-tight mb-2 text-gray-900 dark:text-white">${n.headline}</h3>
+                    <div class="text-xs text-gray-400 flex justify-between mt-2"><span>${n.source}</span><span>${n.date}</span></div>
+                </div>
+            </article>
+        `).join('');
+        setTimeout(()=>$$('.news-card').forEach(c=>c.classList.add('loaded')),50);
+    }
+    $('#load-more-btn').onclick = () => { state.limit += 12; renderFeed(); };
+
+    // --- DETAIL VIEW & ACTIONS ---
+    window.openDetail = (encHl) => {
+        const n = state.allNews.find(x => x.headline === decodeURIComponent(encHl));
+        if(!n) return;
+        
+        $('#detail-headline').innerText = n.headline;
+        $('#detail-image').src = n.image;
+        $('#detail-category-badge').innerText = n.category;
+        $('#detail-source-date').innerText = `${n.source} • ${n.date}`;
+        $('#detail-article-content').innerHTML = n.description.split('\n').map(p=>`<p class="mb-4">${p}</p>`).join('');
+        
+        // Bind Buttons
+        $('#detail-bookmark-btn').onclick = () => toggleBookmark(n);
+        $('#detail-repost-btn').onclick = () => initiateRepost(n);
+        
+        // Update Bookmark Icon State
+        updateBookmarkIcon(n.headline);
+
+        $('#news-detail-page').classList.add('open');
+    };
+    $('#back-to-feed-btn').onclick = () => $('#news-detail-page').classList.remove('open');
+
+    // --- COMMUNITY REPOST LOGIC ---
+    
+    // 1. Check/Set Username
+    async function initiateRepost(newsItem) {
+        if(!state.user) { showToast("Please login to repost"); signInWithPopup(auth, provider); return; }
+        
+        // Check if username exists in local state or fetch
+        if(!state.username) {
+            const userDoc = await getDoc(getUserRef(state.user.uid));
+            if(userDoc.exists() && userDoc.data().username) {
+                state.username = userDoc.data().username;
+            } else {
+                // Open Modal
+                $('#username-modal').classList.add('open');
+                // Pass current item to handle after save
+                window.pendingRepostItem = newsItem; 
+                return;
+            }
+        }
+        postToCommunity(newsItem);
+    }
+
+    $('#save-username-btn').onclick = async () => {
+        const val = $('#new-username-input').value.trim().toLowerCase().replace(/\s/g,'_');
+        if(val.length < 3) { showToast("Username too short"); return; }
+        
+        try {
+            // Save to user profile
+            await setDoc(getUserRef(state.user.uid), { username: val }, { merge: true });
+            state.username = val;
+            $('#username-modal').classList.remove('open');
+            showToast("Username saved!");
+            if(window.pendingRepostItem) postToCommunity(window.pendingRepostItem);
+        } catch(e) { showToast("Error saving username"); }
+    };
+
+    // 2. Post Data
+    async function postToCommunity(item) {
+        try {
+            const docData = {
+                headline: item.headline,
+                image: item.image,
+                source: item.source,
+                repostedBy: { uid: state.user.uid, username: state.username, avatar: state.user.photoURL },
+                likes: [], // Array of UIDs
+                shareCount: 0,
+                timestamp: new Date().toISOString()
+            };
+            
+            await addDoc(getPublicRepostsCol(), docData);
+            showToast("Reposted to Community!");
+            switchView('community'); // Auto switch
+        } catch(e) { console.error(e); showToast("Repost failed: " + e.message); }
+    }
+
+    // 3. Load Feed (Realtime)
+    let unsubscribeFeed = null;
+    function loadCommunityFeed() {
+        if(unsubscribeFeed) return; // Already listening
+        
+        const q = query(getPublicRepostsCol(), orderBy('timestamp', 'desc'), limit(20));
+        unsubscribeFeed = onSnapshot(q, (snap) => {
+            const feedContainer = $('#community-feed');
+            if(snap.empty) { feedContainer.innerHTML = '<div class="text-center py-10 text-gray-400">No reposts yet. Be the first!</div>'; return; }
+            
+            feedContainer.innerHTML = snap.docs.map(doc => {
+                const d = doc.data();
+                const isLiked = state.user && d.likes && d.likes.includes(state.user.uid);
+                const likeCount = d.likes ? d.likes.length : 0;
+                
+                return `
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center gap-3 mb-3">
+                        <img src="${d.repostedBy.avatar||'https://placehold.co/40?text=U'}" class="w-8 h-8 rounded-full">
+                        <div>
+                            <p class="text-sm font-bold dark:text-white">@${d.repostedBy.username}</p>
+                            <p class="text-xs text-gray-400">reposted just now</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Nested News Card -->
+                    <div class="flex gap-3 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden cursor-pointer" onclick="window.openDetail('${encodeURIComponent(d.headline)}')">
+                        <img src="${d.image}" class="w-24 h-24 object-cover">
+                        <div class="p-2 flex-1">
+                            <h4 class="font-bold text-sm line-clamp-2 dark:text-white">${d.headline}</h4>
+                            <p class="text-xs text-gray-500 mt-1">${d.source}</p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-6 mt-4 text-gray-500 text-sm">
+                        <button onclick="window.toggleLike('${doc.id}')" class="${isLiked ? 'text-red-500' : 'hover:text-red-500'} transition flex items-center gap-1">
+                            <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> ${likeCount}
+                        </button>
+                        <button onclick="window.shareRepost('${doc.id}')" class="hover:text-green-500 transition flex items-center gap-1">
+                            <i class="fas fa-share"></i> ${d.shareCount||0}
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        });
+    }
+
+    // 4. Like Action
+    window.toggleLike = async (docId) => {
+        if(!state.user) { signInWithPopup(auth, provider); return; }
+        const ref = doc(getPublicRepostsCol(), docId);
+        const snap = await getDoc(ref);
+        if(!snap.exists()) return;
+        
+        const likes = snap.data().likes || [];
+        if(likes.includes(state.user.uid)) {
+            await updateDoc(ref, { likes: arrayRemove(state.user.uid) });
+        } else {
+            await updateDoc(ref, { likes: arrayUnion(state.user.uid) });
+        }
+    };
+
+    window.shareRepost = async (docId) => {
+        // Simple counter increment for demo
+        const ref = doc(getPublicRepostsCol(), docId);
+        const snap = await getDoc(ref);
+        await updateDoc(ref, { shareCount: (snap.data().shareCount||0) + 1 });
+        // Actual share logic
+        if(navigator.share) navigator.share({title: 'NewsTally', url: window.location.href});
+        else showToast("Link Copied");
+    };
+
+    // --- BOOKMARK LOGIC (Standard) ---
+    async function toggleBookmark(item) {
+        if(!state.user) return signInWithPopup(auth, provider);
+        const ref = getUserRef(state.user.uid);
+        const isB = state.bookmarks.some(b=>b.headline===item.headline);
+        
+        if(isB) {
+            const old = state.bookmarks.find(b=>b.headline===item.headline);
+            await updateDoc(ref, { bookmarks: arrayRemove(old) });
+            showToast("Removed");
+        } else {
+            await setDoc(ref, { bookmarks: arrayUnion({ headline: item.headline, image: item.image, category: item.category }) }, { merge: true });
+            showToast("Saved");
+        }
+    }
+
+    function updateBookmarkIcon(hl) {
+        const isB = state.bookmarks.some(b=>b.headline===hl);
+        const icon = $('#detail-bookmark-btn i');
+        icon.className = isB ? 'fas fa-heart text-lg text-red-500' : 'far fa-heart text-lg';
+    }
+
+    // --- AUTH LISTENER ---
+    onAuthStateChanged(auth, async (user) => {
+        state.user = user;
+        if(user) {
+            $('#sign-in-button').classList.add('hidden');
+            $('#user-profile-button').classList.remove('hidden');
+            $('#user-profile-photo').src = user.photoURL;
+            $('#profile-name').innerText = user.displayName;
+            $('#profile-photo-lg').src = user.photoURL;
+            
+            // Load User Data
+            onSnapshot(getUserRef(user.uid), (doc) => {
+                if(doc.exists()) {
+                    state.bookmarks = doc.data().bookmarks || [];
+                    state.username = doc.data().username || null;
+                    if(state.username) $('#profile-username-display').innerText = '@'+state.username;
+                    updateBookmarkIcon($('#detail-headline').innerText);
+                    
+                    // Render Profile Tabs
+                    $('#bookmarks-list').innerHTML = state.bookmarks.map(b=>`<div class="p-2 border-b flex gap-2 items-center"><img src="${b.image}" class="w-10 h-10 rounded object-cover"><span class="text-sm truncate flex-1">${b.headline}</span></div>`).join('');
+                }
+            });
+        } else {
+            $('#sign-in-button').classList.remove('hidden');
+            $('#user-profile-button').classList.add('hidden');
+            state.bookmarks = [];
+            state.username = null;
+        }
+    });
+
+    $('#sign-in-button').onclick = () => signInWithPopup(auth, provider);
+    $('#user-profile-button').onclick = () => $('#profile-page').classList.add('open');
+    $('#mobile-profile-trigger').onclick = () => state.user ? $('#profile-page').classList.add('open') : signInWithPopup(auth, provider);
+
+    // Profile Tabs
+    $$('.profile-tab').forEach(t => t.onclick = () => {
+        $$('.profile-tab').forEach(x => x.classList.remove('active'));
+        $$('.profile-content-section').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        $(`#${t.dataset.target}`).classList.add('active');
+    });
+
+    // NAV
+    $$('.nav-category').forEach(b => b.onclick = () => {
+        if(b.dataset.view === 'community') switchView('community');
+        else window.filterCategory(b.dataset.category);
+    });
+    $$('.nav-category-mobile').forEach(b => b.onclick = () => {
+        $('#nav-panel').classList.remove('open');
+        if(b.dataset.view === 'community') switchView('community');
+        else window.filterCategory(b.dataset.category);
+    });
+
+    $('#menu-toggle').onclick = () => $('#nav-panel').classList.add('open');
+    $('#close-panel').onclick = () => $('#nav-panel').classList.remove('open');
+
+    // INIT
+    loadNews();
+  </script>
+</body>
+</html>
+
+
