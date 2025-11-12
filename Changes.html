@@ -331,7 +331,7 @@
     <div id="toast-container"></div>
   </div>
 
-  <!-- --- MODULAR FIREBASE SCRIPTS (v11.0.2 Stable) --- -->
+  <!-- --- MODULAR FIREBASE SCRIPTS (v11.0.2) --- -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -342,6 +342,9 @@
     const SHEET_ID = '1Wy6rzaCALqPLFx079nqBCDRP7dk3au5eRO4GuMwQ8Sk';
     const CACHE_KEY_NEWS = 'newsData_v1';
     const CACHE_EXPIRY = 15 * 60 * 1000; // 15 minutes
+    
+    // --- Global App ID ---
+    const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'newstally-default';
 
     // --- State ---
     let allNews = [];
@@ -382,6 +385,12 @@
         toast.innerText = message;
         container.appendChild(toast);
         setTimeout(() => { toast.remove(); }, 3500);
+    }
+    
+    // --- HELPER: Get Correct Firestore Path ---
+    function getUserRef(uid) {
+        // Fix for permission denied: use artifacts path
+        return doc(db, "artifacts", APP_ID, "users", uid, "data", "profile");
     }
 
     // --- Fetching Logic ---
@@ -583,7 +592,7 @@
     function setupRealtimeSync(user) {
         if (unsubscribeSnapshot) unsubscribeSnapshot();
         
-        const userRef = doc(db, 'users', user.uid);
+        const userRef = getUserRef(user.uid);
         unsubscribeSnapshot = onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -597,6 +606,9 @@
                  // Create if doesn't exist (Fix for saving error)
                 setDoc(userRef, { bookmarks: [], history: [] }, { merge: true });
             }
+        }, (error) => {
+            console.error("Sync Error:", error);
+            // Don't toast on sync error usually, unless critical
         });
     }
 
@@ -625,7 +637,7 @@
     // History Logic
     async function addToHistory(item) {
         if (!currentUser) return;
-        const userRef = doc(db, 'users', currentUser.uid);
+        const userRef = getUserRef(currentUser.uid);
         
         const newItem = createItemObj(item);
         userHistory = userHistory.filter(h => h.headline !== item.headline);
@@ -648,7 +660,7 @@
         const item = allNews.find(n => n.headline === headline);
         if (!item) return;
 
-        const userRef = doc(db, 'users', currentUser.uid);
+        const userRef = getUserRef(currentUser.uid);
         const isBookmarked = userBookmarks.some(b => b.headline === headline);
         const itemObj = userBookmarks.find(b => b.headline === headline) || createItemObj(item);
 
@@ -672,7 +684,7 @@
             }
         } catch (e) {
             console.error("Bookmark Error", e);
-            showToast("Error: " + e.message); // SHOW ACTUAL ERROR
+            showToast("Error: " + e.message); 
         }
     };
 
@@ -879,5 +891,7 @@
   </script>
 </body>
 </html>
+
+
 
 
