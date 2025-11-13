@@ -31,10 +31,6 @@
     body { background-color: var(--bg-primary); color: var(--text-primary); transition: 0.3s; }
     .gradient-bg { background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); }
 
-    /* Sticky Header & Blur */
-    .sticky-header { backdrop-filter: blur(12px); background-color: rgba(255,255,255,0.8); }
-    html.dark .sticky-header { background-color: rgba(31,41,55,0.8); }
-    
     /* News Card */
     .news-card { 
       background-color: var(--bg-secondary); border: 1px solid var(--border-color); 
@@ -66,7 +62,7 @@
     #news-detail-page, #profile-page, #username-modal, #public-profile-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-primary); z-index: 80; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); overflow-y: auto; }
     #news-detail-page.open, #profile-page.open, #public-profile-modal.open { transform: translateX(0); }
     
-    /* Modal Overlays (Center Popups) */
+    /* Modal Overlays */
     #username-modal { z-index: 150; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; transform: scale(0); opacity: 0; transition: all 0.3s; }
     #username-modal.open { transform: scale(1); opacity: 1; }
 
@@ -75,7 +71,7 @@
     #nav-panel.open { transform: translateX(0); }
 
     /* Tabs */
-    .profile-tab { cursor: pointer; padding: 12px 20px; border-bottom: 2px solid transparent; color: var(--text-secondary); transition: all 0.2s; }
+    .profile-tab { cursor: pointer; padding: 12px 10px; border-bottom: 2px solid transparent; color: var(--text-secondary); transition: all 0.2s; flex: 1; text-align: center; font-size: 0.9rem; }
     .profile-tab:hover { color: var(--blue-accent); }
     .profile-tab.active { border-color: var(--blue-accent); color: var(--blue-accent); font-weight: bold; }
     .profile-content-section { display: none; }
@@ -85,7 +81,7 @@
     .comment-bubble { border-radius: 1rem; padding: 12px 16px; position: relative; }
     .comment-bubble::before { content: ''; position: absolute; top: 10px; left: -6px; width: 12px; height: 12px; transform: rotate(45deg); }
     
-    /* Follow Button Animation */
+    /* Follow Button */
     .btn-follow { transition: all 0.2s; }
     .btn-follow:active { transform: scale(0.95); }
 
@@ -141,7 +137,6 @@
           <li><button class="hover:text-blue-600 nav-category transition-colors duration-300" data-view="home" data-category="Politics">Politics</button></li>
           <li><button class="hover:text-blue-600 nav-category transition-colors duration-300" data-view="home" data-category="Technology">Technology</button></li>
           <li><button class="hover:text-blue-600 nav-category transition-colors duration-300" data-view="home" data-category="Business">Business</button></li>
-          <!-- Community Tab -->
           <li><button class="text-purple-600 dark:text-purple-400 font-bold nav-category hover:text-purple-700 transition-colors duration-300 flex items-center gap-2" data-view="community"><i class="fas fa-users"></i> Community</button></li>
         </ul>
       </div>
@@ -203,12 +198,27 @@
 
       <!-- COMMUNITY VIEW -->
       <div id="view-community" class="hidden container mx-auto px-4 py-6 max-w-2xl">
-          <div class="flex items-center justify-between mb-8 bg-purple-100 dark:bg-purple-900/30 p-6 rounded-2xl">
-              <div>
-                  <h2 class="text-2xl font-black text-purple-700 dark:text-purple-400"><i class="fas fa-hashtag mr-2"></i>Community</h2>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Discover what people are talking about.</p>
+          <div class="flex flex-col mb-8 bg-purple-100 dark:bg-purple-900/30 p-6 rounded-2xl">
+              <div class="flex items-center justify-between mb-4">
+                  <div>
+                      <h2 class="text-2xl font-black text-purple-700 dark:text-purple-400"><i class="fas fa-hashtag mr-2"></i>Community</h2>
+                      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Connect and Discuss.</p>
+                  </div>
+                  <div class="bg-white dark:bg-gray-800 p-3 rounded-full shadow-sm text-purple-600"><i class="fas fa-users text-2xl"></i></div>
               </div>
-              <div class="bg-white dark:bg-gray-800 p-3 rounded-full shadow-sm text-purple-600"><i class="fas fa-users text-2xl"></i></div>
+              
+              <!-- Search Bar (NEW) -->
+              <div class="relative w-full">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <i class="fas fa-search text-gray-400"></i>
+                  </div>
+                  <input type="text" id="user-search-input" class="w-full pl-10 p-3 rounded-xl border-0 shadow-sm focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800 dark:text-white placeholder-gray-400" placeholder="Find users by @username...">
+                  
+                  <!-- Search Results Dropdown -->
+                  <div id="search-results" class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 hidden overflow-hidden border dark:border-gray-700 max-h-60 overflow-y-auto">
+                      <!-- Results injected here -->
+                  </div>
+              </div>
           </div>
           
           <!-- Reposts Feed -->
@@ -222,12 +232,11 @@
 
     </div>
 
-    <!-- News Detail Page (With Comments) -->
+    <!-- News Detail Page -->
     <div id="news-detail-page" class="bg-white dark:bg-gray-900">
       <div id="reading-progress-bar" class="sticky top-0 left-0 w-full h-1.5 bg-gray-200 dark:bg-gray-800 z-50"><div id="reading-progress-bar-inner" class="h-full bg-gradient-to-r from-blue-600 to-purple-500 w-0 transition-all duration-100"></div></div>
       
       <div class="container mx-auto pb-20 max-w-4xl">
-        <!-- Navbar for Detail -->
         <div class="sticky top-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-40 flex justify-between items-center border-b dark:border-gray-800">
             <button id="back-to-feed-btn" class="px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold flex items-center gap-2 transition">
                 <i class="fas fa-arrow-left"></i> Back
@@ -264,12 +273,10 @@
 
             <div id="detail-article-content" class="prose dark:prose-invert prose-lg max-w-none text-gray-700 dark:text-gray-300 leading-relaxed mb-16"></div>
 
-            <!-- COMMENTS SECTION (Visible only on Reposts) -->
+            <!-- COMMENTS SECTION -->
             <div id="comments-section-wrapper">
                 <div class="border-t dark:border-gray-800 pt-10" id="comments-anchor">
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2"><i class="far fa-comments"></i> Discussion</h3>
-                    
-                    <!-- Add Comment -->
                     <div class="flex gap-4 mb-8">
                         <img id="comment-user-avatar" src="https://placehold.co/50?text=?" class="w-10 h-10 rounded-full border dark:border-gray-700">
                         <div class="flex-1 relative">
@@ -277,21 +284,16 @@
                             <button id="post-comment-btn" class="absolute bottom-3 right-3 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-paper-plane text-xs"></i></button>
                         </div>
                     </div>
-
-                    <!-- Comments List -->
-                    <div id="comments-list" class="space-y-6">
-                        <!-- Comments injected here -->
-                    </div>
+                    <div id="comments-list" class="space-y-6"></div>
                 </div>
             </div>
             
-            <!-- No Comments Fallback (Visible on Main Feed) -->
+            <!-- No Comments Fallback -->
             <div id="no-comments-fallback" class="hidden border-t dark:border-gray-800 pt-10 text-center">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Start a Conversation</h3>
                 <p class="text-gray-500 mb-6">Comments are disabled on the main feed. Repost this story to the community to start a discussion!</p>
                 <button id="fallback-repost-btn" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition shadow-lg"><i class="fas fa-retweet mr-2"></i> Repost to Discuss</button>
             </div>
-
         </article>
       </div>
     </div>
@@ -303,14 +305,7 @@
              <button onclick="$('#public-profile-modal').classList.remove('open')" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center dark:text-white hover:bg-gray-200 transition"><i class="fas fa-times"></i></button>
         </div>
         <div class="container mx-auto max-w-lg p-6">
-            <div id="public-profile-content" class="text-center animate-[slideUpFade_0.3s_ease-out]">
-                <!-- Populated via JS -->
-                <div class="animate-pulse">
-                    <div class="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4"></div>
-                    <div class="h-6 w-48 bg-gray-200 dark:bg-gray-700 mx-auto rounded mb-2"></div>
-                    <div class="h-4 w-32 bg-gray-200 dark:bg-gray-700 mx-auto rounded"></div>
-                </div>
-            </div>
+            <div id="public-profile-content" class="text-center animate-[slideUpFade_0.3s_ease-out]"></div>
         </div>
     </div>
 
@@ -319,7 +314,7 @@
         <div class="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-2xl w-11/12 max-w-md text-center relative transform transition-all">
             <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-tag"></i></div>
             <h3 class="text-2xl font-black mb-2 dark:text-white">Choose a Handle</h3>
-            <p class="text-gray-500 mb-6">Create a unique username to join the discussion and build your following.</p>
+            <p class="text-gray-500 mb-6">Create a unique username to join the discussion.</p>
             <div class="relative">
                 <span class="absolute left-4 top-3.5 text-gray-400 font-bold">@</span>
                 <input type="text" id="new-username-input" placeholder="username" class="w-full pl-10 p-3 border rounded-xl mb-4 bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 ring-blue-500 outline-none font-bold text-lg">
@@ -334,7 +329,8 @@
       <div class="container mx-auto p-4 max-w-2xl">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-black dark:text-white">My Profile</h2>
-            <button onclick="$('#profile-page').classList.remove('open')" class="p-2 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"><i class="fas fa-times text-xl"></i></button>
+            <!-- FIXED: Close button reliably goes back -->
+            <button onclick="closeProfileModal()" class="p-2 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"><i class="fas fa-times text-xl"></i></button>
         </div>
         
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border dark:border-gray-700 mb-6 flex items-center gap-6">
@@ -347,14 +343,32 @@
                 </div>
             </div>
         </div>
-        <button onclick="auth.signOut(); $('#profile-page').classList.remove('open');" class="w-full mb-8 border border-red-200 text-red-500 py-2 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition">Sign Out</button>
+        <button onclick="auth.signOut(); closeProfileModal();" class="w-full mb-8 border border-red-200 text-red-500 py-2 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition">Sign Out</button>
 
-        <div class="flex border-b dark:border-gray-700 mb-4">
-            <div class="profile-tab active w-1/2 text-center" data-target="tab-bookmarks"><i class="fas fa-bookmark mr-2"></i>Bookmarks</div>
-            <div class="profile-tab w-1/2 text-center" data-target="tab-history"><i class="fas fa-history mr-2"></i>History</div>
+        <div class="flex border-b dark:border-gray-700 mb-4 overflow-x-auto">
+            <div class="profile-tab active" data-target="tab-bookmarks"><i class="fas fa-bookmark mr-1"></i>Bookmarks</div>
+            <div class="profile-tab" data-target="tab-history"><i class="fas fa-history mr-1"></i>History</div>
+            <div class="profile-tab" data-target="tab-reposts"><i class="fas fa-retweet mr-1"></i>Reposts</div>
         </div>
-        <div id="tab-bookmarks" class="profile-content-section active"><div id="bookmarks-list" class="dark:text-gray-300 space-y-3"></div></div>
-        <div id="tab-history" class="profile-content-section"><div id="history-list" class="p-10 text-center text-gray-400 italic">Reading history coming soon.</div></div>
+        
+        <!-- Bookmarks -->
+        <div id="tab-bookmarks" class="profile-content-section active">
+            <div id="bookmarks-list" class="dark:text-gray-300 space-y-3"></div>
+        </div>
+        
+        <!-- History (NEW) -->
+        <div id="tab-history" class="profile-content-section">
+            <div id="history-list" class="space-y-3 dark:text-gray-300">
+                <div class="text-center text-gray-400 italic p-4">No reading history yet.</div>
+            </div>
+        </div>
+
+        <!-- My Reposts (NEW) -->
+        <div id="tab-reposts" class="profile-content-section">
+            <div id="my-reposts-list" class="space-y-4">
+                 <div class="text-center text-gray-400 italic p-4">You haven't reposted anything yet.</div>
+            </div>
+        </div>
       </div>
     </div>
     
@@ -373,7 +387,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, arrayUnion, arrayRemove, collection, addDoc, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, updateDoc, getDoc, deleteDoc, onSnapshot, arrayUnion, arrayRemove, collection, addDoc, query, orderBy, limit, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
     // CONFIGURATION
     const GOOGLE_SHEETS_API_KEY = 'AIzaSyC8D-4bl3GDyj_--BGG1pPdO5Bz63r5iXI';
@@ -399,12 +413,13 @@
         allNews: [],
         filteredNews: [],
         bookmarks: [],
-        following: new Set(), // Set of UIDs I follow
+        history: [], // NEW: Reading history
+        following: new Set(),
         user: null,
         username: null,
         category: 'All',
         limit: 12,
-        currentOpenTargetId: null // Can be Article Hash OR Repost ID
+        currentOpenTargetId: null
     };
 
     // Helper Functions
@@ -416,7 +431,6 @@
         $('#toast-container').appendChild(d); setTimeout(()=>d.remove(),3500);
     };
     
-    // Use Base64 of headline as ID for consistency across sheets
     const getArticleId = (headline) => btoa(encodeURIComponent(headline)).replace(/=/g, '');
 
     // --- PATH HELPERS ---
@@ -425,7 +439,7 @@
     const getCommentsCol = () => collection(db, 'artifacts', APP_ID, 'public', 'data', 'comments');
     const getFollowingRef = (myUid, targetUid) => doc(db, 'users', myUid, 'following', targetUid);
 
-    // --- ENHANCED DATA LOADING ---
+    // --- LOAD NEWS ---
     async function loadNews() {
         $('#loading-bar').classList.remove('hidden');
         const timestamp = new Date().getTime();
@@ -500,11 +514,7 @@
     function renderCarousel() {
         const top = state.allNews.filter(n => n.category === 'Top Story').slice(0, 5);
         const container = $('#carousel-content-wrapper');
-        
-        if(!top.length) {
-            container.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500">No Top Stories</div>`;
-            return;
-        }
+        if(!top.length) { container.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500">No Top Stories</div>`; return; }
         
         container.innerHTML = top.map((n,i) => `
             <div class="carousel-slide ${i===0?'active':''} cursor-pointer" onclick="window.openDetail('${encodeURIComponent(n.headline)}', null)">
@@ -519,21 +529,14 @@
         if(window.carouselInterval) clearInterval(window.carouselInterval);
         window.carouselInterval = setInterval(() => {
             const c = $('.carousel-slide.active');
-            if(c) {
-                const n = c.nextElementSibling || container.firstElementChild;
-                c.classList.remove('active'); n.classList.add('active');
-            }
+            if(c) { (c.nextElementSibling || container.firstElementChild).classList.add('active'); c.classList.remove('active'); }
         }, 6000);
     }
 
     function renderFeed() {
         const list = state.filteredNews.slice(0, state.limit);
         const feed = $('#news-feed');
-        
-        if(list.length === 0) {
-            feed.innerHTML = `<div class="col-span-full text-center py-20 text-gray-500 italic">No stories found.</div>`;
-            return;
-        }
+        if(list.length === 0) { feed.innerHTML = `<div class="col-span-full text-center py-20 text-gray-500 italic">No stories found.</div>`; return; }
 
         feed.innerHTML = list.map(n => `
             <article class="news-card rounded-2xl overflow-hidden bg-white dark:bg-gray-800 group cursor-pointer" onclick="window.openDetail('${encodeURIComponent(n.headline)}', null)">
@@ -554,19 +557,17 @@
                 </div>
             </article>
         `).join('');
-        
         setTimeout(() => $$('.news-card').forEach(c => c.classList.add('loaded')), 50);
         $('#load-more').style.display = state.limit >= state.filteredNews.length ? 'none' : 'block';
     }
     $('#load-more-btn').onclick = () => { state.limit += 12; renderFeed(); };
 
-    // --- DETAIL VIEW ---
-    // Modified: Accepts repostId. If null, it's a main story (no comments). If set, it's a community repost (comments allowed).
-    window.openDetail = (encHl, repostId = null) => {
+    // --- DETAIL VIEW & HISTORY ---
+    window.openDetail = async (encHl, repostId = null) => {
         const n = state.allNews.find(x => x.headline === decodeURIComponent(encHl));
         if(!n) return;
         
-        // UI Population
+        // Populate UI
         $('#detail-headline').innerText = n.headline;
         $('#detail-image').src = n.image;
         $('#detail-category-badge').innerText = n.category;
@@ -574,11 +575,10 @@
         $('#detail-date').innerText = n.date;
         $('#detail-article-content').innerHTML = n.description.split('\n').filter(p=>p.trim()).map(p=>`<p class="mb-5">${p}</p>`).join('');
         
-        // Handle Auth Buttons for Comments
+        // User Avatar in comments
         if(state.user) $('#comment-user-avatar').src = state.user.photoURL || 'https://placehold.co/50?text=U';
-        else $('#comment-user-avatar').src = 'https://placehold.co/50?text=?';
 
-        // Actions
+        // Buttons
         $('#detail-bookmark-btn').onclick = () => toggleBookmark(n);
         $('#detail-repost-btn').onclick = () => initiateRepost(n);
         $('#fallback-repost-btn').onclick = () => initiateRepost(n);
@@ -586,40 +586,41 @@
         $('#share-copy').onclick = () => { navigator.clipboard.writeText(window.location.href); showToast("Link copied!"); };
         
         updateBookmarkIcon(n.headline);
+        
+        // --- HISTORY LOGIC (NEW) ---
+        // If logged in, add to history
+        if(state.user) {
+            const historyItem = { headline: n.headline, image: n.image, category: n.category, timestamp: new Date().toISOString() };
+            // Avoid duplicates in local UI immediately (optimization)
+            if(!state.history.some(h => h.headline === n.headline)) {
+                try {
+                    await updateDoc(getUserRef(state.user.uid), { history: arrayUnion(historyItem) });
+                } catch(e) { console.log("History update silent fail", e); }
+            }
+        }
 
-        // --- COMMENT LOGIC MODIFICATION ---
-        const commentSection = $('#comments-section-wrapper');
-        const noCommentsFallback = $('#no-comments-fallback');
-        const repostContext = $('#detail-repost-context');
-
+        // --- COMMENTS LOGIC ---
         if (repostId) {
-            // Viewed via Community Feed -> Enable Comments
-            state.currentOpenTargetId = repostId; // Use REPOST ID for comments
-            commentSection.classList.remove('hidden');
-            noCommentsFallback.classList.add('hidden');
-            repostContext.classList.remove('hidden');
+            state.currentOpenTargetId = repostId;
+            $('#comments-section-wrapper').classList.remove('hidden');
+            $('#no-comments-fallback').classList.add('hidden');
+            $('#detail-repost-context').classList.remove('hidden');
             
-            // Post Comment Button Action
             $('#post-comment-btn').onclick = () => postComment(repostId);
             $('#comment-input').onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postComment(repostId); } };
-            
-            loadComments(repostId); // Load comments for this specific repost
+            loadComments(repostId);
         } else {
-            // Viewed via Home Feed -> Disable Comments
             state.currentOpenTargetId = null;
-            commentSection.classList.add('hidden');
-            noCommentsFallback.classList.remove('hidden');
-            repostContext.classList.add('hidden');
-            $('#comments-list').innerHTML = ''; // Clear old comments
+            $('#comments-section-wrapper').classList.add('hidden');
+            $('#no-comments-fallback').classList.remove('hidden');
+            $('#detail-repost-context').classList.add('hidden');
+            $('#comments-list').innerHTML = '';
         }
 
         $('#news-detail-page').classList.add('open');
     };
 
-    $('#back-to-feed-btn').onclick = () => {
-        $('#news-detail-page').classList.remove('open');
-        window.speechSynthesis.cancel();
-    };
+    $('#back-to-feed-btn').onclick = () => { $('#news-detail-page').classList.remove('open'); window.speechSynthesis.cancel(); };
 
     function speakText(text) {
         window.speechSynthesis.cancel();
@@ -627,41 +628,77 @@
         window.speechSynthesis.speak(utterance);
     }
 
-    // --- COMMENTS SYSTEM ---
+    // --- SEARCH USERS (NEW) ---
+    const searchInput = $('#user-search-input');
+    const searchResults = $('#search-results');
+    
+    searchInput.addEventListener('input', async (e) => {
+        const term = e.target.value.trim().toLowerCase();
+        if(term.length < 2) { searchResults.classList.add('hidden'); return; }
+
+        // Search Firestore for username (Prefix search)
+        // Note: 'username' field in DB should ideally be lowercase for this to work perfectly.
+        const q = query(collection(db, 'users'), 
+            where('username', '>=', term), 
+            where('username', '<=', term + '\uf8ff'),
+            limit(5)
+        );
+
+        try {
+            const snap = await getDocs(q);
+            if(snap.empty) {
+                searchResults.innerHTML = `<div class="p-3 text-gray-500 text-sm text-center">No users found.</div>`;
+            } else {
+                searchResults.innerHTML = snap.docs.map(d => {
+                    const u = d.data();
+                    return `
+                        <div class="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 last:border-0 transition" onclick="window.openPublicProfile('${d.id}'); $('#search-results').classList.add('hidden');">
+                            <img src="${u.photoURL || 'https://placehold.co/40'}" class="w-8 h-8 rounded-full mr-3">
+                            <div>
+                                <p class="text-sm font-bold dark:text-white">${u.displayName}</p>
+                                <p class="text-xs text-blue-500">@${u.username}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            searchResults.classList.remove('hidden');
+        } catch(e) { console.error("Search error", e); }
+    });
+
+    // Hide search on click outside
+    document.addEventListener('click', (e) => {
+        if(!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.add('hidden');
+        }
+    });
+
+    // --- COMMENTS ---
     let commentsUnsub = null;
     function loadComments(targetId) {
         if(commentsUnsub) commentsUnsub();
         $('#comments-list').innerHTML = '<div class="text-center text-gray-400 py-4"><i class="fas fa-spinner fa-spin"></i> Loading thoughts...</div>';
-        
-        // Query comments where targetId matches the Repost ID
         const q = query(getCommentsCol(), where('targetId', '==', targetId), orderBy('timestamp', 'desc'), limit(50));
         
         commentsUnsub = onSnapshot(q, (snap) => {
             const list = $('#comments-list');
-            if(snap.empty) {
-                list.innerHTML = '<div class="text-center text-gray-400 py-6 bg-gray-50 dark:bg-gray-800 rounded-xl">No comments yet on this repost. Be the first!</div>';
-                return;
-            }
+            if(snap.empty) { list.innerHTML = '<div class="text-center text-gray-400 py-6 bg-gray-50 dark:bg-gray-800 rounded-xl">No comments yet.</div>'; return; }
             
             list.innerHTML = snap.docs.map(doc => {
                 const c = doc.data();
                 const isMe = state.user && c.userId === state.user.uid;
-                const time = new Date(c.timestamp).toLocaleDateString() + ' ' + new Date(c.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
+                const time = new Date(c.timestamp).toLocaleDateString();
                 return `
                 <div class="flex gap-3 animate-[slideUpFade_0.3s_ease-out]">
-                    <img src="${c.userAvatar}" class="w-10 h-10 rounded-full border cursor-pointer hover:opacity-80 transition" onclick="window.openPublicProfile('${c.userId}')">
+                    <img src="${c.userAvatar}" class="w-10 h-10 rounded-full border cursor-pointer" onclick="window.openPublicProfile('${c.userId}')">
                     <div class="flex-1">
                         <div class="flex items-baseline justify-between mb-1">
                             <span class="font-bold text-sm dark:text-white cursor-pointer hover:underline" onclick="window.openPublicProfile('${c.userId}')">@${c.username}</span>
                             <span class="text-xs text-gray-400">${time}</span>
                         </div>
-                        <div class="comment-bubble bg-gray-100 dark:bg-gray-800 dark:text-gray-200 text-sm leading-relaxed ${isMe ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800' : ''}">
-                           ${c.text}
-                        </div>
+                        <div class="comment-bubble bg-gray-100 dark:bg-gray-800 dark:text-gray-200 text-sm leading-relaxed ${isMe ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800' : ''}">${c.text}</div>
                     </div>
-                </div>
-                `;
+                </div>`;
             }).join('');
         });
     }
@@ -669,33 +706,23 @@
     async function postComment(targetId) {
         const input = $('#comment-input');
         const text = input.value.trim();
-        
-        if(!state.user) { showToast("Please sign in to comment", "fas fa-user-lock"); signInWithPopup(auth, provider); return; }
-        if(!state.username) { $('#username-modal').classList.add('open'); return; } // Must have username
+        if(!state.user) { showToast("Please sign in", "fas fa-user-lock"); signInWithPopup(auth, provider); return; }
+        if(!state.username) { $('#username-modal').classList.add('open'); return; }
         if(!text) return;
 
         try {
-            input.value = ''; // Optimistic clear
+            input.value = '';
             await addDoc(getCommentsCol(), {
-                targetId: targetId, // Links comment to SPECIFIC REPOST
-                text: text,
-                userId: state.user.uid,
-                username: state.username,
-                userAvatar: state.user.photoURL,
-                timestamp: new Date().toISOString()
+                targetId: targetId, text: text, userId: state.user.uid,
+                username: state.username, userAvatar: state.user.photoURL, timestamp: new Date().toISOString()
             });
-        } catch(e) {
-            console.error(e);
-            showToast("Failed to post comment", "fas fa-times-circle");
-        }
+        } catch(e) { console.error(e); showToast("Failed to post", "fas fa-times-circle"); }
     }
 
-    // --- PUBLIC PROFILE & FOLLOWING (NEW) ---
+    // --- PROFILES ---
     window.openPublicProfile = async (uid) => {
         $('#public-profile-modal').classList.add('open');
         const content = $('#public-profile-content');
-        
-        // Render Skeleton
         content.innerHTML = `<div class="animate-pulse flex flex-col items-center"><div class="w-24 h-24 bg-gray-200 rounded-full mb-4"></div><div class="h-6 w-32 bg-gray-200 rounded"></div></div>`;
 
         try {
@@ -710,135 +737,75 @@
                 <img src="${u.photoURL || 'https://placehold.co/100'}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md">
                 <h2 class="text-2xl font-black dark:text-white">${u.displayName || 'User'}</h2>
                 <p class="text-blue-500 font-bold mb-6">@${u.username || 'anonymous'}</p>
-                
                 ${!isMe ? `
                 <button id="follow-btn-modal" onclick="window.toggleFollow('${uid}')" class="btn-follow px-8 py-2 rounded-full font-bold shadow-lg transition ${isFollowing ? 'bg-white border border-gray-300 text-gray-700' : 'bg-black text-white'}">
                     ${isFollowing ? 'Following' : 'Follow'}
-                </button>
-                ` : `<span class="bg-gray-100 px-4 py-1 rounded-full text-xs font-bold text-gray-500">That's You!</span>`}
-                
-                <div class="grid grid-cols-2 gap-4 mt-8 border-t dark:border-gray-800 pt-6">
-                    <div class="text-center">
-                        <span class="block text-xl font-black dark:text-white">--</span>
-                        <span class="text-xs text-gray-500 uppercase">Followers</span>
-                    </div>
-                    <div class="text-center">
-                        <span class="block text-xl font-black dark:text-white">--</span>
-                        <span class="text-xs text-gray-500 uppercase">Reposts</span>
-                    </div>
-                </div>
-                
+                </button>` : `<span class="bg-gray-100 px-4 py-1 rounded-full text-xs font-bold text-gray-500">That's You!</span>`}
                 <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-sm text-blue-800 dark:text-blue-200">
-                    <i class="fas fa-info-circle mr-1"></i> User stats are hidden in this demo version.
+                    <i class="fas fa-info-circle mr-1"></i> Stats hidden in demo.
                 </div>
             `;
-
-        } catch(e) { console.error(e); content.innerHTML = "Error loading profile"; }
+        } catch(e) { content.innerHTML = "Error loading profile"; }
     };
 
     window.toggleFollow = async (targetUid) => {
         if(!state.user) { signInWithPopup(auth, provider); return; }
-        
         const btn = $('#follow-btn-modal');
         const isFollowing = state.following.has(targetUid);
         
-        // Optimistic UI Update
         if(btn) {
-            if(isFollowing) {
-                btn.innerText = "Follow"; btn.className = "btn-follow px-8 py-2 rounded-full font-bold shadow-lg transition bg-black text-white";
-            } else {
-                btn.innerText = "Following"; btn.className = "btn-follow px-8 py-2 rounded-full font-bold shadow-lg transition bg-white border border-gray-300 text-gray-700";
-            }
+            if(isFollowing) { btn.innerText = "Follow"; btn.className = "btn-follow px-8 py-2 rounded-full font-bold shadow-lg transition bg-black text-white"; } 
+            else { btn.innerText = "Following"; btn.className = "btn-follow px-8 py-2 rounded-full font-bold shadow-lg transition bg-white border border-gray-300 text-gray-700"; }
         }
 
         try {
             const ref = getFollowingRef(state.user.uid, targetUid);
-            if(isFollowing) {
-                await deleteDoc(ref);
-                state.following.delete(targetUid);
-                showToast("Unfollowed");
-            } else {
-                await setDoc(ref, { timestamp: new Date().toISOString() });
-                state.following.add(targetUid);
-                showToast("Following!");
-            }
-            updateProfileStats(); // Update my own "Following" count display
-        } catch(e) { 
-            console.error(e); 
-            showToast("Action failed", "fas fa-times"); 
-        }
+            if(isFollowing) { await deleteDoc(ref); state.following.delete(targetUid); showToast("Unfollowed"); } 
+            else { await setDoc(ref, { timestamp: new Date().toISOString() }); state.following.add(targetUid); showToast("Following!"); }
+            updateProfileStats();
+        } catch(e) { showToast("Action failed", "fas fa-times"); }
     };
 
-    // --- COMMUNITY & REPOST ---
+    // --- REPOST & COMMUNITY FEED ---
     async function initiateRepost(newsItem) {
-        if(!state.user) { showToast("Please login to repost", "fas fa-lock"); signInWithPopup(auth, provider); return; }
-        
-        if(!state.username) {
-            $('#username-modal').classList.add('open');
-            window.pendingRepostItem = newsItem; 
-            return;
-        }
+        if(!state.user) { showToast("Login to repost", "fas fa-lock"); signInWithPopup(auth, provider); return; }
+        if(!state.username) { $('#username-modal').classList.add('open'); window.pendingRepostItem = newsItem; return; }
         postToCommunity(newsItem);
     }
 
     async function postToCommunity(item) {
         try {
             await addDoc(getPublicRepostsCol(), {
-                headline: item.headline,
-                image: item.image,
-                source: item.source,
+                headline: item.headline, image: item.image, source: item.source,
                 repostedBy: { uid: state.user.uid, username: state.username, avatar: state.user.photoURL },
-                likes: [], 
-                shareCount: 0,
-                timestamp: new Date().toISOString()
+                likes: [], shareCount: 0, timestamp: new Date().toISOString()
             });
-            showToast("Shared to Community!", "fas fa-rocket");
+            showToast("Posted to Community!", "fas fa-rocket");
             switchView('community'); 
         } catch(e) { showToast("Repost failed", "fas fa-times"); }
     }
-
-    $('#save-username-btn').onclick = async () => {
-        const val = $('#new-username-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-        if(val.length < 3) { showToast("Username too short"); return; }
-        
-        try {
-            await setDoc(getUserRef(state.user.uid), { username: val, displayName: state.user.displayName, photoURL: state.user.photoURL }, { merge: true });
-            state.username = val;
-            $('#username-modal').classList.remove('open');
-            showToast("Identity Created!", "fas fa-check");
-            if(window.pendingRepostItem) postToCommunity(window.pendingRepostItem);
-        } catch(e) { showToast("Error saving username"); }
-    };
 
     // Community Feed
     let communityUnsub = null;
     function loadCommunityFeed() {
         if(communityUnsub) return; 
-        
         const q = query(getPublicRepostsCol(), orderBy('timestamp', 'desc'), limit(20));
         communityUnsub = onSnapshot(q, (snap) => {
             const feedContainer = $('#community-feed');
-            if(snap.empty) { feedContainer.innerHTML = '<div class="text-center py-10 text-gray-400">No reposts yet. Be the first!</div>'; return; }
+            if(snap.empty) { feedContainer.innerHTML = '<div class="text-center py-10 text-gray-400">No reposts yet.</div>'; return; }
             
             feedContainer.innerHTML = snap.docs.map(doc => {
                 const d = doc.data();
                 const isLiked = state.user && d.likes && d.likes.includes(state.user.uid);
                 const likeCount = d.likes ? d.likes.length : 0;
-                const timeAgo = new Date(d.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
                 return `
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-5 border border-gray-100 dark:border-gray-700 animate-[slideUpFade_0.4s_ease-out]">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3 cursor-pointer group" onclick="window.openPublicProfile('${d.repostedBy.uid}')">
                             <img src="${d.repostedBy.avatar||'https://placehold.co/40?text=U'}" class="w-10 h-10 rounded-full border-2 border-transparent group-hover:border-purple-400 transition">
-                            <div>
-                                <p class="text-sm font-bold dark:text-white group-hover:text-purple-500 transition">@${d.repostedBy.username}</p>
-                                <p class="text-xs text-gray-400">Shared ${timeAgo}</p>
-                            </div>
+                            <div><p class="text-sm font-bold dark:text-white group-hover:text-purple-500 transition">@${d.repostedBy.username}</p></div>
                         </div>
-                        <button class="text-gray-300 hover:text-gray-500"><i class="fas fa-ellipsis-h"></i></button>
                     </div>
-                    
                     <div class="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden cursor-pointer border dark:border-gray-700 hover:ring-2 ring-purple-100 dark:ring-purple-900 transition" onclick="window.openDetail('${encodeURIComponent(d.headline)}', '${doc.id}')">
                         <div class="flex h-28">
                              <img src="${d.image}" class="w-28 h-full object-cover" onerror="this.src='https://placehold.co/100?text=News'">
@@ -848,7 +815,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="flex justify-between items-center mt-5 px-2">
                         <div class="flex gap-6">
                             <button onclick="window.toggleLike('${doc.id}')" class="flex items-center gap-2 text-sm font-medium transition ${isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}">
@@ -858,10 +824,9 @@
                                 <i class="far fa-comment text-lg"></i> Discuss
                             </button>
                         </div>
-                        <button onclick="window.shareRepost('${doc.id}')" class="text-gray-400 hover:text-green-500 transition"><i class="fas fa-share text-lg"></i></button>
+                        <button onclick="showToast('Link Copied')" class="text-gray-400 hover:text-green-500 transition"><i class="fas fa-share text-lg"></i></button>
                     </div>
-                </div>
-                `;
+                </div>`;
             }).join('');
         });
     }
@@ -871,19 +836,18 @@
         const ref = doc(getPublicRepostsCol(), docId);
         const snap = await getDoc(ref);
         if(!snap.exists()) return;
-        
         const likes = snap.data().likes || [];
         if(likes.includes(state.user.uid)) await updateDoc(ref, { likes: arrayRemove(state.user.uid) });
         else await updateDoc(ref, { likes: arrayUnion(state.user.uid) });
     };
-    window.shareRepost = async(id) => { showToast("Link Copied"); };
 
-    // --- BOOKMARK ---
+    // --- USER ACTIONS & PROFILE LOGIC ---
+    window.closeProfileModal = () => { $('#profile-page').classList.remove('open'); };
+
     async function toggleBookmark(item) {
         if(!state.user) return signInWithPopup(auth, provider);
         const ref = getUserRef(state.user.uid);
         const isB = state.bookmarks.some(b=>b.headline===item.headline);
-        
         if(isB) {
             const old = state.bookmarks.find(b=>b.headline===item.headline);
             await updateDoc(ref, { bookmarks: arrayRemove(old) });
@@ -899,6 +863,31 @@
         if(icon) icon.className = isB ? 'fas fa-heart text-lg text-red-500' : 'far fa-heart text-lg';
     }
 
+    // --- LOAD MY REPOSTS (NEW) ---
+    async function loadMyReposts() {
+        if(!state.user) return;
+        const list = $('#my-reposts-list');
+        list.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i></div>';
+        
+        const q = query(getPublicRepostsCol(), where('repostedBy.uid', '==', state.user.uid), orderBy('timestamp', 'desc'));
+        const snap = await getDocs(q);
+        
+        if(snap.empty) { list.innerHTML = '<div class="text-center text-gray-400 italic p-4">You haven\'t reposted anything yet.</div>'; return; }
+
+        list.innerHTML = snap.docs.map(doc => {
+            const d = doc.data();
+            return `
+                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer" onclick="window.openDetail('${encodeURIComponent(d.headline)}', '${doc.id}'); closeProfileModal();">
+                    <img src="${d.image}" class="w-12 h-12 rounded-lg object-cover">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold truncate dark:text-white">${d.headline}</p>
+                        <p class="text-xs text-gray-400">${new Date(d.timestamp).toLocaleDateString()}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     // --- AUTH STATE ---
     onAuthStateChanged(auth, async (user) => {
         state.user = user;
@@ -909,44 +898,50 @@
             $('#profile-name').innerText = user.displayName;
             $('#profile-photo-lg').src = user.photoURL;
 
-            // Ensure basic profile info exists in DB for others to see
             const userRef = getUserRef(user.uid);
-            await setDoc(userRef, { 
-                displayName: user.displayName, 
-                photoURL: user.photoURL,
-                email: user.email // Optional, careful with privacy
-            }, { merge: true });
+            await setDoc(userRef, { displayName: user.displayName, photoURL: user.photoURL, email: user.email }, { merge: true });
 
-            // Load User Data & Following
             onSnapshot(userRef, (doc) => {
                 if(doc.exists()) {
                     const data = doc.data();
                     state.bookmarks = data.bookmarks || [];
+                    state.history = data.history || [];
                     state.username = data.username || null;
                     if(state.username) $('#profile-username-display').innerText = '@'+state.username;
                     
-                    // Render Bookmarks
-                    $('#bookmarks-list').innerHTML = state.bookmarks.map(b=>`<div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer" onclick="window.openDetail('${encodeURIComponent(b.headline)}', null);$('#profile-page').classList.remove('open')"><img src="${b.image}" class="w-12 h-12 rounded-lg object-cover"><span class="text-sm font-bold truncate flex-1">${b.headline}</span></div>`).join('');
+                    // Render Profile Lists
+                    const renderList = (items, elId) => {
+                        $(elId).innerHTML = items.slice().reverse().map(b=>`<div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer" onclick="window.openDetail('${encodeURIComponent(b.headline)}', null); closeProfileModal();"><img src="${b.image}" class="w-12 h-12 rounded-lg object-cover"><span class="text-sm font-bold truncate flex-1">${b.headline}</span></div>`).join('');
+                    };
+                    renderList(state.bookmarks, '#bookmarks-list');
+                    renderList(state.history, '#history-list');
                 }
             });
 
-            // Load Following List
             onSnapshot(collection(db, 'users', user.uid, 'following'), (snap) => {
                 state.following = new Set(snap.docs.map(d => d.id));
                 updateProfileStats();
             });
-
         } else {
             $('#sign-in-button').classList.remove('hidden');
             $('#user-profile-button').classList.add('hidden');
-            state.bookmarks = [];
-            state.following = new Set();
+            state.bookmarks = []; state.history = []; state.following = new Set();
         }
     });
     
-    function updateProfileStats() {
-        $('#my-following-count').innerText = state.following.size;
-    }
+    function updateProfileStats() { $('#my-following-count').innerText = state.following.size; }
+
+    $('#save-username-btn').onclick = async () => {
+        const val = $('#new-username-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+        if(val.length < 3) { showToast("Username too short"); return; }
+        try {
+            await setDoc(getUserRef(state.user.uid), { username: val }, { merge: true });
+            state.username = val;
+            $('#username-modal').classList.remove('open');
+            showToast("Identity Created!", "fas fa-check");
+            if(window.pendingRepostItem) postToCommunity(window.pendingRepostItem);
+        } catch(e) { showToast("Error saving username"); }
+    };
 
     $('#dark-mode-toggle').onclick = () => {
         $('html').classList.toggle('dark');
@@ -955,11 +950,13 @@
     $('#sign-in-button').onclick = () => signInWithPopup(auth, provider);
     $('#user-profile-button').onclick = () => $('#profile-page').classList.add('open');
     $('#mobile-profile-trigger').onclick = () => state.user ? $('#profile-page').classList.add('open') : signInWithPopup(auth, provider);
+    
     $$('.profile-tab').forEach(t => t.onclick = () => {
         $$('.profile-tab').forEach(x => x.classList.remove('active'));
         $$('.profile-content-section').forEach(x => x.classList.remove('active'));
         t.classList.add('active');
         $(`#${t.dataset.target}`).classList.add('active');
+        if(t.dataset.target === 'tab-reposts') loadMyReposts();
     });
 
     // Menu
@@ -971,7 +968,6 @@
         $('#nav-panel').classList.remove('open');
     });
 
-    // Progress Bar
     $('#news-detail-page').onscroll = () => {
         const el = $('#news-detail-page');
         const percent = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
