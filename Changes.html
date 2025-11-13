@@ -31,7 +31,7 @@
     body { background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
     .gradient-bg { background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); }
 
-    /* News Card */
+    /* Optimized News Card */
     .news-card { 
       background-color: var(--bg-secondary); border: 1px solid var(--border-color); 
       transition: transform 0.2s ease; 
@@ -55,7 +55,6 @@
     .carousel { position: relative; overflow: hidden; border-radius: 1.25rem; height: 350px; background: #e5e7eb; }
     .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.5s ease-out; pointer-events: none; }
     .carousel-slide.active { opacity: 1; pointer-events: auto; }
-    .carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
     .carousel-text-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; }
     
     /* Pages / Modals */
@@ -67,6 +66,25 @@
     }
     #news-detail-page.open, #profile-page.open, #public-profile-modal.open, #community-post-page.open { transform: translateX(0); }
     
+    /* --- INSTAGRAM STYLE MODAL (Community Post) --- */
+    #community-post-modal { 
+        position: fixed; inset: 0; z-index: 100; 
+        background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    #community-post-modal.open { opacity: 1; pointer-events: auto; }
+    
+    /* Modal Content Container */
+    .insta-modal-card {
+        background: var(--bg-secondary); width: 95%; max-width: 1000px; height: 85vh; 
+        border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @media (min-width: 768px) { .insta-modal-card { flex-direction: row; } }
+    #community-post-modal.open .insta-modal-card { transform: scale(1); }
+
     /* Modal Overlays */
     #username-modal { z-index: 150; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; transform: scale(0); opacity: 0; transition: all 0.3s; }
     #username-modal.open { transform: scale(1); opacity: 1; }
@@ -192,6 +210,10 @@
                  <p class="text-gray-500">Fetching updates...</p>
               </div>
           </div>
+          <div id="community-error" class="hidden text-center py-4 text-red-500">
+              <p>Unable to load posts.</p>
+              <button onclick="loadCommunityFeed(true)" class="mt-2 text-blue-600 underline">Retry</button>
+          </div>
       </div>
     </div>
 
@@ -223,52 +245,49 @@
       </article>
     </div>
 
-    <!-- Community Post Page (Full Screen Modal with Comments) -->
-    <div id="community-post-page" class="bg-white dark:bg-gray-900">
-        <div class="sticky top-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-40 flex justify-between items-center border-b dark:border-gray-800">
-            <button onclick="closeCommunityPost()" class="px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold flex items-center gap-2 transition">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <span class="font-bold dark:text-white">Community Thread</span>
-            <div class="w-10"></div> <!-- Spacer -->
-        </div>
+    <!-- Community Post Detail Modal (Instagram/Twitter Style) -->
+    <div id="community-post-modal">
+        <!-- Click outside to close -->
+        <div class="absolute inset-0" onclick="closeCommunityModal()"></div>
+        
+        <div class="insta-modal-card relative">
+            <!-- Close Button (Mobile Overlay) -->
+            <button onclick="closeCommunityModal()" class="absolute top-3 right-3 z-50 bg-black/50 text-white w-8 h-8 rounded-full md:hidden"><i class="fas fa-times"></i></button>
 
-        <div class="container mx-auto max-w-3xl px-4 py-6 pb-32">
-            <!-- Repost Info -->
-            <div class="flex items-center gap-3 mb-4">
-                <img id="comm-modal-avatar" src="" class="w-12 h-12 rounded-full border">
-                <div>
-                    <p id="comm-modal-username" class="font-bold text-lg dark:text-white"></p>
-                    <p id="comm-modal-repost-count" class="text-sm text-gray-500"></p>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl overflow-hidden border dark:border-gray-700 mb-8">
-                 <img id="comm-modal-img" src="" class="w-full max-h-[400px] object-cover">
-                 <div class="p-5">
-                     <h2 id="comm-modal-headline" class="text-xl md:text-2xl font-bold dark:text-white mb-2"></h2>
-                     <p id="comm-modal-source" class="text-sm text-gray-500 font-bold uppercase"></p>
+            <!-- Left Side: Content (Scrollable on mobile if long) -->
+            <div class="w-full md:w-3/5 bg-black flex items-center justify-center overflow-hidden relative group h-1/2 md:h-full">
+                 <img id="comm-modal-img" src="" class="max-w-full max-h-full object-contain">
+                 <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4 text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+                     <h3 id="comm-modal-headline" class="font-bold text-lg leading-tight mb-1"></h3>
+                     <p id="comm-modal-source" class="text-xs opacity-80"></p>
                  </div>
             </div>
 
-            <!-- Comments Section -->
-            <div class="border-t dark:border-gray-800 pt-6">
-                <h3 class="font-bold text-lg dark:text-white mb-6">Comments</h3>
-                
-                <!-- Input -->
-                <div class="flex gap-3 mb-8">
-                    <img id="comm-input-avatar" src="https://placehold.co/40" class="w-10 h-10 rounded-full border">
-                    <div class="flex-1">
-                        <textarea id="comm-modal-input" rows="2" class="w-full bg-gray-100 dark:bg-gray-800 border-0 rounded-xl p-3 focus:ring-2 ring-purple-500 dark:text-white resize-none" placeholder="Share your thoughts..."></textarea>
-                        <div class="flex justify-end mt-2">
-                            <button id="comm-modal-send" class="bg-purple-600 text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-purple-700 transition">Post Comment</button>
+            <!-- Right Side: Discussion -->
+            <div class="w-full md:w-2/5 bg-white dark:bg-gray-900 flex flex-col h-1/2 md:h-full">
+                <!-- Header -->
+                <div class="p-4 border-b dark:border-gray-800 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <img id="comm-modal-avatar" src="" class="w-8 h-8 rounded-full border">
+                        <div>
+                            <p id="comm-modal-username" class="font-bold text-sm dark:text-white leading-none"></p>
+                            <p id="comm-modal-repost-count" class="text-xs text-gray-500 mt-1">Reposted by you</p>
                         </div>
                     </div>
+                    <button onclick="closeCommunityModal()" class="hidden md:block text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
                 </div>
 
-                <div id="comm-modal-comments" class="space-y-6">
-                    <!-- Comments injected here -->
+                <!-- Comments List (Scrollable) -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50" id="comm-modal-comments">
+                     <!-- Comments injected here -->
+                </div>
+
+                <!-- Footer: Input -->
+                <div class="p-3 border-t dark:border-gray-800 bg-white dark:bg-gray-900 shrink-0 z-10">
+                    <div class="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2">
+                         <input type="text" id="comm-modal-input" class="bg-transparent w-full text-sm outline-none dark:text-white" placeholder="Add a comment...">
+                         <button id="comm-modal-send" class="text-blue-600 font-bold text-sm disabled:opacity-50">Post</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -430,7 +449,7 @@
         }
     }
 
-    // --- VIEW NAVIGATION (Optimized) ---
+    // --- VIEW NAVIGATION ---
     window.switchView = (viewName) => {
         $('#view-home').classList.add('hidden');
         $('#view-community').classList.add('hidden');
@@ -537,7 +556,6 @@
         
         updateBookmarkIcon(n.headline);
         if(state.user) {
-            // Silent History Update
             if(!state.history.some(h => h.headline === n.headline)) {
                 updateDoc(getUserRef(state.user.uid), { history: arrayUnion({ headline: n.headline, image: n.image, category: n.category, timestamp: new Date().toISOString() }) }).catch(console.log);
             }
@@ -548,34 +566,28 @@
     window.closeNewsDetail = () => { $('#news-detail-page').classList.remove('open'); };
 
     // --- COMMUNITY & REPOSTS ---
-    
-    // 1. REPOST LOGIC (Unique per user/headline pair logic handled via merge/check)
     async function initiateRepost(newsItem) {
         if(!state.user) { showToast("Login to repost", "fas fa-lock"); signInWithPopup(auth, provider); return; }
         if(!state.username) { $('#username-modal').classList.add('open'); window.pendingRepostItem = newsItem; return; }
         
-        // Deterministic ID: Hash of Headline
         const repostId = btoa(encodeURIComponent(newsItem.headline)).replace(/=/g, '');
         const repostRef = doc(getPublicRepostsCol(), repostId);
 
         try {
             const docSnap = await getDoc(repostRef);
-            
             if(docSnap.exists()) {
                 const data = docSnap.data();
                 if(data.reposters && data.reposters.includes(state.user.uid)) {
                     showToast("You already reposted this!", "fas fa-exclamation-circle");
                     return;
                 }
-                // Update existing
                 await updateDoc(repostRef, {
                     reposters: arrayUnion(state.user.uid),
                     repostCount: increment(1),
-                    timestamp: new Date().toISOString(), // Bump to top
+                    timestamp: new Date().toISOString(),
                     latestReposter: { uid: state.user.uid, username: state.username, avatar: state.user.photoURL }
                 });
             } else {
-                // Create new
                 await setDoc(repostRef, {
                     headline: newsItem.headline, 
                     image: newsItem.image, 
@@ -587,24 +599,44 @@
                     timestamp: new Date().toISOString()
                 });
             }
-
             showToast("Posted to Community!", "fas fa-rocket");
             $('#news-detail-page').classList.remove('open');
             switchView('community'); 
-
         } catch(e) { console.error(e); showToast("Repost failed"); }
     }
 
-    // 2. Load Community Feed (Card Style)
     let communityUnsub = null;
-    function loadCommunityFeed() {
-        if(communityUnsub) return; 
-        // Ensure query handles potential empty timestamp
-        const q = query(getPublicRepostsCol(), orderBy('timestamp', 'desc'), limit(30));
+    // Robust Load Function with Fallback
+    window.loadCommunityFeed = function(forceUnordered = false) {
+        if(communityUnsub) communityUnsub();
+        $('#community-error').classList.add('hidden');
+        $('#community-feed').innerHTML = '<div class="text-center py-20 text-gray-400">Fetching updates...</div>';
         
+        // Try Ordered first, if failed (due to index), manually catch error and try Unordered in future steps
+        // For now, we will use a simpler query if the ordered one is failing silently or timeout.
+        let q;
+        if(forceUnordered) {
+             q = query(getPublicRepostsCol(), limit(30)); // No order, safe
+        } else {
+             q = query(getPublicRepostsCol(), orderBy('timestamp', 'desc'), limit(30));
+        }
+        
+        // Fallback Timeout
+        const timeoutId = setTimeout(() => {
+            if($('#community-feed').innerText.includes('Fetching')) {
+                console.warn("Feed timeout, retrying without sort...");
+                loadCommunityFeed(true); // Retry simple
+            }
+        }, 5000);
+
         communityUnsub = onSnapshot(q, (snap) => {
+            clearTimeout(timeoutId);
             const feedContainer = $('#community-feed');
-            if(snap.empty) { feedContainer.innerHTML = '<div class="text-center py-10 text-gray-400">No reposts yet.</div>'; return; }
+            
+            if(snap.empty) { 
+                feedContainer.innerHTML = '<div class="text-center py-10 text-gray-400">No reposts yet. Be the first!</div>'; 
+                return; 
+            }
             
             feedContainer.innerHTML = snap.docs.map(doc => {
                 const d = doc.data();
@@ -641,43 +673,49 @@
                 </div>`;
             }).join('');
         }, (error) => {
-            console.error("Error loading community feed:", error);
-            $('#community-feed').innerHTML = '<div class="text-center p-10 text-red-400">Error loading feed. Check console.</div>';
+            clearTimeout(timeoutId);
+            console.error("Error loading feed:", error);
+            $('#community-feed').innerHTML = '';
+            $('#community-error').classList.remove('hidden');
         });
     }
 
-    // 3. Community Post Page Logic
+    // --- INSTAGRAM STYLE MODAL ---
     let modalCommentsUnsub = null;
 
     window.openCommunityPost = async (docId) => {
-        // Fetch data
+        // 1. Get Post Data
         const ref = doc(getPublicRepostsCol(), docId);
         const snap = await getDoc(ref);
         if(!snap.exists()) return;
         const d = snap.data();
 
-        // Populate UI
+        // 2. Populate Modal UI
         $('#comm-modal-img').src = d.image;
         $('#comm-modal-headline').innerText = d.headline;
         $('#comm-modal-source').innerText = d.source;
+        
         $('#comm-modal-username').innerText = '@' + d.latestReposter.username;
         $('#comm-modal-avatar').src = d.latestReposter.avatar || 'https://placehold.co/40';
         $('#comm-modal-repost-count').innerText = (d.repostCount || 1) + ' Reposts';
         
-        if(state.user) $('#comm-input-avatar').src = state.user.photoURL || 'https://placehold.co/40';
+        // 3. Show Modal
+        $('#community-post-modal').classList.add('open');
+        document.body.style.overflow = 'hidden';
 
-        // Setup Send
+        // 4. Setup Inputs
         $('#comm-modal-send').onclick = () => postCommentInModal(docId);
-        
-        // Load Comments
-        loadModalComments(docId);
+        $('#comm-modal-input').value = '';
+        $('#comm-modal-input').onkeydown = (e) => { if(e.key==='Enter') postCommentInModal(docId); };
 
-        $('#community-post-page').classList.add('open');
+        // 5. Load Comments Realtime
+        loadModalComments(docId);
     };
 
-    window.closeCommunityPost = () => {
-        $('#community-post-page').classList.remove('open');
-        if(modalCommentsUnsub) modalCommentsUnsub();
+    window.closeCommunityModal = () => {
+        $('#community-post-modal').classList.remove('open');
+        document.body.style.overflow = ''; // Restore scroll
+        if(modalCommentsUnsub) modalCommentsUnsub(); // Cleanup listener
     };
 
     function loadModalComments(docId) {
@@ -685,27 +723,27 @@
         const list = $('#comm-modal-comments');
         list.innerHTML = '<div class="text-center p-4 text-gray-400"><i class="fas fa-spinner fa-spin"></i></div>';
         
-        const q = query(getCommentsCol(), where('targetId', '==', docId), orderBy('timestamp', 'asc'), limit(50));
+        const q = query(getCommentsCol(), where('targetId', '==', docId), orderBy('timestamp', 'asc'), limit(100));
         
         modalCommentsUnsub = onSnapshot(q, (snap) => {
-            if(snap.empty) { list.innerHTML = '<div class="text-center p-10 text-gray-400 italic">No comments yet.</div>'; return; }
+            if(snap.empty) { list.innerHTML = '<div class="text-center p-10 text-gray-400 italic">No comments yet. Start the conversation!</div>'; return; }
             
             list.innerHTML = snap.docs.map(doc => {
                 const c = doc.data();
                 return `
-                <div class="flex gap-3 animate-fadeIn">
-                    <img src="${c.userAvatar||'https://placehold.co/30'}" class="w-10 h-10 rounded-full shrink-0 border cursor-pointer" onclick="window.openPublicProfile('${c.userId}'); closeCommunityPost()">
+                <div class="flex gap-3 animate-fadeIn mb-3">
+                    <img src="${c.userAvatar||'https://placehold.co/30'}" class="w-8 h-8 rounded-full shrink-0 border cursor-pointer" onclick="window.openPublicProfile('${c.userId}'); closeCommunityModal()">
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-baseline gap-2 mb-1">
-                            <span class="font-bold text-sm dark:text-white cursor-pointer" onclick="window.openPublicProfile('${c.userId}'); closeCommunityPost()">@${c.username}</span>
-                            <span class="text-xs text-gray-400">${new Date(c.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="font-bold text-xs dark:text-white cursor-pointer" onclick="window.openPublicProfile('${c.userId}'); closeCommunityModal()">@${c.username}</span>
+                            <span class="text-[10px] text-gray-400">${new Date(c.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
                         </div>
-                        <div class="comment-bubble bg-white dark:bg-gray-700 dark:text-gray-200 shadow-sm border dark:border-gray-600">
-                            ${c.text}
-                        </div>
+                        <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed break-words">${c.text}</p>
                     </div>
                 </div>`;
             }).join('');
+            
+            list.scrollTop = list.scrollHeight;
         });
     }
 
