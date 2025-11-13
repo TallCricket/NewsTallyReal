@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,61 +31,65 @@
         <button id="new-post-btn" class="px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-400 text-white font-semibold shadow-lg hover:brightness-105"><i class="fas fa-plus mr-2"></i>New Post</button>
         <button id="refresh-community" class="p-2 rounded-full glass"><i class="fas fa-sync-alt"></i></button>
       </div>
-    </header><!-- Composer + Feed Layout -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <!-- Left: Composer (large on desktop) -->
-  <div class="md:col-span-1 insta-card p-4">
-    <h3 class="font-bold mb-3">Create Post</h3>
-    <div id="composer" class="space-y-3">
-      <label class="block text-sm font-medium text-gray-600">Image</label>
-      <div id="uploader" class="uploader-drag p-3 flex flex-col gap-3 items-center justify-center cursor-pointer" tabindex="0">
-        <input id="file-input" type="file" accept="image/*" class="hidden">
-        <div class="text-center text-sm text-gray-500">
-          <i class="fas fa-cloud-upload-alt text-3xl mb-2 text-indigo-500"></i>
-          <div class="font-medium">Drag & drop an image, or <button id="uploader-browse" class="text-indigo-600 underline">browse</button></div>
-          <div class="text-xs text-gray-400 mt-1">JPEG/PNG up to 8MB</div>
+    </header>
+
+    <!-- Composer + Feed Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Left: Composer (large on desktop) -->
+      <div class="md:col-span-1 insta-card p-4">
+        <h3 class="font-bold mb-3">Create Post</h3>
+        <div id="composer" class="space-y-3">
+          <label class="block text-sm font-medium text-gray-600">Image</label>
+          <div id="uploader" class="uploader-drag p-3 flex flex-col gap-3 items-center justify-center cursor-pointer" tabindex="0">
+            <input id="file-input" type="file" accept="image/*" class="hidden">
+            <div class="text-center text-sm text-gray-500">
+              <i class="fas fa-cloud-upload-alt text-3xl mb-2 text-indigo-500"></i>
+              <div class="font-medium">Drag & drop an image, or <button id="uploader-browse" class="text-indigo-600 underline">browse</button></div>
+              <div class="text-xs text-gray-400 mt-1">JPEG/PNG up to 8MB</div>
+            </div>
+            <img id="local-preview" src="" alt="Preview" class="w-full rounded-lg mt-2 hidden image-preview">
+          </div>
+
+          <label class="block text-sm font-medium text-gray-600">Title / Topic</label>
+          <input id="post-title" type="text" placeholder="Add a short headline" class="w-full p-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-300">
+
+          <label class="block text-sm font-medium text-gray-600">Description</label>
+          <textarea id="post-desc" rows="4" placeholder="Write something about this post..." class="w-full p-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-300"></textarea>
+
+          <label class="block text-sm font-medium text-gray-600">Category</label>
+          <div class="flex gap-2 items-center">
+            <select id="post-category" class="p-2 border rounded-lg flex-1">
+              <option value="General">General</option>
+              <option value="Politics">Politics</option>
+              <option value="Technology">Technology</option>
+              <option value="Business">Business</option>
+              <option value="Sports">Sports</option>
+              <option value="Other">Other (custom)</option>
+            </select>
+            <input id="post-category-custom" class="p-2 border rounded-lg hidden" placeholder="Enter category" />
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="submit-post" class="flex-1 px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold shadow hover:brightness-105">Post</button>
+            <button id="clear-post" class="px-3 py-2 rounded-full border">Clear</button>
+          </div>
+
+          <div id="upload-progress" class="w-full bg-gray-100 rounded-full h-2 overflow-hidden hidden"><div id="upload-bar" class="h-full bg-indigo-500 w-0"></div></div>
         </div>
-        <img id="local-preview" src="" alt="Preview" class="w-full rounded-lg mt-2 hidden image-preview">
       </div>
 
-      <label class="block text-sm font-medium text-gray-600">Title / Topic</label>
-      <input id="post-title" type="text" placeholder="Add a short headline" class="w-full p-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-300">
-
-      <label class="block text-sm font-medium text-gray-600">Description</label>
-      <textarea id="post-desc" rows="4" placeholder="Write something about this post..." class="w-full p-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-indigo-300"></textarea>
-
-      <label class="block text-sm font-medium text-gray-600">Category</label>
-      <div class="flex gap-2 items-center">
-        <select id="post-category" class="p-2 border rounded-lg flex-1">
-          <option value="General">General</option>
-          <option value="Politics">Politics</option>
-          <option value="Technology">Technology</option>
-          <option value="Business">Business</option>
-          <option value="Sports">Sports</option>
-          <option value="Other">Other (custom)</option>
-        </select>
-        <input id="post-category-custom" class="p-2 border rounded-lg hidden" placeholder="Enter category" />
+      <!-- Middle: Feed -->
+      <div class="md:col-span-2 space-y-6">
+        <div id="community-feed" class="space-y-6">
+          <!-- posts injected here -->
+          <div class="text-center text-gray-400 py-12">No posts yet — create the first one or refresh.</div>
+        </div>
       </div>
-
-      <div class="flex items-center gap-2">
-        <button id="submit-post" class="flex-1 px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold shadow hover:brightness-105">Post</button>
-        <button id="clear-post" class="px-3 py-2 rounded-full border">Clear</button>
-      </div>
-
-      <div id="upload-progress" class="w-full bg-gray-100 rounded-full h-2 overflow-hidden hidden"><div id="upload-bar" class="h-full bg-indigo-500 w-0"></div></div>
     </div>
   </div>
 
-  <!-- Middle: Feed -->
-  <div class="md:col-span-2 space-y-6">
-    <div id="community-feed" class="space-y-6">
-      <!-- posts injected here -->
-      <div class="text-center text-gray-400 py-12">No posts yet — create the first one or refresh.</div>
-    </div>
-  </div>
-</div>
-
-  </div>  <!-- Composer Modal (big screen) -->  <div id="composer-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+  <!-- Composer Modal (big screen) -->
+  <div id="composer-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
     <div class="bg-white rounded-2xl w-[95%] md:w-[900px] max-h-[90vh] overflow-auto p-4 insta-card">
       <div class="flex justify-between items-center mb-3">
         <h3 class="text-lg font-bold">Create Post</h3>
@@ -122,7 +127,10 @@
         </div>
       </div>
     </div>
-  </div>  <!-- Firebase + Logic -->  <script type="module">
+  </div>
+
+  <!-- Firebase + Logic -->
+  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
     import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, doc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
@@ -143,6 +151,12 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
+
+    // IMPORTANT: match your security rules - use the same APP_ID used in rules
+    const APP_ID = 'newstally-social';
+
+    // GLOBAL
+    let currentUser = null;
 
     // Elements
     const fileInput = document.getElementById('file-input');
@@ -170,10 +184,8 @@
     const modalCategory = document.getElementById('modal-category');
     const modalCategoryCustom = document.getElementById('modal-category-custom');
 
-    let currentUser = null;
-
-    // Auth
-    onAuthStateChanged(auth, (u)=>{ currentUser = u; if(!u) { /* optionally prompt login */ } });
+    // Auth listener
+    onAuthStateChanged(auth, (u)=>{ currentUser = u; console.log('[auth] state', u ? { uid: u.uid, name: u.displayName } : null); });
 
     // small helpers
     function readFileToPreview(file, imgEl){
@@ -212,34 +224,84 @@
     clearBtn.addEventListener('click', ()=>{ fileInput.value=''; preview.src=''; preview.classList.add('hidden'); titleEl.value=''; descEl.value=''; categoryEl.value='General'; categoryCustom.value=''; progressWrap.classList.add('hidden'); progressBar.style.width='0%'; });
 
     // Open composer modal
-    newPostBtn.addEventListener('click', ()=> composerModal.classList.remove('hidden'));
+    newPostBtn.addEventListener('click', ()=> {
+      if(!currentUser){ // prompt sign-in first
+        signInWithPopup(auth, provider).catch(()=>{});
+        return;
+      }
+      composerModal.classList.remove('hidden');
+    });
     document.getElementById('close-composer').addEventListener('click', ()=> composerModal.classList.add('hidden'));
     modalCancel.addEventListener('click', ()=> composerModal.classList.add('hidden'));
 
-    // Post logic (modal)
-    async function uploadAndCreatePost(file, meta){
-      // file: File, meta: {title,desc,category,author}
+    // ------------ IMPORTANT: uploadAndCreatePost (writes to artifacts/{APP_ID}/public/data/reposts) ------------
+    async function uploadAndCreatePost(file, meta) {
+      console.log('[uploadAndCreatePost] start', { fileName: file?.name, meta });
       const id = 'post_' + Date.now();
-      const path = `community/${id}_${file.name}`;
+      const path = `community/${id}_${file.name.replace(/\s+/g,'_')}`;
       const storageRef = sRef(storage, path);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       progressWrap.classList.remove('hidden');
-      return new Promise((resolve,reject)=>{
-        uploadTask.on('state_changed', (snapshot)=>{
-          const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          progressBar.style.width = pct + '%';
-        }, (err)=>{ console.error(err); progressWrap.classList.add('hidden'); reject(err); }, async ()=>{
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
-          const doc = await addDoc(collection(db,'community_posts'),{
-            title: meta.title, description: meta.desc, category: meta.category, image: url,
-            authorName: meta.authorName||'Anonymous', authorUid: meta.authorUid||null, timestamp: serverTimestamp(), likes: [], commentsCount:0
-          });
-          progressWrap.classList.add('hidden'); progressBar.style.width='0%';
-          resolve(doc.id);
-        });
+      progressBar.style.width = '0%';
+
+      return new Promise((resolve, reject) => {
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            progressBar.style.width = pct + '%';
+            console.log(`[upload] ${pct}%`);
+          },
+          (uploadError) => {
+            console.error('[upload] failed', uploadError);
+            progressWrap.classList.add('hidden');
+            showLocalToast('Upload failed: ' + (uploadError.message || 'unknown'));
+            reject(uploadError);
+          },
+          async () => {
+            try {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              console.log('[upload] finished, downloadURL=', url);
+
+              // Map post meta into the repost schema allowed by rules
+              const payload = {
+                headline: meta.title || '(No title)',
+                image: url,
+                source: meta.authorName || 'Community',
+                reposters: meta.authorUid ? [meta.authorUid] : [],
+                repostCount: 1,
+                latestReposter: {
+                  uid: meta.authorUid || null,
+                  username: meta.authorName ? (meta.authorName.replace(/\s+/g,'').toLowerCase()) : 'anon',
+                  avatar: (currentUser && currentUser.photoURL) ? currentUser.photoURL : null
+                },
+                description: meta.desc || '',
+                category: meta.category || 'General',
+                likes: [],
+                timestamp: serverTimestamp()
+              };
+
+              console.log('[firestore] writing doc with payload:', payload);
+
+              // WRITE to artifacts/{APP_ID}/public/data/reposts
+              const colRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts');
+              const docRef = await addDoc(colRef, payload);
+
+              console.log('[firestore] doc created id=', docRef.id);
+              progressWrap.classList.add('hidden');
+              progressBar.style.width = '0%';
+              resolve(docRef.id);
+            } catch (e) {
+              console.error('[firestore] write failed', e);
+              progressWrap.classList.add('hidden');
+              showLocalToast('Failed to save post: ' + (e.message || 'unknown'));
+              reject(e);
+            }
+          }
+        );
       });
     }
+    // ----------------------------------------------------------------------------------------------
 
     // Modal Post button
     modalPostBtn.addEventListener('click', async ()=>{
@@ -274,29 +336,32 @@
     });
 
     // Real-time feed listener
-    const q = query(collection(db,'community_posts'), orderBy('timestamp','desc'), limit(50));
+    const q = query(collection(db,'artifacts', APP_ID, 'public', 'data', 'reposts'), orderBy('timestamp','desc'), limit(50));
     onSnapshot(q, (snap)=>{
       const docs = snap.docs.map(d=>({id:d.id, ...d.data()}));
       renderFeed(docs);
+    }, (err)=>{
+      console.error('[feed] snapshot error', err);
+      feed.innerHTML = '<div class="text-center text-red-500 py-8">Failed to load feed.</div>';
     });
 
     // render feed
     function renderFeed(posts){
       if(!posts || !posts.length){ feed.innerHTML='<div class="text-center text-gray-400 py-12">No posts yet — create the first one.</div>'; return; }
       feed.innerHTML = posts.map(p=>{
-        const t = p.timestamp && p.timestamp.toDate ? formatDate(p.timestamp.toDate()) : '';
+        const t = p.timestamp && p.timestamp.toDate ? formatDate(p.timestamp.toDate()) : (p.timestamp ? (new Date(p.timestamp.seconds ? p.timestamp.seconds*1000 : p.timestamp).toLocaleString()) : '');
         return `
           <div class="insta-card p-4">
             <div class="flex items-center gap-3 mb-3">
-              <img src="${p.authorUid?`https://avatars.dicebear.com/api/identicon/${p.authorUid}.svg`:'https://placehold.co/40'}" class="w-10 h-10 rounded-full">
+              <img src="${p.latestReposter && p.latestReposter.avatar ? p.latestReposter.avatar : `https://avatars.dicebear.com/api/identicon/${p.latestReposter?.uid||p.id}.svg`}" class="w-10 h-10 rounded-full">
               <div class="flex-1">
-                <div class="font-semibold">${escapeHtml(p.authorName||'Anonymous')}</div>
+                <div class="font-semibold">${escapeHtml(p.latestReposter?.username || (p.source||'Community'))}</div>
                 <div class="text-xs text-gray-400">${escapeHtml(p.category||'General')} • ${t}</div>
               </div>
               <button class="three-dot-btn p-2" data-post-id="${p.id}"><i class="fas fa-ellipsis-h"></i></button>
             </div>
             <div class="mb-3">
-              <img src="${p.image}" alt="${escapeHtml(p.title||'image')}" class="w-full rounded-lg image-preview">
+              <img src="${p.image}" alt="${escapeHtml(p.headline||'image')}" class="w-full rounded-lg image-preview">
             </div>
             <div class="flex items-center justify-between gap-3 mb-2">
               <div class="flex items-center gap-3">
@@ -304,19 +369,17 @@
                 <button class="comment-open" data-id="${p.id}"><i class="far fa-comment"></i></button>
                 <button class="share-btn" data-id="${p.id}"><i class="fas fa-paper-plane"></i></button>
               </div>
-              <div class="text-sm text-gray-500">${p.likes?p.likes.length:0} likes</div>
+              <div class="text-sm text-gray-500">${p.likes? p.likes.length : 0} likes</div>
             </div>
-            <div class="mb-2 font-bold">${escapeHtml(p.title||'')}</div>
+            <div class="mb-2 font-bold">${escapeHtml(p.headline||'')}</div>
             <div class="text-sm text-gray-700">${escapeHtml(p.description||'')}</div>
           </div>
         `;
       }).join('');
 
       // attach event listeners for dynamic buttons
-      document.querySelectorAll('.like-btn').forEach(b=>{ b.onclick = async (e)=>{ const id=b.dataset.id; if(!currentUser){ if(confirm('Sign in to like?')) signInWithPopup(auth, provider); return;} try{ await updateDoc(doc(db,'community_posts',id), { likes: arrayUnion(currentUser.uid) }); showLocalToast('Liked'); }catch(err){ console.error(err);} }; });
-      document.querySelectorAll('.three-dot-btn').forEach(btn=>{ btn.onclick=(e)=>{ e.stopPropagation(); const pid=btn.dataset.postId; // simple menu
-          const menu = document.createElement('div'); menu.className='p-2 bg-white rounded shadow'; menu.innerHTML=`<div class="p-2 cursor-pointer" data-act="report">Report</div><div class="p-2 cursor-pointer" data-act="copy">Copy Link</div>`; document.body.appendChild(menu); const rect=btn.getBoundingClientRect(); menu.style.position='fixed'; menu.style.left=rect.right-10+'px'; menu.style.top=rect.bottom+6+'px'; setTimeout(()=>{ menu.addEventListener('click',(ev)=>{ if(ev.target.dataset.act==='report'){ alert('Reported'); } if(ev.target.dataset.act==='copy'){ navigator.clipboard.writeText(location.href+'#post/'+pid); showLocalToast('Link copied'); } menu.remove(); }); },20);
-      }; });
+      document.querySelectorAll('.like-btn').forEach(b=>{ b.onclick = async (e)=>{ const id=b.dataset.id; if(!currentUser){ if(confirm('Sign in to like?')) signInWithPopup(auth, provider); return;} try{ await updateDoc(doc(db,'artifacts', APP_ID, 'public', 'data', 'reposts', id), { likes: arrayUnion(currentUser.uid) }); showLocalToast('Liked'); }catch(err){ console.error(err);} }; });
+      document.querySelectorAll('.three-dot-btn').forEach(btn=>{ btn.onclick=(e)=>{ e.stopPropagation(); const pid=btn.dataset.postId; const menu = document.createElement('div'); menu.className='p-2 bg-white rounded shadow'; menu.innerHTML=`<div class="p-2 cursor-pointer" data-act="report">Report</div><div class="p-2 cursor-pointer" data-act="copy">Copy Link</div>`; document.body.appendChild(menu); const rect=btn.getBoundingClientRect(); menu.style.position='fixed'; menu.style.left=rect.right-10+'px'; menu.style.top=rect.bottom+6+'px'; setTimeout(()=>{ menu.addEventListener('click',(ev)=>{ if(ev.target.dataset.act==='report'){ alert('Reported'); } if(ev.target.dataset.act==='copy'){ navigator.clipboard.writeText(location.href+'#post/'+pid); showLocalToast('Link copied'); } menu.remove(); }); },20); }; });
     }
 
     // small utilities
@@ -330,5 +393,6 @@
     // quick sign-in on demand
     document.getElementById('new-post-btn').addEventListener('click', ()=>{ if(!currentUser){ signInWithPopup(auth, provider).catch(()=>{}); } });
 
-  </script></body>
+  </script>
+</body>
 </html>
