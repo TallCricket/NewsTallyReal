@@ -997,6 +997,229 @@
       showToast("Bookmark toggled");
     }
 
+    /* ===========================
+       NEW: UI HANDLERS MERGED HERE
+       (menu, profile open, back, tabs, three-dot, mobile profile trigger, sign-in)
+       =========================== */
+
+    // Menu open/close (mobile)
+    const menuToggleBtn = document.getElementById('menu-toggle');
+    const navPanel = document.getElementById('nav-panel');
+    const closePanelBtn = document.getElementById('close-panel');
+
+    if (menuToggleBtn && navPanel) {
+      menuToggleBtn.addEventListener('click', () => {
+        navPanel.classList.toggle('open');
+      });
+    }
+    if (closePanelBtn && navPanel) {
+      closePanelBtn.addEventListener('click', () => {
+        navPanel.classList.remove('open');
+      });
+    }
+
+    // Desktop nav-category buttons (top nav) -> filterCategory
+    document.querySelectorAll('.nav-category').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const cat = btn.dataset.category || 'All';
+        // visually mark active
+        document.querySelectorAll('.nav-category').forEach(b => b.classList.remove('text-blue-600'));
+        btn.classList.add('text-blue-600');
+        filterCategory(cat);
+      });
+    });
+
+    // Mobile nav category items inside sidebar
+    document.querySelectorAll('.nav-category-mobile').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const cat = btn.dataset.category || btn.dataset.view || 'All';
+        navPanel.classList.remove('open');
+        if (btn.dataset.view === 'community') switchView('community');
+        else filterCategory(cat);
+      });
+    });
+
+    // User profile open (header button) -> open profile page
+    const userProfileBtn = document.getElementById('user-profile-button');
+    if (userProfileBtn) {
+      userProfileBtn.addEventListener('click', async (e) => {
+        // If not signed in, open sign in
+        if (!state.user) {
+          showToast('Please sign in to view profile', 'fas fa-lock');
+          signInWithPopup(auth, provider).catch(err => console.log(err));
+          return;
+        }
+        // Open profile panel (same as #profile-page)
+        document.getElementById('profile-page').classList.add('open');
+        // scroll to top of profile
+        document.getElementById('profile-page').scrollTop = 0;
+        // focus on close button for accessibility
+        const closeBtn = document.querySelector('#profile-page button[onclick*="closeProfileModal"]') || null;
+        if (closeBtn) closeBtn.focus();
+      });
+    }
+
+    // Mobile bottom "You" profile trigger
+    const mobileProfileTrigger = document.getElementById('mobile-profile-trigger');
+    if (mobileProfileTrigger) {
+      mobileProfileTrigger.addEventListener('click', async (e) => {
+        if (!state.user) {
+          // open sign-in
+          showToast('Sign in to view your profile', 'fas fa-lock');
+          signInWithPopup(auth, provider).catch(err => console.log(err));
+          return;
+        }
+        document.getElementById('profile-page').classList.add('open');
+      });
+    }
+
+    // News detail "Back" button
+    const newsDetailBackBtn = document.getElementById('news-detail-back');
+    if (newsDetailBackBtn) {
+      newsDetailBackBtn.addEventListener('click', () => {
+        closeNewsDetail();
+      });
+    }
+
+    // Profile tabs (Bookmarks / History / Reposts)
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        // remove active from all then add to clicked
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // hide all sections and show target
+        document.querySelectorAll('.profile-content-section').forEach(s => s.classList.remove('active'));
+        const target = tab.dataset.target;
+        if (target) {
+          const el = document.getElementById(target);
+          if (el) el.classList.add('active');
+        }
+      });
+    });
+
+    // Sign-in button hookup
+    const signInBtn = document.getElementById('sign-in-button');
+    if (signInBtn) {
+      signInBtn.addEventListener('click', () => {
+        signInWithPopup(auth, provider).catch(err => console.error('Sign-in failed', err));
+      });
+    }
+
+    // Ensure clicking on profile photo in header opens profile page (if visible)
+    const userProfilePhoto = document.getElementById('user-profile-photo');
+    if (userProfilePhoto) {
+      userProfilePhoto.addEventListener('click', () => {
+        if (!state.user) { signInWithPopup(auth, provider).catch(()=>{}); return; }
+        document.getElementById('profile-page').classList.add('open');
+      });
+    }
+
+    // Generic "three-dot" menu handling (if you add .three-dot-btn on any card)
+    document.querySelectorAll('.three-dot-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // prevent parent click (like opening article)
+        // Try to find a data-action on button such as data-action="share|report|save"
+        const action = btn.dataset.action || 'menu';
+        // Simple demo behavior: open username modal for "menu" or show toast
+        if (action === 'menu') {
+          // You can show a small contextual menu; for now open username modal as placeholder
+          document.getElementById('username-modal').classList.add('open');
+        } else {
+          showToast(`Action: ${action}`, 'fas fa-ellipsis-h');
+        }
+      });
+    });
+
+    // Close nav panel if user clicks outside it (on mobile)
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('nav-panel');
+      const mt = document.getElementById('menu-toggle');
+      if (!panel || !panel.classList.contains('open')) return;
+      if (mt && mt.contains(e.target)) return;
+      if (panel.contains(e.target)) return;
+      // clicked outside
+      panel.classList.remove('open');
+    });
+
+    // Accessibility: close profile/modal with Escape key as well
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        // close modals/panels if open
+        document.getElementById('nav-panel')?.classList.remove('open');
+        document.getElementById('community-post-modal')?.classList.remove('open');
+        document.getElementById('news-detail-page')?.classList.remove('open');
+        document.getElementById('profile-page')?.classList.remove('open');
+        document.getElementById('username-modal')?.classList.remove('open');
+        document.getElementById('public-profile-modal')?.classList.remove('open');
+      }
+    });
+
+    // optional: ensure nav buttons in bottom nav get visual active state
+    document.querySelectorAll('.nav-btn-mobile').forEach(b => {
+      b.addEventListener('click', (e) => {
+        document.querySelectorAll('.nav-btn-mobile').forEach(x => x.classList.remove('active', 'text-blue-600'));
+        b.classList.add('active');
+        b.classList.add('text-blue-600');
+      });
+    });
+
+    // Helper: open public profile modal & load user doc
+    window.openPublicProfile = function(uid) {
+      // if uid empty, show own profile
+      if (!uid) {
+        if (!state.user) { signInWithPopup(auth, provider); return; }
+        document.getElementById('profile-page').classList.add('open');
+        return;
+      }
+      // load public profile content
+      const ref = getUserRef(uid);
+      getDoc(ref).then(snap => {
+        if (snap.exists()) {
+          const data = snap.data();
+          const content = document.getElementById('public-profile-content');
+          content.innerHTML = `
+            <img src="${data.photoURL||'https://placehold.co/100'}" alt="${escapeAttr(data.displayName||'User')}" class="w-24 h-24 rounded-full mx-auto mb-4">
+            <h3 class="font-bold text-xl mb-1">${data.displayName||'User'}</h3>
+            <p class="text-sm text-blue-600 mb-4">@${data.username||''}</p>
+            <p class="text-sm text-gray-500">${data.bio || ''}</p>
+          `;
+          document.getElementById('public-profile-modal').classList.add('open');
+        } else {
+          showToast('Profile not found', 'fas fa-user-slash');
+        }
+      }).catch(err => {
+        console.error('openPublicProfile error', err);
+        showToast('Failed to load profile', 'fas fa-exclamation-triangle');
+      });
+    };
+
+    // Ensure profile close button works (defensive)
+    const profileCloseBtn = document.querySelector('#profile-page button[onclick*="closeProfileModal"]');
+    if (profileCloseBtn) profileCloseBtn.addEventListener('click', closeProfileModal);
+
+    // Ensure "create identity" username modal save button is functional
+    const saveUsernameBtn = document.getElementById('save-username-btn');
+    if (saveUsernameBtn) {
+      saveUsernameBtn.addEventListener('click', async () => {
+        const val = document.getElementById('new-username-input')?.value?.trim();
+        if (!val) { showToast('Choose a username', 'fas fa-exclamation-circle'); return; }
+        if (!state.user) { showToast('Sign in first', 'fas fa-lock'); signInWithPopup(auth, provider); return; }
+        try {
+          await updateDoc(getUserRef(state.user.uid), { username: val });
+          showToast('Username saved', 'fas fa-check-circle');
+          document.getElementById('username-modal').classList.remove('open');
+        } catch (err) {
+          console.error(err);
+          showToast('Could not save username', 'fas fa-exclamation-triangle');
+        }
+      });
+    }
+
+    /* ===========================
+       END UI HANDLERS
+       =========================== */
+
     // Unload cleanup to avoid leaks
     window.addEventListener('beforeunload', () => {
       if (window.carouselInterval) clearInterval(window.carouselInterval);
