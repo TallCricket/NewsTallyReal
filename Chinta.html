@@ -8,7 +8,7 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome (Pro-like) -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,7 +29,6 @@
       border-radius: 8px;
       margin-bottom: 20px;
     }
-    /* Mobile: remove borders/radius for edge-to-edge feel */
     @media (max-width: 768px) {
       .insta-card { border-left: none; border-right: none; border-radius: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
     }
@@ -45,18 +44,37 @@
     .carousel-overlay { background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%); }
 
     /* Modals & Transitions */
-    .page-layer {
+    .page-layer, .modal-layer {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: var(--bg-app); z-index: 50; 
-      transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       overflow-y: auto;
     }
+    .page-layer { transform: translateX(100%); }
     .page-layer.open { transform: translateX(0); }
+
+    /* Fullscreen Modal (like create post) */
+    .modal-layer { transform: translateY(100%); }
+    .modal-layer.open { transform: translateY(0); }
+
+    /* Overlay Modal (username) */
+    .overlay-modal {
+        position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.6);
+        display: flex; items-center; justify-center;
+        opacity: 0; pointer-events: none; transition: opacity 0.2s ease-out;
+    }
+    .overlay-modal.open { opacity: 1; pointer-events: auto; }
+    .overlay-modal > div { transform: scale(0.95); transition: transform 0.2s ease-out; }
+    .overlay-modal.open > div { transform: scale(1); }
 
     /* Shimmer / Skeleton */
     .skeleton { background: #e1e9ee; background-image: linear-gradient(90deg, #e1e9ee 0px, #f4f8fa 40px, #e1e9ee 80px); background-size: 600px; animation: shimmer 1.6s infinite linear; }
     html.dark .skeleton { background: #1e1e1e; background-image: linear-gradient(90deg, #1e1e1e 0px, #2a2a2a 40px, #1e1e1e 80px); }
     @keyframes shimmer { 0% { background-position: -100px; } 100% { background-position: 100px; } }
+
+    /* Smooth Fade-in Animation (for load more) */
+    .animate-fade { animation: animate-fade 0.4s ease-out both; }
+    @keyframes animate-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
@@ -64,25 +82,36 @@
     html.dark ::-webkit-scrollbar-thumb { background: #444; }
 
     /* Like Animation */
-    .heart-anim { animation: like-bounce 0.3s; color: #ef4444 !important; }
+    .heart-anim { animation: like-bounce 0.3s; }
     @keyframes like-bounce { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
     
     /* Header Glass */
     header { background: rgba(255,255,255,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
     html.dark header { background: rgba(0,0,0,0.9); }
+
+    /* Profile Tabs */
+    .profile-tab {
+        flex: 1; text-align: center; padding: 12px 0; font-medium;
+        color: #8e8e8e; border-bottom: 1px solid var(--border);
+        cursor: pointer;
+    }
+    .profile-tab.active {
+        color: var(--text-main);
+        border-bottom: 2px solid var(--text-main);
+    }
+    .profile-grid { display: none; }
+    .profile-grid.active { display: grid; }
   </style>
 </head>
 <body class="pb-16 md:pb-0">
 
   <!-- TOP NAV -->
   <header class="fixed top-0 w-full z-40 h-14 flex items-center justify-between px-4 md:px-6">
-    <!-- Logo -->
     <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
       <div class="bg-gradient-to-tr from-blue-600 to-purple-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg">N</div>
       <h1 class="text-xl font-bold tracking-tight hidden md:block">NewsTally</h1>
     </div>
 
-    <!-- Desktop Nav -->
     <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-gray-500 dark:text-gray-400">
       <button onclick="switchView('home')" class="nav-link hover:text-blue-600 transition active-nav" data-target="home">Top Stories</button>
       <button onclick="filterCategory('Politics')" class="nav-link hover:text-blue-600 transition">Politics</button>
@@ -90,19 +119,13 @@
       <button onclick="switchView('community')" class="nav-link hover:text-purple-500 transition font-semibold flex items-center gap-2" data-target="community"><i class="fas fa-fire"></i> Community</button>
     </nav>
 
-    <!-- Right Actions -->
     <div class="flex items-center gap-4">
       <button id="dark-mode-toggle" class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition"><i class="far fa-moon"></i></button>
-      
-      <!-- Auth State -->
       <button id="sign-in-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-full text-sm font-bold transition shadow-sm">Sign In</button>
       
       <div id="user-actions" class="hidden flex items-center gap-3">
-        <!-- Create Post (Desktop) -->
         <button onclick="openCreatePostModal()" class="hidden md:flex w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 items-center justify-center text-xl"><i class="far fa-plus-square"></i></button>
-        <!-- Profile -->
         <img id="header-avatar" src="" class="w-8 h-8 rounded-full object-cover border border-gray-200 cursor-pointer" onclick="openProfile()">
-        <!-- Quick Logout -->
         <button onclick="doLogout()" class="text-gray-400 hover:text-red-500 ml-1" title="Sign Out"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     </div>
@@ -113,34 +136,24 @@
     
     <!-- VIEW: HOME (News) -->
     <div id="view-home" class="animate-fade">
-      
-      <!-- Trending Carousel -->
       <div class="px-4 md:px-0 mb-8">
         <div class="carousel-wrapper shadow-lg">
           <div id="carousel-track" class="w-full h-full relative">
-            <!-- Skeletons injected via JS -->
             <div class="skeleton w-full h-full absolute inset-0"></div>
           </div>
-          <!-- Controls -->
           <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-3 rounded-full z-10"><i class="fas fa-chevron-left"></i></button>
           <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-3 rounded-full z-10"><i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
 
-      <!-- News Grid -->
       <div class="px-4 md:px-0">
         <div class="flex items-center justify-between mb-6 border-l-4 border-blue-600 pl-3">
            <h2 class="text-2xl font-bold">Latest Headlines</h2>
            <span id="category-label" class="text-sm font-mono text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">All</span>
         </div>
-        
         <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- Skeletons -->
-          <div class="h-80 rounded-xl bg-gray-100 dark:bg-gray-800 skeleton"></div>
-          <div class="h-80 rounded-xl bg-gray-100 dark:bg-gray-800 skeleton"></div>
           <div class="h-80 rounded-xl bg-gray-100 dark:bg-gray-800 skeleton"></div>
         </div>
-        
         <div class="text-center mt-10 mb-10">
           <button id="load-more-btn" class="px-8 py-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-full font-semibold shadow-sm hover:shadow-md transition text-sm">Load More</button>
         </div>
@@ -149,49 +162,52 @@
 
     <!-- VIEW: COMMUNITY (Instagram Style) -->
     <div id="view-community" class="hidden max-w-lg mx-auto px-0 md:px-4">
-      
-      <!-- Stories / Header Area -->
       <div class="flex items-center justify-between px-4 py-4 mb-2">
         <h2 class="text-xl font-bold tracking-tight">Community Feed</h2>
         <button onclick="openCreatePostModal()" class="text-blue-500 font-semibold text-sm md:hidden">Create</button>
       </div>
 
-      <!-- Feed Container -->
-      <div id="community-feed" class="space-y-4 pb-20">
-        <!-- Loading Skeletons -->
-        <div class="insta-card p-4 space-y-4">
-           <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full skeleton"></div><div class="h-4 w-32 skeleton"></div></div>
-           <div class="h-64 w-full skeleton rounded"></div>
-           <div class="h-4 w-3/4 skeleton"></div>
+      <!-- SEARCH BAR (Re-added) -->
+      <div class="px-4 mb-4">
+        <div class="relative">
+            <input type="text" id="user-search-input" class="w-full pl-10 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800 dark:text-white placeholder-gray-400 text-sm" placeholder="Find users by @username...">
+            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+            <div id="search-results" class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 hidden overflow-hidden border dark:border-gray-700 max-h-60 overflow-y-auto"></div>
         </div>
       </div>
 
-      <!-- Create Post FAB (Mobile) -->
+      <div id="community-feed" class="space-y-0 md:space-y-4 pb-20">
+        <!-- Skeletons -->
+        <div class="insta-card p-4 space-y-4">
+           <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full skeleton"></div><div class="h-4 w-32 skeleton"></div></div>
+           <div class="aspect-square w-full skeleton rounded"></div>
+        </div>
+      </div>
+
       <button onclick="openCreatePostModal()" class="md:hidden fixed bottom-20 right-5 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-30 active:scale-90 transition">
         <i class="fas fa-plus"></i>
       </button>
     </div>
-
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
   <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-black border-t dark:border-gray-800 flex justify-around py-3 z-40 safe-pb">
-    <button onclick="switchView('home')" class="nav-icon active text-gray-400 hover:text-blue-600 flex flex-col items-center gap-1"><i class="fas fa-home text-xl"></i></button>
+    <button onclick="switchView('home')" class="nav-icon active text-blue-600 flex flex-col items-center gap-1"><i class="fas fa-home text-xl"></i></button>
     <button onclick="switchView('community')" class="nav-icon text-gray-400 hover:text-purple-500 flex flex-col items-center gap-1"><i class="fas fa-compass text-xl"></i></button>
     <button onclick="openProfile()" class="nav-icon text-gray-400 hover:text-gray-900 dark:hover:text-white flex flex-col items-center gap-1">
         <img id="btm-avatar" src="https://via.placeholder.com/30" class="w-6 h-6 rounded-full border border-gray-300">
     </button>
   </nav>
 
-  <!-- === MODALS === -->
+  <!-- === MODALS / PAGES === -->
 
   <!-- 1. NEWS DETAIL PAGE -->
   <div id="news-detail-page" class="page-layer bg-white dark:bg-black">
     <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
       <button onclick="closePage('news-detail-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
       <div class="flex gap-4 text-xl text-gray-600 dark:text-gray-300">
-        <button onclick="repostCurrentNews()" class="hover:text-green-500"><i class="fas fa-retweet"></i></button>
-        <button onclick="bookmarkCurrentNews()" class="hover:text-yellow-500"><i class="far fa-bookmark"></i></button>
+        <button onclick="repostCurrentNews()" class="hover:text-green-500" title="Repost"><i class="fas fa-retweet"></i></button>
+        <button id="detail-bookmark-btn" onclick="bookmarkCurrentNews()" class="hover:text-yellow-500" title="Save"><i class="far fa-bookmark"></i></button>
       </div>
     </div>
     <div class="max-w-3xl mx-auto p-5 pb-20">
@@ -212,7 +228,6 @@
       <button onclick="closePage('profile-page')" class="text-2xl"><i class="fas fa-times"></i></button>
     </div>
     <div class="max-w-2xl mx-auto p-4">
-      <!-- Header -->
       <div class="flex items-center gap-6 mb-8">
         <img id="p-avatar" src="" class="w-20 h-20 rounded-full border-2 border-gray-200 p-1">
         <div class="flex-1">
@@ -222,33 +237,25 @@
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="flex border-b dark:border-gray-800 mb-4">
-        <button class="flex-1 py-3 font-semibold border-b-2 border-black dark:border-white" onclick="switchProfileTab('reposts')"><i class="fas fa-th"></i> Reposts</button>
-        <button class="flex-1 py-3 font-semibold text-gray-400 hover:text-gray-600" onclick="switchProfileTab('bookmarks')"><i class="far fa-bookmark"></i> Saved</button>
+      <div class="flex mb-4">
+        <button id="tab-btn-reposts" class="profile-tab active" onclick="switchProfileTab('reposts')"><i class="fas fa-th mr-2"></i>Posts</button>
+        <button id="tab-btn-bookmarks" class="profile-tab" onclick="switchProfileTab('bookmarks')"><i class="far fa-bookmark mr-2"></i>Saved</button>
       </div>
 
-      <!-- Grid Content -->
-      <div id="p-reposts-grid" class="grid grid-cols-3 gap-1">
-        <!-- Images injected here -->
-      </div>
-      <div id="p-bookmarks-list" class="hidden space-y-3">
-        <!-- Bookmarks list here -->
-      </div>
+      <div id="p-reposts-grid" class="profile-grid active grid-cols-3 gap-1"></div>
+      <div id="p-bookmarks-list" class="profile-grid space-y-3"></div>
     </div>
   </div>
 
   <!-- 3. CREATE POST MODAL -->
-  <div id="create-modal" class="fixed inset-0 z-50 hidden bg-black/60 items-center justify-center">
-    <div class="bg-white dark:bg-gray-900 w-full max-w-md md:rounded-xl h-full md:h-auto md:max-h-[90vh] flex flex-col animate-fade">
+  <div id="create-modal" class="modal-layer bg-white dark:bg-black">
       <div class="p-3 border-b dark:border-gray-800 flex justify-between items-center">
-        <button onclick="closeCreatePostModal()" class="text-gray-500 hover:text-black dark:hover:text-white">Cancel</button>
+        <button onclick="closeCreatePostModal()" class="text-gray-500 hover:text-black dark:hover:text-white text-lg"><i class="fas fa-times"></i></button>
         <h3 class="font-bold">New Post</h3>
         <button id="share-btn" class="text-blue-500 font-bold opacity-50" disabled>Share</button>
       </div>
       
       <div class="p-4 flex-1 overflow-y-auto">
-        <!-- Uploader -->
         <div id="drop-area" class="aspect-square bg-gray-100 dark:bg-gray-800 rounded-xl flex flex-col items-center justify-center cursor-pointer mb-4 border-2 border-dashed border-transparent hover:border-blue-500 transition relative overflow-hidden">
            <div id="upload-ui" class="text-center">
              <i class="fas fa-images text-4xl text-gray-300 mb-2"></i>
@@ -258,16 +265,27 @@
            <input type="file" id="file-in" class="hidden" accept="image/*">
         </div>
         
-        <!-- Caption -->
         <div class="flex gap-3">
           <img id="create-avatar" src="" class="w-8 h-8 rounded-full">
           <textarea id="caption-in" class="flex-1 bg-transparent outline-none resize-none mt-1" rows="3" placeholder="Write a caption..."></textarea>
         </div>
 
-        <!-- Progress -->
         <div id="progress-bar" class="h-1 bg-blue-600 w-0 transition-all mt-4 hidden"></div>
       </div>
-    </div>
+  </div>
+
+  <!-- 4. USERNAME MODAL (Re-added) -->
+  <div id="username-modal" class="overlay-modal">
+      <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-11/12 max-w-sm text-center">
+          <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-tag"></i></div>
+          <h3 class="text-2xl font-bold mb-2 dark:text-white">Choose your @username</h3>
+          <p class="text-gray-500 mb-6 text-sm">This will be your unique name on Community.</p>
+          <div class="relative">
+              <span class="absolute left-4 top-3.5 text-gray-400 font-bold">@</span>
+              <input type="text" id="new-username-input" placeholder="username" class="w-full pl-10 p-3 border rounded-xl mb-4 bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 ring-blue-500 outline-none font-bold text-lg">
+          </div>
+          <button id="save-username-btn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">Save & Continue</button>
+      </div>
   </div>
 
   <!-- TOAST NOTIFICATION -->
@@ -298,10 +316,13 @@
 
     // --- STATE ---
     let currentUser = null;
+    let currentUsername = null;
     let newsData = [];
     let newsLimit = 9;
     let currentCategory = 'All';
-    let currentNewsItem = null;
+    let currentNewsItem = null; // For detail page
+    let userBookmarks = []; // For saved feature
+    let pendingRepostItem = null; // For username modal flow
 
     // --- AUTH ---
     onAuthStateChanged(auth, async (user) => {
@@ -318,20 +339,32 @@
         document.getElementById('p-name').innerText = user.displayName;
         document.getElementById('create-avatar').src = av;
 
-        // Ensure User Doc Exists
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, { 
             displayName: user.displayName, 
             photoURL: user.photoURL, 
-            email: user.email,
-            username: user.email.split('@')[0] 
+            email: user.email 
         }, { merge: true });
 
-        // Fetch username
-        getDoc(userRef).then(s => {
-            if(s.exists()) document.getElementById('p-username').innerText = '@' + (s.data().username || 'user');
+        // Listen for user doc changes (username, bookmarks)
+        onSnapshot(userRef, (s) => {
+            if(s.exists()) {
+                const data = s.data();
+                currentUsername = data.username;
+                userBookmarks = data.bookmarks || [];
+                
+                document.getElementById('p-username').innerText = '@' + (currentUsername || user.email.split('@')[0]);
+
+                // Check if username modal was pending
+                if(currentUsername && pendingRepostItem) {
+                    repostCurrentNews(pendingRepostItem); // Pass the stored item
+                    pendingRepostItem = null; // Clear it
+                }
+            }
         });
       } else {
+        // Logged Out State
+        currentUser = null; currentUsername = null; userBookmarks = [];
         document.getElementById('sign-in-btn').classList.remove('hidden');
         document.getElementById('user-actions').classList.add('hidden');
         document.getElementById('user-actions').classList.remove('flex');
@@ -347,8 +380,22 @@
             });
         }
     };
-
     document.getElementById('sign-in-btn').onclick = () => signInWithPopup(auth, provider);
+
+    // --- USERNAME MODAL (Re-added) ---
+    document.getElementById('save-username-btn').onclick = async () => {
+        const input = document.getElementById('new-username-input');
+        const newName = input.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, ''); // Sanitize
+        
+        if(newName.length < 3) { showToast("Username must be 3+ characters"); return; }
+        if(!currentUser) return;
+
+        try {
+            await setDoc(doc(db, 'users', currentUser.uid), { username: newName }, { merge: true });
+            showToast("Username saved!");
+            document.getElementById('username-modal').classList.remove('open');
+        } catch(e) { console.error(e); showToast("Error saving username"); }
+    };
 
     // --- NEWS LOGIC ---
     const SHEET_ID = '1Wy6rzaCALqPLFx079nqBCDRP7dk3au5eRO4GuMwQ8Sk';
@@ -358,7 +405,7 @@
         try {
             const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`);
             const json = await res.json();
-            const rows = json.values.slice(1); // Skip header
+            const rows = json.values.slice(1);
             
             newsData = rows.map(r => ({
                 headline: r[1], source: r[2], date: r[3], 
@@ -374,7 +421,6 @@
     function renderCarousel() {
         const top = newsData.filter(n => n.category === 'Top Story').slice(0, 5);
         const track = document.getElementById('carousel-track');
-        
         if(!top.length) return;
         
         track.innerHTML = top.map((n, i) => `
@@ -386,28 +432,32 @@
                 </div>
             </div>
         `).join('');
-
-        // Auto Play
-        let idx = 0;
-        const slides = document.querySelectorAll('.carousel-slide');
-        if(slides.length > 1) {
-            setInterval(() => {
-                slides[idx].classList.remove('active');
-                idx = (idx + 1) % slides.length;
-                slides[idx].classList.add('active');
-            }, 5000);
-        }
     }
 
     function renderNewsGrid() {
         const grid = document.getElementById('news-grid');
         const filtered = currentCategory === 'All' ? newsData : newsData.filter(n => n.category === currentCategory);
+        
+        const oldLimit = (grid.children.length > 0) ? grid.children.length : 0;
         const visible = filtered.slice(0, newsLimit);
 
         document.getElementById('category-label').innerText = currentCategory;
+        
+        if(oldLimit === 0) { // First load
+            grid.innerHTML = visible.map(n => createNewsCardHTML(n, 0)).join('');
+        } else { // Load More
+            const newItems = visible.slice(oldLimit);
+            const newHTML = newItems.map((n, i) => createNewsCardHTML(n, i * 50)).join('');
+            grid.insertAdjacentHTML('beforeend', newHTML);
+        }
 
-        grid.innerHTML = visible.map(n => `
-            <div class="group cursor-pointer" onclick="openNewsDetail('${encodeURIComponent(n.headline)}')">
+        document.getElementById('load-more-btn').style.display = newsLimit >= filtered.length ? 'none' : 'inline-block';
+    }
+
+    // Helper for smooth load
+    function createNewsCardHTML(n, delay) {
+        return `
+            <div class="group cursor-pointer animate-fade" style="animation-delay: ${delay}ms" onclick="openNewsDetail('${encodeURIComponent(n.headline)}')">
                 <div class="aspect-video overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 relative mb-3">
                     <img src="${n.image}" loading="lazy" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 img-fade-in" onload="this.classList.add('img-loaded')">
                     <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm font-medium">${n.source}</div>
@@ -415,21 +465,20 @@
                 <h3 class="font-bold text-lg leading-snug group-hover:text-blue-600 transition-colors">${n.headline}</h3>
                 <p class="text-sm text-gray-400 mt-1">${n.date}</p>
             </div>
-        `).join('');
-
-        document.getElementById('load-more-btn').style.display = newsLimit >= filtered.length ? 'none' : 'inline-block';
+        `;
     }
 
     window.filterCategory = (cat) => {
         currentCategory = cat;
         newsLimit = 9;
+        document.getElementById('news-grid').innerHTML = ""; // Clear grid for new category
         switchView('home');
         renderNewsGrid();
     };
 
     document.getElementById('load-more-btn').onclick = () => { newsLimit += 6; renderNewsGrid(); };
 
-    // --- NEWS DETAIL ---
+    // --- NEWS DETAIL & BOOKMARKS ---
     window.openNewsDetail = (encTitle) => {
         const n = newsData.find(i => i.headline === decodeURIComponent(encTitle));
         if(!n) return;
@@ -442,29 +491,45 @@
         document.getElementById('nd-img').src = n.image;
         document.getElementById('nd-body').innerHTML = n.desc.split('\n').map(p => `<p class="mb-4">${p}</p>`).join('');
         
+        // Update bookmark icon state
+        const btn = document.getElementById('detail-bookmark-btn');
+        if(userBookmarks.some(b => b.headline === n.headline)) {
+            btn.innerHTML = '<i class="fas fa-bookmark"></i>';
+            btn.classList.add('text-yellow-500');
+        } else {
+            btn.innerHTML = '<i class="far fa-bookmark"></i>';
+            btn.classList.remove('text-yellow-500');
+        }
+        
         document.getElementById('news-detail-page').classList.add('open');
     };
 
-    window.repostCurrentNews = async () => {
+    window.repostCurrentNews = async (itemToRepost = null) => {
+        const item = itemToRepost || currentNewsItem;
         if(!currentUser) { signInWithPopup(auth, provider); return; }
-        if(!currentNewsItem) return;
+        if(!item) return;
 
-        const id = btoa(encodeURIComponent(currentNewsItem.headline)).replace(/=/g,'');
+        // Check for username (re-added)
+        if(!currentUsername) {
+            pendingRepostItem = item; // Save item
+            document.getElementById('username-modal').classList.add('open');
+            return;
+        }
+
+        const id = btoa(encodeURIComponent(item.headline)).replace(/=/g,'');
         const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id);
-        
         const snap = await getDoc(ref);
+
         if(snap.exists() && snap.data().reposters.includes(currentUser.uid)) {
             showToast("Already reposted!"); return;
         }
 
         const payload = {
-            headline: currentNewsItem.headline,
-            image: currentNewsItem.image,
-            source: currentNewsItem.source,
+            headline: item.headline, image: item.image, source: item.source,
             reposters: arrayUnion(currentUser.uid),
             repostCount: increment(1),
             timestamp: new Date().toISOString(),
-            latestReposter: { username: currentUser.displayName, uid: currentUser.uid, avatar: currentUser.photoURL }
+            latestReposter: { username: currentUsername, uid: currentUser.uid, avatar: currentUser.photoURL }
         };
         
         await setDoc(ref, payload, { merge: true });
@@ -473,96 +538,122 @@
         switchView('community');
     };
 
+    window.bookmarkCurrentNews = async () => {
+        if(!currentUser) { signInWithPopup(auth, provider); return; }
+        if(!currentNewsItem) return;
+
+        const userRef = doc(db, 'users', currentUser.uid);
+        const bookmark = { 
+            headline: currentNewsItem.headline, 
+            image: currentNewsItem.image, 
+            source: currentNewsItem.source 
+        };
+        const btn = document.getElementById('detail-bookmark-btn');
+
+        if(userBookmarks.some(b => b.headline === bookmark.headline)) {
+            // Remove
+            await updateDoc(userRef, { bookmarks: arrayRemove(bookmark) });
+            btn.innerHTML = '<i class="far fa-bookmark"></i>';
+            btn.classList.remove('text-yellow-500');
+            showToast("Bookmark removed");
+        } else {
+            // Add
+            await updateDoc(userRef, { bookmarks: arrayUnion(bookmark) });
+            btn.innerHTML = '<i class="fas fa-bookmark"></i>';
+            btn.classList.add('text-yellow-500');
+            showToast("Bookmark Saved!");
+        }
+    };
+
     // --- COMMUNITY FEED (Instagram Style) ---
     let commUnsub = null;
 
     window.loadCommunity = () => {
         const feed = document.getElementById('community-feed');
-        if(!commUnsub) {
-             // Skeleton Initial Load
-             feed.innerHTML = [1,2].map(() => `
-                <div class="insta-card p-4 space-y-4">
-                   <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full skeleton"></div><div class="h-4 w-32 skeleton"></div></div>
-                   <div class="aspect-square w-full skeleton rounded"></div>
-                </div>
-             `).join('');
+        if(commUnsub) return; // Already listening
+        
+        feed.innerHTML = [1,2].map(() => `
+            <div class="insta-card p-4 space-y-4">
+               <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full skeleton"></div><div class="h-4 w-32 skeleton"></div></div>
+               <div class="aspect-square w-full skeleton rounded"></div>
+            </div>
+        `).join('');
 
-             const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), limit(50));
+        const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), limit(50));
+        
+        commUnsub = onSnapshot(q, (snap) => {
+             if(snap.empty) { feed.innerHTML = "<div class='text-center py-10 text-gray-400'>No posts yet.</div>"; return; }
+             const docs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
              
-             commUnsub = onSnapshot(q, (snap) => {
-                 if(snap.empty) { feed.innerHTML = "<div class='text-center py-10 text-gray-400'>No posts yet.</div>"; return; }
-                 
-                 const docs = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                 
-                 feed.innerHTML = docs.map(p => {
-                     const isLiked = currentUser && p.likes && p.likes.includes(currentUser.uid);
-                     const username = p.latestReposter?.username || p.source || 'User';
-                     const avatar = p.latestReposter?.avatar || 'https://via.placeholder.com/40';
-                     const isUserPost = p.isUserPost || false;
-                     const caption = isUserPost ? (p.headline || '') : p.headline;
-                     const subHeader = isUserPost ? '' : `<span class="text-xs text-gray-400 ml-2">Reposted News</span>`;
+             feed.innerHTML = docs.map(p => {
+                 const isLiked = currentUser && p.likes && p.likes.includes(currentUser.uid);
+                 const username = p.latestReposter?.username || p.source || 'User';
+                 const avatar = p.latestReposter?.avatar || 'https://via.placeholder.com/40';
+                 const isUserPost = p.isUserPost || false;
+                 const caption = p.headline || '';
+                 const subHeader = isUserPost ? '' : `<span class="text-xs text-gray-400 ml-2">Reposted News</span>`;
 
-                     return `
-                        <div class="insta-card bg-white dark:bg-gray-900 animate-fade">
-                            <!-- Header -->
-                            <div class="flex items-center justify-between p-3">
-                                <div class="flex items-center gap-3">
-                                    <img src="${avatar}" class="w-9 h-9 rounded-full border object-cover p-0.5 cursor-pointer" onclick="openPublicProfile('${p.latestReposter?.uid}')">
-                                    <div>
-                                        <div class="font-bold text-sm flex items-center">${username} ${subHeader}</div>
-                                        <div class="text-xs text-gray-500">Just now</div>
-                                    </div>
-                                </div>
-                                <button class="text-gray-400"><i class="fas fa-ellipsis-h"></i></button>
-                            </div>
-
-                            <!-- Image -->
-                            <div class="w-full bg-gray-100 dark:bg-black relative" ondblclick="toggleLike('${p.id}')">
-                                <img src="${p.image}" class="w-full object-contain max-h-[500px] img-fade-in" onload="this.classList.add('img-loaded')">
-                                <div id="heart-${p.id}" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
-                                    <i class="fas fa-heart text-white text-6xl drop-shadow-lg"></i>
-                                </div>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="p-3">
-                                <div class="flex items-center gap-4 text-2xl mb-2">
-                                    <button onclick="toggleLike('${p.id}')" class="transition-transform active:scale-125 ${isLiked ? 'text-red-500' : 'text-gray-800 dark:text-white hover:text-gray-600'}">
-                                        <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
-                                    </button>
-                                    <button class="text-gray-800 dark:text-white hover:text-gray-600"><i class="far fa-comment"></i></button>
-                                    <button class="text-gray-800 dark:text-white hover:text-gray-600 ml-auto"><i class="far fa-bookmark"></i></button>
-                                </div>
-                                <div class="font-bold text-sm mb-1">${p.likes ? p.likes.length : 0} likes</div>
+                 return `
+                    <div class="insta-card animate-fade">
+                        <div class="flex items-center justify-between p-3">
+                            <div class="flex items-center gap-3">
+                                <img src="${avatar}" class="w-9 h-9 rounded-full border object-cover p-0.5 cursor-pointer" onclick="openPublicProfile('${p.latestReposter?.uid}')">
                                 <div>
-                                    <span class="font-bold text-sm mr-2">${username}</span>
-                                    <span class="text-sm text-gray-800 dark:text-gray-200">${caption}</span>
+                                    <div class="font-bold text-sm flex items-center">${username} ${subHeader}</div>
                                 </div>
+                            </div>
+                            <button class="text-gray-400"><i class="fas fa-ellipsis-h"></i></button>
+                        </div>
+                        <div class="w-full bg-gray-100 dark:bg-black relative" ondblclick="toggleLike('${p.id}', true)">
+                            <img src="${p.image}" class="w-full object-contain max-h-[500px] img-fade-in" onload="this.classList.add('img-loaded')">
+                            <div id="heart-${p.id}" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+                                <i class="fas fa-heart text-white text-6xl drop-shadow-lg heart-anim"></i>
                             </div>
                         </div>
-                     `;
-                 }).join('');
-             });
-        }
+                        <div class="p-3">
+                            <div class="flex items-center gap-4 text-2xl mb-2">
+                                <button id="like-btn-${p.id}" onclick="toggleLike('${p.id}')" class="transition-transform active:scale-125 ${isLiked ? 'text-red-500' : 'text-gray-800 dark:text-white hover:text-gray-600'}">
+                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                                </button>
+                                <button class="text-gray-800 dark:text-white hover:text-gray-600"><i class="far fa-comment"></i></button>
+                                <button class="text-gray-800 dark:text-white hover:text-gray-600 ml-auto"><i class="far fa-bookmark"></i></button>
+                            </div>
+                            <div class="font-bold text-sm mb-1">${p.likes ? p.likes.length : 0} likes</div>
+                            <div>
+                                <span class="font-bold text-sm mr-2">${username}</span>
+                                <span class="text-sm text-gray-800 dark:text-gray-200">${caption}</span>
+                            </div>
+                        </div>
+                    </div>
+                 `;
+             }).join('');
+         });
     };
 
-    window.toggleLike = async (id) => {
+    window.toggleLike = async (id, fromDblClick = false) => {
         if(!currentUser) { signInWithPopup(auth, provider); return; }
         const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id);
         const snap = await getDoc(ref);
         if(!snap.exists()) return;
 
+        const btn = document.getElementById(`like-btn-${id}`);
         const likes = snap.data().likes || [];
+        
         if(likes.includes(currentUser.uid)) {
+            // Un-like
+            if(fromDblClick) return; // Can't un-like with double click
             updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+            if(btn) btn.classList.remove('heart-anim');
         } else {
-            // Show big heart animation
-            const heartEl = document.getElementById(`heart-${id}`);
-            if(heartEl) {
-                heartEl.style.opacity = 1;
-                heartEl.classList.add('heart-anim');
-                setTimeout(() => { heartEl.style.opacity = 0; heartEl.classList.remove('heart-anim'); }, 800);
+            // Like
+            if(fromDblClick) {
+                const heartEl = document.getElementById(`heart-${id}`);
+                if(heartEl) {
+                    heartEl.style.opacity = 1;
+                    setTimeout(() => { heartEl.style.opacity = 0; }, 800);
+                }
             }
+            if(btn) btn.classList.add('heart-anim');
             updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
         }
     };
@@ -577,12 +668,17 @@
 
     window.openCreatePostModal = () => {
         if(!currentUser) { signInWithPopup(auth, provider); return; }
+        // Check for username
+        if(!currentUsername) {
+            document.getElementById('username-modal').classList.add('open');
+            return;
+        }
         createModal.classList.remove('hidden');
-        createModal.classList.add('flex');
+        createModal.classList.add('modal-layer', 'open');
     };
     window.closeCreatePostModal = () => {
         createModal.classList.add('hidden');
-        createModal.classList.remove('flex');
+        createModal.classList.remove('modal-layer', 'open');
         resetCreateForm();
     };
 
@@ -605,21 +701,17 @@
         document.getElementById('progress-bar').style.width = "50%";
 
         try {
-            // Compress Image
             const base64 = await compressImage(selectedFile);
             document.getElementById('progress-bar').style.width = "80%";
 
-            // Upload
             const docId = `post_${Date.now()}_${currentUser.uid.slice(0,4)}`;
             await setDoc(doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), docId), {
                 headline: document.getElementById('caption-in').value,
-                image: base64,
-                source: 'Community',
+                image: base64, source: 'Community',
                 reposters: [currentUser.uid],
-                repostCount: 1,
-                likes: [],
+                repostCount: 1, likes: [],
                 timestamp: new Date().toISOString(),
-                latestReposter: { username: currentUser.displayName, uid: currentUser.uid, avatar: currentUser.photoURL },
+                latestReposter: { username: currentUsername, uid: currentUser.uid, avatar: currentUser.photoURL },
                 isUserPost: true
             });
 
@@ -631,7 +723,7 @@
         } catch(e) { console.error(e); showToast("Error posting"); }
     };
 
-    function compressImage(file) {
+    function compressImage(file) { /* ... (same as v12) ... */ 
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -651,8 +743,7 @@
             }
         });
     }
-
-    function resetCreateForm() {
+    function resetCreateForm() { /* ... (same as v12) ... */ 
         selectedFile = null;
         previewImg.src = ""; previewImg.classList.add('hidden');
         document.getElementById('upload-ui').classList.remove('hidden');
@@ -662,39 +753,91 @@
         document.getElementById('progress-bar').classList.add('hidden');
     }
 
-    // --- PROFILE (Fixed Reposts) ---
+    // --- PROFILE (Fixed Reposts & Bookmarks) ---
     window.openProfile = () => {
         if(!currentUser) { signInWithPopup(auth, provider); return; }
         document.getElementById('profile-page').classList.add('open');
-        switchProfileTab('reposts'); // Load reposts by default
+        switchProfileTab('reposts');
     };
 
     window.switchProfileTab = (tab) => {
-        const container = document.getElementById('p-reposts-grid');
-        container.innerHTML = `<div class="col-span-3 py-10 text-center"><div class="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>`;
+        // Switch tab visual state
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-btn-${tab}`).classList.add('active');
+        
+        // Switch content grid
+        document.querySelectorAll('.profile-grid').forEach(g => g.classList.remove('active'));
+        const grid = document.getElementById(`p-${tab}-list`) || document.getElementById(`p-${tab}-grid`);
+        grid.classList.add('active');
+        grid.innerHTML = `<div class="col-span-3 py-10 text-center"><div class="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>`;
         
         if(tab === 'reposts') {
-            // Correct Query: Fetch where 'reposters' array contains current UID
             const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), where('reposters', 'array-contains', currentUser.uid));
-            
             getDocs(q).then(snap => {
-                if(snap.empty) {
-                    container.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-400">No posts yet.</div>`; return;
-                }
+                if(snap.empty) { grid.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-400">No posts yet.</div>`; return; }
                 const docs = snap.docs.map(d => d.data()).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                container.innerHTML = docs.map(d => `
-                    <div class="aspect-square bg-gray-100 relative group cursor-pointer border border-white">
+                grid.innerHTML = docs.map(d => `
+                    <div class="aspect-square bg-gray-100 relative group cursor-pointer border border-white dark:border-black">
                         <img src="${d.image}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center text-white font-bold">
-                            <i class="fas fa-heart mr-1"></i> ${d.likes ? d.likes.length : 0}
-                        </div>
                     </div>
                 `).join('');
             });
-        } else {
-            // Bookmarks placeholder logic
-            container.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-400">Bookmarks coming soon via Firestore sync.</div>`;
+        } else if (tab === 'bookmarks') {
+            if(userBookmarks.length === 0) {
+                grid.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-400">No saved posts.</div>`; return;
+            }
+            grid.innerHTML = userBookmarks.map(b => `
+                <div classall" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer" onclick="openNewsDetail('${encodeURIComponent(b.headline)}'); closePage('profile-page');">
+                    <img src="${b.image}" class="w-12 h-12 rounded-lg object-cover">
+                    <span classs="text-sm font-bold truncate flex-1">${b.headline}</span>
+                </div>
+            `).join('');
         }
+    };
+
+    // --- USER SEARCH (Re-added) ---
+    function debounce(fn, delay) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
+    const searchInput = document.getElementById('user-search-input');
+    const searchResults = document.getElementById('search-results');
+    searchInput.addEventListener('input', debounce(async (e) => {
+        const term = e.target.value.trim().toLowerCase();
+        if(term.length < 2) { searchResults.classList.add('hidden'); return; }
+        
+        const q = query(collection(db, 'users'), where('username', '>=', term), where('username', '<=', term + '\uf8ff'), limit(5));
+        
+        const snap = await getDocs(q);
+        if(snap.empty) { searchResults.innerHTML = `<div class="p-3 text-gray-500 text-sm text-center">No users found.</div>`; } 
+        else {
+            searchResults.innerHTML = snap.docs.map(d => {
+                const u = d.data();
+                return `<div class="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700 last:border-0 transition" onclick="openPublicProfile('${d.id}');">
+                    <img src="${u.photoURL}" class="w-8 h-8 rounded-full mr-3">
+                    <div>
+                        <p class="text-sm font-bold dark:text-white">${u.displayName}</p>
+                        <p class="text-xs text-blue-500">@${u.username}</p>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        searchResults.classList.remove('hidden');
+    }, 350));
+    // Hide search results when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.add('hidden');
+        }
+    });
+
+    window.openPublicProfile = (uid) => {
+        // Placeholder to open profile page (or a new modal)
+        showToast(`Opening profile for ${uid.slice(0,5)}...`);
+        searchResults.classList.add('hidden');
     };
 
     // --- UTILS ---
@@ -704,11 +847,10 @@
         document.getElementById(`view-${v}`).classList.remove('hidden');
         if(v === 'community') loadCommunity();
         
-        // Nav highlighting
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('text-blue-600'));
-        document.querySelectorAll('.nav-icon').forEach(el => el.classList.remove('text-blue-600', 'active'));
+        document.querySelectorAll('.nav-link, .nav-icon').forEach(el => el.classList.remove('text-blue-600', 'text-purple-600', 'active'));
+        document.querySelector(`.nav-link[data-target="${v}"]`)?.classList.add('text-blue-600');
+        document.querySelector(`.nav-icon[onclick*="${v}"]`)?.classList.add(v === 'home' ? 'text-blue-600' : 'text-purple-600', 'active');
     };
-
     window.closePage = (id) => document.getElementById(id).classList.remove('open');
 
     function showToast(msg) {
@@ -717,8 +859,6 @@
         t.style.opacity = 1;
         setTimeout(() => t.style.opacity = 0, 2500);
     }
-
-    // Dark Mode
     const darkBtn = document.getElementById('dark-mode-toggle');
     darkBtn.onclick = () => {
         document.documentElement.classList.toggle('dark');
