@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     :root{--bg:#f8fafc;--card:#fff;--muted:#6b7280;--accent:#6366f1}
     html.dark{--bg:#0b1220;--card:#0f1724;--muted:#9ca3af;--accent:#7c3aed}
     body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial; background:var(--bg); color:#0f1724}
@@ -35,7 +34,7 @@
 
     <!-- Composer + Feed Layout -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Left: Composer (large on desktop) -->
+      <!-- Left: Composer -->
       <div class="md:col-span-1 insta-card p-4">
         <h3 class="font-bold mb-3">Create Post</h3>
         <div id="composer" class="space-y-3">
@@ -81,14 +80,13 @@
       <!-- Middle: Feed -->
       <div class="md:col-span-2 space-y-6">
         <div id="community-feed" class="space-y-6">
-          <!-- posts injected here -->
           <div class="text-center text-gray-400 py-12">No posts yet — create the first one or refresh.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Composer Modal (big screen) -->
+  <!-- Composer Modal -->
   <div id="composer-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
     <div class="bg-white rounded-2xl w-[95%] md:w-[900px] max-h-[90vh] overflow-auto p-4 insta-card">
       <div class="flex justify-between items-center mb-3">
@@ -136,7 +134,7 @@
     import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, doc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
     import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js';
 
-    // CONFIG (keep as your project)
+    // Firebase config (your project)
     const firebaseConfig = {
       apiKey: "AIzaSyA4zw5cZqxLwzkTy2e5NiHz-tGKqk1KGdI",
       authDomain: "newstally-df03c.firebaseapp.com",
@@ -152,11 +150,8 @@
     const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
 
-    // IMPORTANT: match your security rules - use the same APP_ID used in rules
+    // IMPORTANT: must match your Firestore rules path
     const APP_ID = 'newstally-social';
-
-    // GLOBAL
-    let currentUser = null;
 
     // Elements
     const fileInput = document.getElementById('file-input');
@@ -184,6 +179,8 @@
     const modalCategory = document.getElementById('modal-category');
     const modalCategoryCustom = document.getElementById('modal-category-custom');
 
+    let currentUser = null;
+
     // Auth listener
     onAuthStateChanged(auth, (u)=>{ currentUser = u; console.log('[auth] state', u ? { uid: u.uid, name: u.displayName } : null); });
 
@@ -194,7 +191,7 @@
       reader.readAsDataURL(file);
     }
 
-    // Drag & drop
+    // Drag & drop handlers
     ['dragenter','dragover'].forEach(ev=>{
       uploader.addEventListener(ev,(e)=>{ e.preventDefault(); uploader.classList.add('ring-2','ring-indigo-300'); });
       modalUploader.addEventListener(ev,(e)=>{ e.preventDefault(); modalUploader.classList.add('ring-2','ring-indigo-300'); });
@@ -223,22 +220,20 @@
     // Clear
     clearBtn.addEventListener('click', ()=>{ fileInput.value=''; preview.src=''; preview.classList.add('hidden'); titleEl.value=''; descEl.value=''; categoryEl.value='General'; categoryCustom.value=''; progressWrap.classList.add('hidden'); progressBar.style.width='0%'; });
 
-    // Open composer modal
+    // Open composer modal (requires auth)
     newPostBtn.addEventListener('click', ()=> {
-      if(!currentUser){ // prompt sign-in first
-        signInWithPopup(auth, provider).catch(()=>{});
-        return;
-      }
+      if(!currentUser){ signInWithPopup(auth, provider).catch(()=>{}); return; }
       composerModal.classList.remove('hidden');
     });
     document.getElementById('close-composer').addEventListener('click', ()=> composerModal.classList.add('hidden'));
     modalCancel.addEventListener('click', ()=> composerModal.classList.add('hidden'));
 
-    // ------------ IMPORTANT: uploadAndCreatePost (writes to artifacts/{APP_ID}/public/data/reposts) ------------
+    // ---------- uploadAndCreatePost (writes to artifacts/{APP_ID}/public/data/reposts) ----------
     async function uploadAndCreatePost(file, meta) {
       console.log('[uploadAndCreatePost] start', { fileName: file?.name, meta });
       const id = 'post_' + Date.now();
-      const path = `community/${id}_${file.name.replace(/\s+/g,'_')}`;
+      const safeName = file.name.replace(/\s+/g,'_');
+      const path = `community/${id}_${safeName}`;
       const storageRef = sRef(storage, path);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -250,20 +245,19 @@
           (snapshot) => {
             const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
             progressBar.style.width = pct + '%';
-            console.log(`[upload] ${pct}%`);
+            console.log('[upload] progress', pct);
           },
           (uploadError) => {
             console.error('[upload] failed', uploadError);
             progressWrap.classList.add('hidden');
-            showLocalToast('Upload failed: ' + (uploadError.message || 'unknown'));
+            alert('Upload failed: ' + (uploadError.message || 'unknown'));
             reject(uploadError);
           },
           async () => {
             try {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
-              console.log('[upload] finished, downloadURL=', url);
+              console.log('[upload] finished, url=', url);
 
-              // Map post meta into the repost schema allowed by rules
               const payload = {
                 headline: meta.title || '(No title)',
                 image: url,
@@ -281,27 +275,25 @@
                 timestamp: serverTimestamp()
               };
 
-              console.log('[firestore] writing doc with payload:', payload);
+              console.log('[firestore] writing payload', payload);
 
-              // WRITE to artifacts/{APP_ID}/public/data/reposts
               const colRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts');
               const docRef = await addDoc(colRef, payload);
 
-              console.log('[firestore] doc created id=', docRef.id);
-              progressWrap.classList.add('hidden');
-              progressBar.style.width = '0%';
+              console.log('[firestore] created doc id=', docRef.id);
+              progressWrap.classList.add('hidden'); progressBar.style.width = '0%';
               resolve(docRef.id);
             } catch (e) {
               console.error('[firestore] write failed', e);
               progressWrap.classList.add('hidden');
-              showLocalToast('Failed to save post: ' + (e.message || 'unknown'));
+              alert('Failed to save post: ' + (e.message || 'unknown'));
               reject(e);
             }
           }
         );
       });
     }
-    // ----------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------
 
     // Modal Post button
     modalPostBtn.addEventListener('click', async ()=>{
@@ -315,7 +307,7 @@
         showLocalToast('Posted to community');
         composerModal.classList.add('hidden');
         modalFile.value=''; modalPreview.classList.add('hidden'); modalTitle.value=''; modalDesc.value=''; modalCategory.value='General'; modalCategoryCustom.value='';
-      }catch(err){ console.error(err); alert('Upload failed'); }
+      }catch(err){ console.error(err); alert('Upload failed: ' + (err.message || err)); }
       modalPostBtn.disabled = false; modalPostBtn.innerText='Post';
     });
 
@@ -331,11 +323,11 @@
         showLocalToast('Posted to community');
         // clear
         fileInput.value=''; preview.classList.add('hidden'); titleEl.value=''; descEl.value=''; categoryEl.value='General'; categoryCustom.value='';
-      }catch(err){ console.error(err); alert('Upload failed'); }
+      }catch(err){ console.error(err); alert('Upload failed: ' + (err.message || err)); }
       submitBtn.disabled=false; submitBtn.innerText='Post';
     });
 
-    // Real-time feed listener
+    // Real-time feed listener -> now listens to artifacts/.../reposts
     const q = query(collection(db,'artifacts', APP_ID, 'public', 'data', 'reposts'), orderBy('timestamp','desc'), limit(50));
     onSnapshot(q, (snap)=>{
       const docs = snap.docs.map(d=>({id:d.id, ...d.data()}));
@@ -377,21 +369,18 @@
         `;
       }).join('');
 
-      // attach event listeners for dynamic buttons
+      // attach event listeners for dynamic buttons (likes -> artifacts/.../reposts/{id})
       document.querySelectorAll('.like-btn').forEach(b=>{ b.onclick = async (e)=>{ const id=b.dataset.id; if(!currentUser){ if(confirm('Sign in to like?')) signInWithPopup(auth, provider); return;} try{ await updateDoc(doc(db,'artifacts', APP_ID, 'public', 'data', 'reposts', id), { likes: arrayUnion(currentUser.uid) }); showLocalToast('Liked'); }catch(err){ console.error(err);} }; });
       document.querySelectorAll('.three-dot-btn').forEach(btn=>{ btn.onclick=(e)=>{ e.stopPropagation(); const pid=btn.dataset.postId; const menu = document.createElement('div'); menu.className='p-2 bg-white rounded shadow'; menu.innerHTML=`<div class="p-2 cursor-pointer" data-act="report">Report</div><div class="p-2 cursor-pointer" data-act="copy">Copy Link</div>`; document.body.appendChild(menu); const rect=btn.getBoundingClientRect(); menu.style.position='fixed'; menu.style.left=rect.right-10+'px'; menu.style.top=rect.bottom+6+'px'; setTimeout(()=>{ menu.addEventListener('click',(ev)=>{ if(ev.target.dataset.act==='report'){ alert('Reported'); } if(ev.target.dataset.act==='copy'){ navigator.clipboard.writeText(location.href+'#post/'+pid); showLocalToast('Link copied'); } menu.remove(); }); },20); }; });
     }
 
-    // small utilities
+    // utilities
     function escapeHtml(s){ if(!s) return ''; return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function formatDate(d){ try{ return d.toLocaleString(); }catch(e){ return ''; } }
     function showLocalToast(msg){ const t=document.createElement('div'); t.className='fixed right-6 bottom-6 bg-black text-white px-4 py-2 rounded shadow'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2500); }
 
     // refresh
     document.getElementById('refresh-community').addEventListener('click', ()=>{ showLocalToast('Refreshed'); });
-
-    // quick sign-in on demand
-    document.getElementById('new-post-btn').addEventListener('click', ()=>{ if(!currentUser){ signInWithPopup(auth, provider).catch(()=>{}); } });
 
   </script>
 </body>
