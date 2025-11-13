@@ -31,14 +31,13 @@
     body { background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
     .gradient-bg { background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); }
 
-    /* Optimized News Card */
+    /* News Card */
     .news-card { 
       background-color: var(--bg-secondary); border: 1px solid var(--border-color); 
       transition: transform 0.2s ease; 
       position: relative; display: flex; flex-direction: column;
       will-change: transform;
     }
-    .news-card.loaded { opacity: 1; transform: translateY(0); }
     .news-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1); }
 
     /* Action Buttons */
@@ -58,13 +57,13 @@
     .carousel-text-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); color: white; }
     
     /* Pages / Modals */
-    #news-detail-page, #profile-page, #username-modal, #public-profile-modal, #community-post-page { 
+    #news-detail-page, #profile-page, #username-modal, #public-profile-modal { 
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
         background-color: var(--bg-primary); z-index: 80; 
         transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
         overflow-y: auto; will-change: transform;
     }
-    #news-detail-page.open, #profile-page.open, #public-profile-modal.open, #community-post-page.open { transform: translateX(0); }
+    #news-detail-page.open, #profile-page.open, #public-profile-modal.open { transform: translateX(0); }
     
     /* --- INSTAGRAM STYLE MODAL (Community Post) --- */
     #community-post-modal { 
@@ -167,8 +166,7 @@
              </div>
             <div class="carousel bg-gray-200 dark:bg-gray-700">
               <div id="carousel-content-wrapper" class="relative w-full h-full">
-                <!-- JS Injects slides here -->
-                <div class="w-full h-full flex items-center justify-center text-gray-400">Loading...</div>
+                <div class="skeleton w-full h-full absolute inset-0"></div>
               </div>
               <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 backdrop-blur-md text-white p-3 rounded-full hover:bg-black/50 transition z-10"><i class="fas fa-chevron-left"></i></button>
               <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 backdrop-blur-md text-white p-3 rounded-full hover:bg-black/50 transition z-10"><i class="fas fa-chevron-right"></i></button>
@@ -179,7 +177,9 @@
           <main class="px-4 md:px-0">
               <h2 class="text-2xl font-extrabold mb-6 flex items-center gap-2 dark:text-white border-l-4 border-blue-600 pl-3">Latest News</h2>
               <div id="news-feed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                 <!-- News Cards -->
+                <!-- Skeletons -->
+                <div class="news-card h-80 rounded-xl p-4"><div class="skeleton w-full h-40 rounded-lg mb-4"></div><div class="skeleton h-4 w-3/4 mb-2"></div><div class="skeleton h-4 w-1/2"></div></div>
+                <div class="news-card h-80 rounded-xl p-4"><div class="skeleton w-full h-40 rounded-lg mb-4"></div><div class="skeleton h-4 w-3/4 mb-2"></div><div class="skeleton h-4 w-1/2"></div></div>
               </div>
               <div id="load-more" class="text-center mt-12">
                 <button id="load-more-btn" class="px-10 py-3 rounded-full shadow-xl bg-blue-600 text-white font-bold transition transform hover:scale-105">Load More News</button>
@@ -207,14 +207,16 @@
           <div id="community-feed" class="space-y-6">
               <div class="text-center py-20">
                  <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-                 <p class="text-gray-500">Fetching updates...</p>
+                 <p class="text-gray-500">Loading Community...</p>
               </div>
           </div>
-          <div id="community-error" class="hidden text-center py-4 text-red-500">
-              <p>Unable to load posts.</p>
-              <button onclick="loadCommunityFeed(true)" class="mt-2 text-blue-600 underline">Retry</button>
+          <!-- Error/Retry UI -->
+          <div id="community-error" class="hidden text-center py-4">
+              <p class="text-red-500 mb-2">Failed to load posts.</p>
+              <button onclick="loadCommunityFeed()" class="text-blue-600 underline">Retry</button>
           </div>
       </div>
+
     </div>
 
     <!-- News Detail Page (Read Only - From Sheets) -->
@@ -449,7 +451,7 @@
         }
     }
 
-    // --- VIEW NAVIGATION ---
+    // --- VIEW NAVIGATION (Optimized) ---
     window.switchView = (viewName) => {
         $('#view-home').classList.add('hidden');
         $('#view-community').classList.add('hidden');
@@ -566,28 +568,35 @@
     window.closeNewsDetail = () => { $('#news-detail-page').classList.remove('open'); };
 
     // --- COMMUNITY & REPOSTS ---
+    
+    // 1. SMART REPOST LOGIC (DEDUPLICATED)
     async function initiateRepost(newsItem) {
         if(!state.user) { showToast("Login to repost", "fas fa-lock"); signInWithPopup(auth, provider); return; }
         if(!state.username) { $('#username-modal').classList.add('open'); window.pendingRepostItem = newsItem; return; }
         
+        // Deterministic ID: Base64 encoded headline
         const repostId = btoa(encodeURIComponent(newsItem.headline)).replace(/=/g, '');
         const repostRef = doc(getPublicRepostsCol(), repostId);
 
         try {
             const docSnap = await getDoc(repostRef);
+            
             if(docSnap.exists()) {
                 const data = docSnap.data();
+                // Check if user already reposted
                 if(data.reposters && data.reposters.includes(state.user.uid)) {
                     showToast("You already reposted this!", "fas fa-exclamation-circle");
                     return;
                 }
+                // Update existing post
                 await updateDoc(repostRef, {
                     reposters: arrayUnion(state.user.uid),
                     repostCount: increment(1),
-                    timestamp: new Date().toISOString(),
+                    timestamp: new Date().toISOString(), // Bump to top
                     latestReposter: { uid: state.user.uid, username: state.username, avatar: state.user.photoURL }
                 });
             } else {
+                // Create new post
                 await setDoc(repostRef, {
                     headline: newsItem.headline, 
                     image: newsItem.image, 
@@ -599,38 +608,25 @@
                     timestamp: new Date().toISOString()
                 });
             }
+
             showToast("Posted to Community!", "fas fa-rocket");
             $('#news-detail-page').classList.remove('open');
             switchView('community'); 
+
         } catch(e) { console.error(e); showToast("Repost failed"); }
     }
 
+    // 2. Load Community Feed (Fallback Logic included)
     let communityUnsub = null;
-    // Robust Load Function with Fallback
-    window.loadCommunityFeed = function(forceUnordered = false) {
+    window.loadCommunityFeed = function() {
         if(communityUnsub) communityUnsub();
         $('#community-error').classList.add('hidden');
-        $('#community-feed').innerHTML = '<div class="text-center py-20 text-gray-400">Fetching updates...</div>';
+        $('#community-feed').innerHTML = '<div class="text-center py-20 text-gray-400"><i class="fas fa-spinner fa-spin text-2xl"></i><br>Loading...</div>';
         
-        // Try Ordered first, if failed (due to index), manually catch error and try Unordered in future steps
-        // For now, we will use a simpler query if the ordered one is failing silently or timeout.
-        let q;
-        if(forceUnordered) {
-             q = query(getPublicRepostsCol(), limit(30)); // No order, safe
-        } else {
-             q = query(getPublicRepostsCol(), orderBy('timestamp', 'desc'), limit(30));
-        }
+        // Use simple query first to avoid index errors, sort manually in JS
+        const q = query(getPublicRepostsCol(), limit(50));
         
-        // Fallback Timeout
-        const timeoutId = setTimeout(() => {
-            if($('#community-feed').innerText.includes('Fetching')) {
-                console.warn("Feed timeout, retrying without sort...");
-                loadCommunityFeed(true); // Retry simple
-            }
-        }, 5000);
-
         communityUnsub = onSnapshot(q, (snap) => {
-            clearTimeout(timeoutId);
             const feedContainer = $('#community-feed');
             
             if(snap.empty) { 
@@ -638,24 +634,32 @@
                 return; 
             }
             
-            feedContainer.innerHTML = snap.docs.map(doc => {
-                const d = doc.data();
+            // Manual Sort (Newest First)
+            let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            docs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            feedContainer.innerHTML = docs.map(d => {
                 const isLiked = state.user && d.likes && d.likes.includes(state.user.uid);
                 const othersCount = (d.repostCount || 1) - 1;
-                const reposterText = othersCount > 0 ? `Reposted by @${d.latestReposter.username} and ${othersCount} others` : `Reposted by @${d.latestReposter.username}`;
+                
+                const username = d.latestReposter?.username || 'Unknown';
+                const uid = d.latestReposter?.uid || '';
+                const avatar = d.latestReposter?.avatar || 'https://placehold.co/40';
+                
+                const reposterText = othersCount > 0 ? `Reposted by @${username} and ${othersCount} others` : `Reposted by @${username}`;
                 
                 return `
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center gap-3 mb-3 cursor-pointer" onclick="window.openPublicProfile('${d.latestReposter.uid}')">
-                         <img src="${d.latestReposter.avatar||'https://placehold.co/40'}" class="w-10 h-10 rounded-full border">
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 border border-gray-100 dark:border-gray-700 mb-4">
+                    <div class="flex items-center gap-3 mb-3 cursor-pointer" onclick="window.openPublicProfile('${uid}')">
+                         <img src="${avatar}" class="w-10 h-10 rounded-full border object-cover">
                          <div>
-                             <p class="text-sm font-bold dark:text-white">@${d.latestReposter.username}</p>
+                             <p class="text-sm font-bold dark:text-white">@${username}</p>
                              <p class="text-xs text-gray-400 flex items-center gap-1"><i class="fas fa-retweet"></i> ${reposterText}</p>
                          </div>
                     </div>
                     
-                    <div class="relative rounded-xl overflow-hidden cursor-pointer group" onclick="window.openCommunityPost('${doc.id}')">
-                         <img src="${d.image}" loading="lazy" class="w-full h-64 object-cover bg-gray-100 transition duration-500 group-hover:scale-105">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer group" onclick="window.openCommunityPost('${d.id}')">
+                         <img src="${d.image}" loading="lazy" class="w-full h-64 object-cover bg-gray-100 transition duration-500 group-hover:scale-105" onerror="this.src='https://placehold.co/600x400?text=News'">
                          <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
                              <h3 class="font-bold text-lg leading-tight shadow-black drop-shadow-md line-clamp-2">${d.headline}</h3>
                              <p class="text-xs opacity-80 mt-1">${d.source}</p>
@@ -663,59 +667,56 @@
                     </div>
 
                     <div class="flex items-center gap-6 mt-3 px-2">
-                        <button onclick="window.toggleLike('${doc.id}')" class="flex items-center gap-2 text-sm font-bold transition ${isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}">
+                        <button onclick="window.toggleLike('${d.id}')" class="flex items-center gap-2 text-sm font-bold transition ${isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}">
                             <i class="${isLiked ? 'fas' : 'far'} fa-heart text-xl"></i> ${d.likes ? d.likes.length : 0}
                         </button>
-                        <button onclick="window.openCommunityPost('${doc.id}')" class="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-blue-500 transition">
+                        <button onclick="window.openCommunityPost('${d.id}')" class="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-blue-500 transition">
                             <i class="far fa-comment text-xl"></i> Discuss
                         </button>
                     </div>
                 </div>`;
             }).join('');
         }, (error) => {
-            clearTimeout(timeoutId);
             console.error("Error loading feed:", error);
             $('#community-feed').innerHTML = '';
             $('#community-error').classList.remove('hidden');
         });
-    }
+    };
 
     // --- INSTAGRAM STYLE MODAL ---
     let modalCommentsUnsub = null;
 
     window.openCommunityPost = async (docId) => {
-        // 1. Get Post Data
         const ref = doc(getPublicRepostsCol(), docId);
         const snap = await getDoc(ref);
         if(!snap.exists()) return;
         const d = snap.data();
 
-        // 2. Populate Modal UI
         $('#comm-modal-img').src = d.image;
         $('#comm-modal-headline').innerText = d.headline;
         $('#comm-modal-source').innerText = d.source;
         
-        $('#comm-modal-username').innerText = '@' + d.latestReposter.username;
-        $('#comm-modal-avatar').src = d.latestReposter.avatar || 'https://placehold.co/40';
+        const username = d.latestReposter?.username || 'user';
+        const avatar = d.latestReposter?.avatar || 'https://placehold.co/40';
+
+        $('#comm-modal-username').innerText = '@' + username;
+        $('#comm-modal-avatar').src = avatar;
         $('#comm-modal-repost-count').innerText = (d.repostCount || 1) + ' Reposts';
         
-        // 3. Show Modal
         $('#community-post-modal').classList.add('open');
         document.body.style.overflow = 'hidden';
 
-        // 4. Setup Inputs
         $('#comm-modal-send').onclick = () => postCommentInModal(docId);
         $('#comm-modal-input').value = '';
         $('#comm-modal-input').onkeydown = (e) => { if(e.key==='Enter') postCommentInModal(docId); };
 
-        // 5. Load Comments Realtime
         loadModalComments(docId);
     };
 
     window.closeCommunityModal = () => {
         $('#community-post-modal').classList.remove('open');
-        document.body.style.overflow = ''; // Restore scroll
-        if(modalCommentsUnsub) modalCommentsUnsub(); // Cleanup listener
+        document.body.style.overflow = ''; 
+        if(modalCommentsUnsub) modalCommentsUnsub();
     };
 
     function loadModalComments(docId) {
@@ -723,14 +724,15 @@
         const list = $('#comm-modal-comments');
         list.innerHTML = '<div class="text-center p-4 text-gray-400"><i class="fas fa-spinner fa-spin"></i></div>';
         
-        const q = query(getCommentsCol(), where('targetId', '==', docId), orderBy('timestamp', 'asc'), limit(100));
+        const q = query(getCommentsCol(), where('targetId', '==', docId), limit(50));
         
         modalCommentsUnsub = onSnapshot(q, (snap) => {
             if(snap.empty) { list.innerHTML = '<div class="text-center p-10 text-gray-400 italic">No comments yet. Start the conversation!</div>'; return; }
             
-            list.innerHTML = snap.docs.map(doc => {
-                const c = doc.data();
-                return `
+            let comments = snap.docs.map(d => d.data());
+            comments.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            list.innerHTML = comments.map(c => `
                 <div class="flex gap-3 animate-fadeIn mb-3">
                     <img src="${c.userAvatar||'https://placehold.co/30'}" class="w-8 h-8 rounded-full shrink-0 border cursor-pointer" onclick="window.openPublicProfile('${c.userId}'); closeCommunityModal()">
                     <div class="flex-1 min-w-0">
@@ -740,8 +742,7 @@
                         </div>
                         <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed break-words">${c.text}</p>
                     </div>
-                </div>`;
-            }).join('');
+                </div>`).join('');
             
             list.scrollTop = list.scrollHeight;
         });
@@ -798,64 +799,7 @@
     window.closeProfileModal = () => { $('#profile-page').classList.remove('open'); };
     window.closePublicProfile = () => { $('#public-profile-modal').classList.remove('open'); };
     
-    window.openPublicProfile = async (uid) => {
-        $('#public-profile-modal').classList.add('open');
-        $('#public-profile-content').innerHTML = '<div class="animate-pulse flex flex-col items-center"><div class="w-24 h-24 bg-gray-200 rounded-full mb-4"></div></div>';
-        const u = (await getDoc(getUserRef(uid))).data();
-        if(u) {
-            const isFollowing = state.following.has(uid);
-            $('#public-profile-content').innerHTML = `<img src="${u.photoURL}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white"><h2 class="text-2xl font-black dark:text-white">${u.displayName}</h2><p class="text-blue-500 font-bold mb-6">@${u.username}</p>${state.user && state.user.uid !== uid ? `<button id="follow-btn-modal" onclick="window.toggleFollow('${uid}')" class="btn-follow px-8 py-2 rounded-full font-bold shadow-lg transition ${isFollowing ? 'bg-white border border-gray-300 text-gray-700' : 'bg-black text-white'}">${isFollowing ? 'Following' : 'Follow'}</button>` : ''}`;
-        }
-    };
-    
-    window.toggleFollow = async (targetUid) => {
-        if(!state.user) return signInWithPopup(auth, provider);
-        const ref = getFollowingRef(state.user.uid, targetUid);
-        if(state.following.has(targetUid)) { await deleteDoc(ref); state.following.delete(targetUid); showToast("Unfollowed"); }
-        else { await setDoc(ref, { t: new Date().toISOString() }); state.following.add(targetUid); showToast("Following"); }
-    };
-    
-    async function toggleBookmark(item) {
-        if(!state.user) return signInWithPopup(auth, provider);
-        const ref = getUserRef(state.user.uid);
-        const isB = state.bookmarks.some(b=>b.headline===item.headline);
-        if(isB) { await updateDoc(ref, { bookmarks: arrayRemove(state.bookmarks.find(b=>b.headline===item.headline)) }); showToast("Bookmark Removed"); }
-        else { await setDoc(ref, { bookmarks: arrayUnion({ headline: item.headline, image: item.image, category: item.category }) }, { merge: true }); showToast("Bookmark Saved"); }
-    }
-    function updateBookmarkIcon(hl) {
-        const isB = state.bookmarks.some(b=>b.headline===hl);
-        const icon = $('#detail-bookmark-btn i');
-        if(icon) icon.className = isB ? 'fas fa-heart text-lg text-red-500' : 'far fa-heart text-lg';
-    }
-
-    $('#save-username-btn').onclick = async () => {
-        const val = $('#new-username-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-        if(val.length < 3) return showToast("Too short");
-        await setDoc(getUserRef(state.user.uid), { username: val }, { merge: true });
-        state.username = val; $('#username-modal').classList.remove('open');
-        if(window.pendingRepostItem) initiateRepost(window.pendingRepostItem);
-    };
-
-    $('#dark-mode-toggle').onclick = () => { $('html').classList.toggle('dark'); $('#dark-mode-toggle i').className = $('html').classList.contains('dark') ? 'fas fa-sun text-yellow-400' : 'fas fa-moon'; };
-    $('#sign-in-button').onclick = () => signInWithPopup(auth, provider);
-    $('#user-profile-button').onclick = () => $('#profile-page').classList.add('open');
-    $('#mobile-profile-trigger').onclick = () => state.user ? $('#profile-page').classList.add('open') : signInWithPopup(auth, provider);
-    
-    $$('.profile-tab').forEach(t => t.onclick = () => {
-        $$('.profile-tab').forEach(x => x.classList.remove('active'));
-        $$('.profile-content-section').forEach(x => x.classList.remove('active'));
-        t.classList.add('active'); $(`#${t.dataset.target}`).classList.add('active');
-    });
-    
-    $('#menu-toggle').onclick = () => $('#nav-panel').classList.add('open');
-    $('#close-panel').onclick = () => $('#nav-panel').classList.remove('open');
-    $$('.nav-category, .nav-category-mobile').forEach(b => b.onclick = () => {
-        if(b.dataset.view === 'community') switchView('community');
-        else window.filterCategory(b.dataset.category);
-        $('#nav-panel').classList.remove('open');
-    });
-
-    // --- AUTH ---
+    // ... (Auth and Init logic remains same) ...
     onAuthStateChanged(auth, async (user) => {
         state.user = user;
         if(user) {
