@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NewsTally - Social</title>
+  <title>NewsTally - Social (No Storage)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -30,14 +30,11 @@
       </div>
       
       <div class="flex items-center gap-4">
-        <!-- Auth Buttons -->
         <div id="auth-section" class="flex items-center gap-3">
             <button id="login-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-full font-medium text-sm transition shadow-sm">
                 <i class="fab fa-google mr-2"></i>Login
             </button>
         </div>
-        
-        <!-- Logged In User View (Hidden by default) -->
         <div id="user-section" class="hidden flex items-center gap-3 cursor-pointer p-1 rounded-full hover:bg-gray-100 transition border border-transparent hover:border-gray-200">
             <img id="nav-avatar" src="" class="w-9 h-9 rounded-full border border-gray-300 object-cover">
             <div class="hidden md:block text-left mr-2">
@@ -53,10 +50,8 @@
   <!-- MAIN LAYOUT -->
   <div class="max-w-6xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6 mt-2">
     
-    <!-- LEFT SIDEBAR (Profile & Composer) -->
+    <!-- LEFT SIDEBAR -->
     <div class="lg:col-span-1 space-y-6">
-        
-        <!-- Profile Card (Shows when logged in) -->
         <div id="profile-card" class="card p-6 text-center hidden">
             <div class="relative w-20 h-20 mx-auto mb-3">
                 <img id="profile-avatar" src="" class="w-full h-full rounded-full object-cover border-4 border-white shadow-md">
@@ -64,14 +59,12 @@
             </div>
             <h2 id="profile-name" class="text-lg font-bold text-gray-900">User Name</h2>
             <p id="profile-email" class="text-sm text-gray-500 mb-4 font-medium bg-gray-100 inline-block px-3 py-1 rounded-full mt-1">user@gmail.com</p>
-            
             <div class="flex justify-center gap-6 text-sm text-gray-600 border-t pt-4 mt-2">
-                <div class="text-center"><span class="block font-bold text-black text-lg">0</span>Posts</div>
+                <div class="text-center"><span class="block font-bold text-black text-lg" id="user-post-count">0</span>Posts</div>
                 <div class="text-center"><span class="block font-bold text-black text-lg">0</span>Likes</div>
             </div>
         </div>
 
-        <!-- Guest Card (Shows when logged out) -->
         <div id="guest-card" class="card p-8 text-center">
             <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                 <i class="fas fa-user-lock"></i>
@@ -81,27 +74,31 @@
             <button id="guest-login-btn" class="text-indigo-600 font-bold hover:underline">Login with Google</button>
         </div>
 
-        <!-- Mini Composer (Desktop) -->
+        <!-- Desktop Composer -->
         <div class="card p-5 hidden lg:block sticky top-24">
             <h3 class="font-bold text-gray-700 mb-3">Create Post</h3>
+            
             <div id="desktop-uploader" class="uploader p-4 rounded-lg text-center cursor-pointer mb-3">
                 <i class="fas fa-image text-2xl text-gray-400 mb-1"></i>
                 <p class="text-xs text-gray-500">Click to Upload Image</p>
                 <img id="desktop-preview" class="hidden w-full h-32 object-cover rounded mt-2">
             </div>
+
+            <div class="text-center text-xs text-gray-400 mb-2">- OR -</div>
+            <input id="desktop-url" class="w-full text-sm p-2 border rounded mb-2 bg-gray-50" placeholder="Paste Image Link...">
+
             <input id="desktop-title" class="w-full text-sm p-2 border rounded mb-2 bg-gray-50" placeholder="Headline...">
             <button id="desktop-post-btn" class="w-full btn-primary py-2 rounded-lg font-semibold text-sm">Post Update</button>
-            <!-- Progress -->
+            
             <div id="desktop-progress-wrap" class="hidden mt-2">
                 <div class="h-1 w-full bg-gray-200 rounded overflow-hidden"><div id="desktop-progress" class="h-full bg-indigo-600 w-0"></div></div>
-                <div class="text-xs text-center text-gray-400 mt-1">Publishing...</div>
+                <div class="text-xs text-center text-gray-400 mt-1" id="desktop-status-text">Processing...</div>
             </div>
         </div>
     </div>
 
     <!-- RIGHT FEED -->
     <div class="lg:col-span-2">
-        <!-- Mobile Trigger for Post -->
         <div class="lg:hidden mb-4 card p-3 flex items-center gap-3 cursor-pointer" id="mobile-composer-trigger">
             <div class="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0 overflow-hidden">
                  <img id="mobile-bar-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-full h-full object-cover">
@@ -119,22 +116,26 @@
     </div>
   </div>
 
-  <!-- Hidden File Input for Desktop Composer -->
+  <!-- Inputs & Modals -->
   <input type="file" id="desktop-file" class="hidden" accept="image/*">
 
-  <!-- Mobile Composer Modal -->
   <div id="modal" class="fixed inset-0 z-50 hidden bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-xl p-4 animate-slide-up">
           <div class="flex justify-between items-center mb-4 border-b pb-2">
               <h3 class="font-bold">New Post</h3>
               <button id="close-modal" class="w-8 h-8 bg-gray-100 rounded-full"><i class="fas fa-times"></i></button>
           </div>
-          <div id="modal-uploader" class="uploader p-8 rounded-xl text-center cursor-pointer mb-4">
+          
+          <div id="modal-uploader" class="uploader p-8 rounded-xl text-center cursor-pointer mb-2">
               <i class="fas fa-cloud-upload-alt text-3xl text-indigo-400 mb-2"></i>
               <p class="text-sm text-gray-500">Tap to select image</p>
               <img id="modal-preview" class="hidden w-full max-h-48 object-contain mt-2 rounded">
           </div>
           <input type="file" id="modal-file" class="hidden" accept="image/*">
+
+          <div class="text-center text-xs text-gray-400 mb-2">- OR -</div>
+          <input id="modal-url" class="w-full p-2 bg-gray-50 border rounded-lg mb-3 text-sm" placeholder="Paste Image Link...">
+
           <input id="modal-title" class="w-full p-3 bg-gray-50 border rounded-lg mb-3 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Write a headline...">
           <textarea id="modal-desc" class="w-full p-3 bg-gray-50 border rounded-lg mb-4 outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Add a caption..."></textarea>
           
@@ -142,21 +143,18 @@
           
           <div id="modal-progress-wrap" class="hidden mt-3">
               <div class="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div id="modal-progress" class="h-full bg-indigo-600 w-0"></div></div>
-              <p class="text-center text-xs text-gray-500 mt-1">Uploading...</p>
+              <p class="text-center text-xs text-gray-500 mt-1">Processing & Saving...</p>
           </div>
       </div>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-xl text-sm font-medium opacity-0 pointer-events-none transition-opacity z-50">
-      Message
-  </div>
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-xl text-sm font-medium opacity-0 pointer-events-none transition-opacity z-50 text-center">Message</div>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
     import { getFirestore, collection, addDoc, serverTimestamp, query, limit, onSnapshot, doc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
-    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js';
+    // NOTE: No Storage Import Needed!
 
     const firebaseConfig = {
       apiKey: "AIzaSyA4zw5cZqxLwzkTy2e5NiHz-tGKqk1KGdI",
@@ -170,251 +168,256 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
     const APP_ID = 'newstally-social';
+    const COLLECTION_NAME = 'posts'; 
 
     let currentUser = null;
 
-    // --- AUTH LISTENER (Handles UI Updates) ---
+    // --- AUTHENTICATION ---
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         if(user) {
-            // Show Logged In UI
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('user-section').classList.remove('hidden');
-            
-            // Navbar Updates
             document.getElementById('nav-avatar').src = user.photoURL;
-            document.getElementById('nav-name').innerText = user.displayName.split(' ')[0]; // First name
+            document.getElementById('nav-name').innerText = user.displayName.split(' ')[0];
             document.getElementById('nav-email').innerText = user.email;
             document.getElementById('mobile-bar-avatar').src = user.photoURL;
-
-            // Profile Card Updates
+            
             document.getElementById('guest-card').classList.add('hidden');
             document.getElementById('profile-card').classList.remove('hidden');
             document.getElementById('profile-avatar').src = user.photoURL;
             document.getElementById('profile-name').innerText = user.displayName;
-            document.getElementById('profile-email').innerText = user.email; // Showing Gmail
+            document.getElementById('profile-email').innerText = user.email;
         } else {
-            // Show Guest UI
             document.getElementById('auth-section').classList.remove('hidden');
             document.getElementById('user-section').classList.add('hidden');
-            
             document.getElementById('guest-card').classList.remove('hidden');
             document.getElementById('profile-card').classList.add('hidden');
             document.getElementById('mobile-bar-avatar').src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
         }
     });
 
-    // --- LOGIN / LOGOUT ACTIONS ---
     const loginAction = async () => {
-        try {
-            await signInWithPopup(auth, provider);
-            showToast('Welcome back!');
-        } catch(e) { console.error(e); showToast('Login failed'); }
+        try { await signInWithPopup(auth, provider); showToast('Welcome!'); } 
+        catch(e) { console.error(e); showToast('Login failed: '+e.message); }
     }
-    
     document.getElementById('login-btn').addEventListener('click', loginAction);
     document.getElementById('guest-login-btn').addEventListener('click', loginAction);
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
 
-
     // --- FEED LOGIC ---
     const feedContainer = document.getElementById('feed-container');
-    // No sort in query to avoid index errors
-    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), limit(50));
+    const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', COLLECTION_NAME), limit(50));
 
     onSnapshot(q, (snapshot) => {
         if(snapshot.empty) {
-            feedContainer.innerHTML = `<div class="text-center py-10 text-gray-400">No posts yet.</div>`;
+            feedContainer.innerHTML = `<div class="text-center py-10 text-gray-400">No posts yet. Start the conversation!</div>`;
             return;
         }
         
-        // Client side sorting (Newest first)
         const posts = snapshot.docs.map(d => ({id: d.id, ...d.data()}))
             .sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+        if(currentUser) {
+            const myPosts = posts.filter(p => p.userId === currentUser.uid).length;
+            document.getElementById('user-post-count').innerText = myPosts;
+        }
 
         feedContainer.innerHTML = posts.map(p => {
             const isLiked = currentUser && p.likes && p.likes.includes(currentUser.uid);
             const time = p.timestamp ? new Date(p.timestamp.seconds * 1000).toLocaleDateString() : '';
             
+            // Handle long base64 strings safely
+            const imgSource = p.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image';
+
             return `
                 <div class="card mb-6 fade-in">
-                    <!-- Post Header -->
                     <div class="p-4 flex items-center gap-3">
-                        <img src="${p.latestReposter?.avatar || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover border">
+                        <img src="${p.userAvatar || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded-full object-cover border">
                         <div>
-                            <div class="font-bold text-gray-900 text-sm">${escapeHtml(p.latestReposter?.username || 'User')}</div>
-                            <div class="text-xs text-gray-500">${time} • ${escapeHtml(p.category || 'General')}</div>
+                            <div class="font-bold text-gray-900 text-sm">${escapeHtml(p.userName || 'User')}</div>
+                            <div class="text-xs text-gray-500">${time}</div>
                         </div>
-                        <button class="ml-auto text-gray-400 hover:text-gray-600"><i class="fas fa-ellipsis-h"></i></button>
                     </div>
-
-                    <!-- Image -->
-                    <div class="bg-black">
-                        <img src="${p.image}" class="w-full max-h-[500px] object-contain mx-auto">
+                    <div class="bg-gray-100 border-y border-gray-200">
+                        <img src="${imgSource}" class="w-full max-h-[500px] object-contain mx-auto">
                     </div>
-
-                    <!-- Actions -->
                     <div class="p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex gap-5">
-                                <button onclick="toggleLike('${p.id}')" class="text-2xl transition ${isLiked ? 'text-red-500 drop-shadow-sm' : 'text-gray-600 hover:text-red-500'}">
-                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
-                                </button>
-                                <button class="text-2xl text-gray-600 hover:text-indigo-600"><i class="far fa-comment"></i></button>
-                                <button class="text-2xl text-gray-600 hover:text-indigo-600"><i class="far fa-paper-plane"></i></button>
-                            </div>
-                            <button class="text-2xl text-gray-600 hover:text-gray-900"><i class="far fa-bookmark"></i></button>
+                        <div class="flex gap-5 mb-3 text-2xl text-gray-600">
+                            <button onclick="toggleLike('${p.id}')" class="transition ${isLiked ? 'text-red-500' : 'hover:text-red-500'}">
+                                <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                            </button>
+                            <button class="hover:text-indigo-600"><i class="far fa-comment"></i></button>
                         </div>
-
                         <div class="font-bold text-sm mb-2">${p.likes ? p.likes.length : 0} likes</div>
-                        
                         <div>
-                            <span class="font-bold text-sm mr-2">${escapeHtml(p.latestReposter?.username)}</span>
-                            <span class="font-bold text-sm text-gray-800">${escapeHtml(p.headline)}</span>
+                            <span class="font-bold text-sm mr-2">${escapeHtml(p.userName)}</span>
+                            <span class="text-sm text-gray-800">${escapeHtml(p.caption)}</span>
                         </div>
-                        <div class="text-sm text-gray-600 mt-1">${escapeHtml(p.description)}</div>
                     </div>
                 </div>
             `;
         }).join('');
+    }, (error) => {
+        console.error("Feed Error:", error);
     });
 
-    // --- UPLOAD LOGIC (Refactored) ---
-    
-    // Desktop
-    const dUploader = document.getElementById('desktop-uploader');
-    const dFile = document.getElementById('desktop-file');
-    const dPreview = document.getElementById('desktop-preview');
-    let dFileObj = null;
-    
-    dUploader.addEventListener('click', () => dFile.click());
-    dFile.addEventListener('change', (e) => {
-        const f = e.target.files[0];
-        if(f) {
-            dFileObj = f;
-            dPreview.src = URL.createObjectURL(f);
-            dPreview.classList.remove('hidden');
-        }
-    });
-    
-    document.getElementById('desktop-post-btn').addEventListener('click', () => {
-        uploadPost(
-            dFileObj, 
-            document.getElementById('desktop-title').value,
-            '', // no desc in mini composer
-            document.getElementById('desktop-post-btn'),
-            document.getElementById('desktop-progress-wrap'),
-            document.getElementById('desktop-progress'),
-            () => {
-                dFileObj = null; dPreview.classList.add('hidden'); dFile.value = '';
-                document.getElementById('desktop-title').value = '';
-            }
-        );
-    });
+    // --- COMPRESSION HELPER (The Magic Trick) ---
+    // Converts image to compressed Base64 string to fit in Firestore (Max 1MB doc size)
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Resize to save space
+                    const MAX_HEIGHT = 800;
+                    let width = img.width;
+                    let height = img.height;
 
-    // Mobile / Modal
-    const modal = document.getElementById('modal');
-    const mUploader = document.getElementById('modal-uploader');
-    const mFile = document.getElementById('modal-file');
-    const mPreview = document.getElementById('modal-preview');
-    let mFileObj = null;
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Compress to JPEG at 70% quality
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(dataUrl);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    }
 
-    document.getElementById('mobile-composer-trigger').addEventListener('click', () => {
+    // --- MAIN POST LOGIC ---
+    async function handlePost(file, urlInput, title, caption, btn, pWrap, pBar, onSuccess) {
         if(!currentUser) { loginAction(); return; }
-        modal.classList.remove('hidden');
-    });
-    document.getElementById('close-modal').addEventListener('click', () => modal.classList.add('hidden'));
-    
-    mUploader.addEventListener('click', () => mFile.click());
-    mFile.addEventListener('change', (e) => {
-        const f = e.target.files[0];
-        if(f) {
-            mFileObj = f;
-            mPreview.src = URL.createObjectURL(f);
-            mPreview.classList.remove('hidden');
-        }
-    });
-
-    document.getElementById('modal-submit').addEventListener('click', () => {
-        uploadPost(
-            mFileObj,
-            document.getElementById('modal-title').value,
-            document.getElementById('modal-desc').value,
-            document.getElementById('modal-submit'),
-            document.getElementById('modal-progress-wrap'),
-            document.getElementById('modal-progress'),
-            () => {
-                modal.classList.add('hidden'); mFileObj = null; mPreview.classList.add('hidden'); mFile.value='';
-                document.getElementById('modal-title').value = '';
-                document.getElementById('modal-desc').value = '';
-            }
-        );
-    });
-
-    async function uploadPost(file, title, desc, btn, pWrap, pBar, onSuccess) {
-        if(!currentUser) { loginAction(); return; }
-        if(!file) { showToast('Please select an image'); return; }
         if(!title) { showToast('Headline is required'); return; }
+        
+        const hasFile = file && file.size > 0;
+        const hasUrl = urlInput && urlInput.length > 10;
+        if(!hasFile && !hasUrl) { showToast('Please select image OR paste link'); return; }
 
         btn.disabled = true;
         pWrap.classList.remove('hidden');
-        pBar.style.width = '10%';
+        pBar.style.width = '20%';
+
+        let finalImageUrl = '';
 
         try {
-            // Upload Image
-            const path = `community/${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, path);
-            const task = uploadBytesResumable(storageRef, file);
+            // STRATEGY: Compress Image -> Base64 String -> Firestore
+            if (hasFile) {
+                 pBar.style.width = '40%';
+                 // 1. Compress image locally
+                 finalImageUrl = await compressImage(file);
+                 pBar.style.width = '70%';
+                 
+                 // Check size (Firestore limit is 1MB for whole doc)
+                 // Base64 string length * 0.75 = approx bytes
+                 if(finalImageUrl.length > 900000) {
+                     alert("Image is too complex even after compression. Please try a simpler or smaller image.");
+                     btn.disabled = false; pWrap.classList.add('hidden');
+                     return;
+                 }
+            } else {
+                finalImageUrl = urlInput;
+                pBar.style.width = '80%';
+            }
 
-            task.on('state_changed', 
-                (snap) => {
-                    const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
-                    pBar.style.width = pct + '%';
-                },
-                (err) => { console.error(err); showToast('Upload Error'); btn.disabled=false; },
-                async () => {
-                    const url = await getDownloadURL(task.snapshot.ref);
-                    
-                    await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), {
-                        headline: title,
-                        description: desc || '',
-                        category: 'General',
-                        image: url,
-                        timestamp: serverTimestamp(),
-                        likes: [],
-                        source: currentUser.displayName,
-                        latestReposter: {
-                            uid: currentUser.uid,
-                            username: currentUser.displayName,
-                            avatar: currentUser.photoURL,
-                            email: currentUser.email // Storing email in doc too if needed
-                        }
-                    });
+            // 2. Save DIRECTLY to Database (No Storage Bucket needed)
+            await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', COLLECTION_NAME), {
+                caption: title + (caption ? '\n' + caption : ''),
+                imageUrl: finalImageUrl, // Storing the base64 string directly here!
+                timestamp: serverTimestamp(),
+                userId: currentUser.uid,
+                userName: currentUser.displayName,
+                userAvatar: currentUser.photoURL,
+                userEmail: currentUser.email,
+                likes: []
+            });
 
-                    showToast('Posted Successfully!');
-                    btn.disabled = false;
-                    pWrap.classList.add('hidden');
-                    onSuccess();
-                }
-            );
-        } catch(e) {
-            console.error(e);
-            showToast('Error: ' + e.message);
+            pBar.style.width = '100%';
+            showToast('Post Created!');
             btn.disabled = false;
+            pWrap.classList.add('hidden');
+            onSuccess();
+
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+            btn.disabled = false;
+            pWrap.classList.add('hidden');
         }
     }
 
-    // Global Functions
-    window.toggleLike = async (pid) => {
+    // Desktop Events
+    const dFile = document.getElementById('desktop-file');
+    const dPreview = document.getElementById('desktop-preview');
+    let dFileObj = null;
+    document.getElementById('desktop-uploader').addEventListener('click', ()=>dFile.click());
+    dFile.addEventListener('change', (e)=>{ if(e.target.files[0]){dFileObj=e.target.files[0]; dPreview.src=URL.createObjectURL(dFileObj); dPreview.classList.remove('hidden');}});
+    
+    document.getElementById('desktop-post-btn').addEventListener('click', ()=>{
+        handlePost(
+            dFileObj, 
+            document.getElementById('desktop-url').value,
+            document.getElementById('desktop-title').value, 
+            '', 
+            document.getElementById('desktop-post-btn'), 
+            document.getElementById('desktop-progress-wrap'), 
+            document.getElementById('desktop-progress'), 
+            ()=>{
+                dFileObj = null; dPreview.classList.add('hidden'); dFile.value=''; 
+                document.getElementById('desktop-title').value=''; document.getElementById('desktop-url').value='';
+            }
+        );
+    });
+
+    // Mobile Events
+    const mFile = document.getElementById('modal-file');
+    const mPreview = document.getElementById('modal-preview');
+    let mFileObj = null;
+    const modal = document.getElementById('modal');
+    document.getElementById('mobile-composer-trigger').addEventListener('click', ()=>{ if(!currentUser) loginAction(); else modal.classList.remove('hidden'); });
+    document.getElementById('close-modal').addEventListener('click', ()=>modal.classList.add('hidden'));
+    document.getElementById('modal-uploader').addEventListener('click', ()=>mFile.click());
+    mFile.addEventListener('change', (e)=>{ if(e.target.files[0]){mFileObj=e.target.files[0]; mPreview.src=URL.createObjectURL(mFileObj); mPreview.classList.remove('hidden');}});
+
+    document.getElementById('modal-submit').addEventListener('click', ()=>{
+        handlePost(
+            mFileObj, 
+            document.getElementById('modal-url').value,
+            document.getElementById('modal-title').value, 
+            document.getElementById('modal-desc').value, 
+            document.getElementById('modal-submit'), 
+            document.getElementById('modal-progress-wrap'), 
+            document.getElementById('modal-progress'), 
+            ()=>{
+                modal.classList.add('hidden'); mFileObj=null; mPreview.classList.add('hidden'); mFile.value=''; 
+                document.getElementById('modal-title').value=''; document.getElementById('modal-desc').value=''; document.getElementById('modal-url').value='';
+            }
+        );
+    });
+
+    // Likes
+    window.toggleLike = async (id) => {
         if(!currentUser) { loginAction(); return; }
         try {
-            const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', 'reposts', pid);
+            const ref = doc(db, 'artifacts', APP_ID, 'public', 'data', COLLECTION_NAME, id);
             await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
-            // Note: To toggle off requires checking state. Simple add for now.
-        } catch(e) { console.error(e); }
+        } catch(e) { console.error("Like Error", e); }
     }
 
     function showToast(msg) {
@@ -423,10 +426,7 @@
         t.classList.remove('opacity-0');
         setTimeout(() => t.classList.add('opacity-0'), 3000);
     }
-
-    function escapeHtml(text) {
-        return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
-    }
+    function escapeHtml(t) { return t ? t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : ''; }
   </script>
 </body>
 </html>
