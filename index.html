@@ -1048,7 +1048,7 @@
             const newItems = visible.slice(oldLimit);
             grid.insertAdjacentHTML('beforeend', newItems.map((n, i) => createNewsCardHTML(n, i * 50)).join(''));
         }
-        if (visible.length === 0) grid.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 text-gray-400">No articles found for "${currentCategory}".</div>`;
+        if (visible.length === 0) grid.innerHTML = `<div class="col-span-1 md:col-span-2 lg:grid-cols-3 text-center py-10 text-gray-400">No articles found for "${currentCategory}".</div>`;
         document.getElementById('load-more-btn').style.display = (newsLimit >= filtered.length || visible.length === 0) ? 'none' : 'inline-block';
     }
     function createNewsCardHTML(n, delay) {
@@ -1289,7 +1289,7 @@
                            <i class="${isBookmarked ? 'fas' : 'far'} fa-bookmark"></i>
                        </button>
                    </div>
-                   <div class="font-bold text-sm mb-1">${likes.length} likes</div>
+                   <div id="like-count-${postData.id}" class="font-bold text-sm mb-1">${likes.length} likes</div>
                    <div class="text-sm text-gray-800 dark:text-gray-200">
                        <span class="font-bold mr-2 cursor-pointer" onclick="openPublicProfile('${uid}')">${username}</span>
                        <span id="caption-${postData.id}">${renderHashtags(caption)}</span>
@@ -1302,36 +1302,115 @@
         `;
     }
     
-    window.toggleLike = async (id, fromDblClick = false) => {
-        if(!currentUser) { openAuthModal(); return; }
-        if(!id) return;
-        const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id);
-        const snap = await getDoc(ref); if(!snap.exists()) return;
-        const btn = document.getElementById(`like-btn-${id}`);
-        const postDoc = snap.data();
-        const likes = postDoc.likes || [];
-        
-        if(likes.includes(currentUser.uid)) {
-            if(fromDblClick) return;
-            updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
-            if(btn) btn.classList.remove('heart-anim');
-        } else {
-            if(fromDblClick) {
-                const heartEl = document.getElementById(`heart-${id}`);
-                if(heartEl) { heartEl.style.opacity = 1; setTimeout(() => { heartEl.style.opacity = 0; }, 800); }
-            }
-            if(btn) btn.classList.add('heart-anim');
-            await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+    // --- Helper function to send notification without blocking UI ---
+    async function sendLikeNotification(postRef) {
+        try {
+            const postSnap = await getDoc(postRef);
+            if (!postSnap.exists()) return;
             
+            const postDoc = postSnap.data();
             const ownerUid = postDoc.latestReposter?.uid;
+            
+            // Only send if it's someone else's post
             if (ownerUid && ownerUid !== currentUser.uid) {
                 const notifRef = doc(collection(db, 'users', ownerUid, 'notifications'));
                 await setDoc(notifRef, {
                     type: 'like', actorUid: currentUser.uid, actorUsername: currentUsername,
                     actorAvatar: currentUserDoc.photoURL, timestamp: serverTimestamp(),
-                    read: false, postId: id, postImage: postDoc.image
+                    read: false, postId: postRef.id, postImage: postDoc.image
                 });
             }
+        } catch (e) {
+            console.error("Error sending like notification:", e);
+        }
+    }
+    
+    // --- (FIXED) toggleLike for Optimistic UI ---
+    window.toggleLike = (id, fromDblClick = false) => {
+        if(!currentUser) { openAuthModal(); return; }
+        if(!id) return;
+
+        const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id);
+        const btn = document.getElementById(`like-btn-${id}`);
+        const icon = btn ? btn.querySelector('i') : null; // <-- (FIX) Get the icon tag
+        const countEl = document.getElementById(`like-count-${id}`); 
+        
+        if (!btn || !icon || !countEl) return; // <-- (FIX) Check for icon
+
+        // Determine state from UI (icon class)
+        const isCurrentlyLiked = icon.classList.contains('fas'); // <-- (FIX) Check icon's class
+        let currentCount = parseInt(countEl.innerText) || 0; 
+
+        if (isCurrentlyLiked) {
+            // --- UNLIKE ---
+            if (fromDblClick) return; // Can't unlike with a double-click
+            
+            // 1. Optimistic UI Update (Unlike)
+            // Icon
+            icon.classList.remove('fas'); // (FIX)
+            icon.classList.add('far'); // (FIX)
+            // Button Color
+            btn.classList.remove('text-red-500');
+            btn.classList.add('text-gray-800', 'dark:text-white', 'hover:text-gray-600');
+            
+            btn.classList.remove('heart-anim');
+            currentCount = Math.max(0, currentCount - 1); // Decrement
+            countEl.innerText = `${currentCount} likes`;
+
+            // 2. Background Sync
+            updateDoc(ref, { likes: arrayRemove(currentUser.uid) })
+                .catch(e => {
+                    console.error("Unlike failed:", e);
+                    // Revert UI on failure
+                    icon.classList.add('fas'); // (FIX)
+                    icon.classList.remove('far'); // (FIX)
+                    btn.classList.add('text-red-500'); 
+                    btn.classList.remove('text-gray-800', 'dark:text-white', 'hover:text-gray-600');
+                    currentCount++; 
+                    countEl.innerText = `${currentCount} likes`;
+                    showToast("Error unliking post");
+                });
+        
+        } else {
+            // --- LIKE ---
+            // 1. Optimistic UI Update (Like)
+            // Icon
+            icon.classList.remove('far'); // (FIX)
+            icon.classList.add('fas'); // (FIX)
+            // Button Color
+            btn.classList.remove('text-gray-800', 'dark:text-white', 'hover:text-gray-600');
+            btn.classList.add('text-red-500');
+
+            btn.classList.add('heart-anim');
+            currentCount++; // Increment
+            countEl.innerText = `${currentCount} likes`;
+
+            if (fromDblClick) {
+                const heartEl = document.getElementById(`heart-${id}`);
+                if (heartEl) { 
+                    heartEl.style.opacity = 1; 
+                    setTimeout(() => { heartEl.style.opacity = 0; }, 800); 
+                }
+            }
+
+            // 2. Background Sync
+            updateDoc(ref, { likes: arrayUnion(currentUser.uid) })
+                .then(() => {
+                    // 3. Send notification in background (non-blocking)
+                    sendLikeNotification(ref); 
+                })
+                .catch(e => {
+                    console.error("Like failed:", e);
+                    // Revert UI on failure
+                    icon.classList.remove('fas'); // (FIX)
+                    icon.classList.add('far'); // (FIX)
+                    btn.classList.remove('text-red-500'); 
+                    btn.classList.add('text-gray-800', 'dark:text-white', 'hover:text-gray-600');
+                    btn.classList.remove('heart-anim');
+                    currentCount--; 
+                    countEl.innerText = `${currentCount} likes`;
+                    showToast("Error liking post");
+                });
         }
     };
     
