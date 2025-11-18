@@ -2,153 +2,248 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <!-- FEATURE: Double Tap Zoom Disable (user-scalable=no) -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <!-- FEATURE: Dynamic Status Bar Color -->
+  <meta name="theme-color" content="#ffffff" id="theme-color-meta">
   <title>NewsTally - Premium Social News</title>
   <meta name="description" content="NewsTally - Read, Repost, Connect." />
   
+  <!-- FEATURE: Preconnect for Faster Loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com">
+  <link rel="preconnect" href="https://www.gstatic.com">
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #2563eb; --bg-app: #fafafa; --card-bg: #ffffff; --text-main: #262626; --border: #dbdbdb;
+      --primary: #0095f6; /* Instagram Blue */
+      --bg-app: #fafafa; 
+      --card-bg: #ffffff; 
+      --text-main: #262626; 
+      --border: #dbdbdb;
+      --btn-grey-bg: #efefef;
+      --btn-grey-hover: #dbdbdb;
+      --btn-grey-text: #000000;
     }
     html.dark {
-      --primary: #60a5fa; --bg-app: #000000; --card-bg: #121212; --text-main: #f5f5f5; --border: #262626;
+      --primary: #0095f6; 
+      --bg-app: #000000; 
+      --card-bg: #121212; 
+      --text-main: #f5f5f5; 
+      --border: #262626;
+      --btn-grey-bg: #363636;
+      --btn-grey-hover: #262626;
+      --btn-grey-text: #ffffff;
     }
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-app); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+    
+    /* --- NATIVE APP FEEL TWEAKS --- */
+    * { -webkit-tap-highlight-color: transparent; } /* Remove Blue Tap Box */
+    
+    body { 
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        background-color: var(--bg-app); 
+        color: var(--text-main); 
+        -webkit-font-smoothing: antialiased;
+        overscroll-behavior-y: none; /* Prevent Pull-to-Refresh Bounce */
+    }
+
+    /* FEATURE: Prevent Image Dragging */
+    img { -webkit-user-drag: none; user-select: none; }
+
+    /* FEATURE: Active Scale Effect (Button Press) */
+    button:active { transform: scale(0.96); transition: transform 0.1s; }
+
+    /* FEATURE: Custom Scrollbar Hide */
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* FEATURE: Text Line Clamp */
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 
     /* --- INSTAGRAM-STYLE UI UTILITIES --- */
-   .insta-card {
+    .insta-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 8px;
       margin-bottom: 20px;
     }
     @media (max-width: 768px) {
-     .insta-card { border-left: none; border-right: none; border-radius: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      .insta-card { border-left: none; border-right: none; border-radius: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      #post-detail-page .insta-card { border: none; border-radius: 0; box-shadow: none; }
     }
 
-    /* Smooth Image Loading */
-   .img-fade-in { opacity: 0; transition: opacity 0.4s ease-in-out; }
-   .img-loaded { opacity: 1; }
+    /* --- PREMIUM FOLLOW BUTTONS --- */
+    .btn-insta-base {
+        padding: 7px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.1s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 18px;
+    }
+    .btn-insta-follow { background-color: var(--primary); color: white; border: none; }
+    .btn-insta-follow:hover { background-color: #1877f2; }
+    .btn-insta-following { background-color: var(--btn-grey-bg); color: var(--btn-grey-text); border: none; }
+    .btn-insta-following:hover { background-color: var(--btn-grey-hover); }
 
-    /* Carousel Stability Fixes */
-   .carousel-wrapper { position: relative; height: 400px; overflow: hidden; border-radius: 16px; background: #e5e5e5; }
-   .carousel-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.6s ease-in-out; z-index: 1; pointer-events: none; }
-   .carousel-slide.active { opacity: 1; z-index: 2; pointer-events: auto; }
-   .carousel-overlay { background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%); }
+    /* Smooth Image Loading */
+    .img-fade-in { opacity: 0; transition: opacity 0.4s ease-in-out; }
+    .img-loaded { opacity: 1; }
+
+    /* --- CAROUSEL SNAP SCROLL --- */
+    .carousel-wrapper { position: relative; height: 400px; overflow: hidden; border-radius: 16px; background: #e5e5e5; }
+    html.dark .carousel-wrapper { background: #1a1a1a; }
+    #carousel-track {
+        display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+        height: 100%; width: 100%; scrollbar-width: none; -ms-overflow-style: none;
+    }
+    #carousel-track::-webkit-scrollbar { display: none; }
+    .carousel-slide { flex: 0 0 100%; width: 100%; height: 100%; scroll-snap-align: center; position: relative; }
+    .carousel-overlay { background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%); }
 
     /* Modals & Transitions */
-   .page-layer,.modal-layer {
+    .page-layer, .modal-layer {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: var(--bg-app); z-index: 50; 
       transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       overflow-y: auto;
     }
-   .page-layer { transform: translateX(100%); }
-   .page-layer.open { transform: translateX(0); }
-
-    /* Fullscreen Modal (like create post) */
-   .modal-layer { transform: translateY(100%); }
-   .modal-layer.open { transform: translateY(0); }
-
-    /* Overlay Modal (username) */
-   .overlay-modal {
+    .page-layer { transform: translateX(100%); }
+    .page-layer.open { transform: translateX(0); }
+    .modal-layer { transform: translateY(100%); }
+    .modal-layer.open { transform: translateY(0); }
+    .overlay-modal {
         position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.6);
         display: flex; items-center; justify-center;
         opacity: 0; pointer-events: none; transition: opacity 0.2s ease-out;
     }
-   .overlay-modal.open { opacity: 1; pointer-events: auto; }
-   .overlay-modal > div { transform: scale(0.95); transition: transform 0.2s ease-out; }
-   .overlay-modal.open > div { transform: scale(1); }
+    .overlay-modal.open { opacity: 1; pointer-events: auto; }
+    .overlay-modal > div { transform: scale(0.95); transition: transform 0.2s ease-out; }
+    .overlay-modal.open > div { transform: scale(1); }
 
-    /* Shimmer / Skeleton */
-   .skeleton { background: #e1e9ee; background-image: linear-gradient(90deg, #e1e9ee 0px, #f4f8fa 40px, #e1e9ee 80px); background-size: 600px; animation: shimmer 1.6s infinite linear; }
-    html.dark.skeleton { background: #1e1e1e; background-image: linear-gradient(90deg, #1e1e1e 0px, #2a2a2a 40px, #1e1e1e 80px); }
-    @keyframes shimmer { 0% { background-position: -100px; } 100% { background-position: 100px; } }
-
-    /* Smooth Fade-in Animation (for load more) */
-   .animate-fade { animation: animate-fade 0.4s ease-out both; }
-    @keyframes animate-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-    html.dark ::-webkit-scrollbar-thumb { background: #444; }
-
-    /* Like Animation */
-   .heart-anim { animation: like-bounce 0.3s; }
-    @keyframes like-bounce { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-    
-    /* Header Glass */
-    header { background: rgba(255,255,255,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
+    /* Header Shadow Transition */
+    header { transition: box-shadow 0.3s ease; background: rgba(255,255,255,0.95); border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
     html.dark header { background: rgba(0,0,0,0.9); }
+    header.shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-bottom: none; }
 
-    /* Profile Tabs */
-   .profile-tab {
-        flex: 1; text-align: center; padding: 12px 0; font-medium;
-        color: #8e8e8e; border-bottom: 1px solid var(--border);
-        cursor: pointer;
+    /* --- AUTH MODAL STYLES --- */
+    .auth-google-btn {
+        display: flex; align-items: center; justify-content: center; gap: 12px;
+        width: 100%; padding: 12px; border-radius: 12px; font-weight: 700;
+        background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s;
     }
-   .profile-tab.active {
-        color: var(--text-main);
-        border-bottom: 2px solid var(--text-main);
+    .auth-divider { display: flex; align-items: center; text-align: center; color: #aaa; font-size: 12px; font-weight: 600; text-transform: uppercase; margin: 24px 0; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+    .auth-divider:not(:empty)::before { margin-right: .5em; } .auth-divider:not(:empty)::after { margin-left: .5em; }
+    .auth-input {
+        width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
+        background: var(--bg-app); font-size: 15px; font-weight: 500; outline: none; transition: box-shadow 0.2s;
     }
-   .profile-grid { display: none; }
-   .profile-grid.active { display: grid; }
+    .auth-input:focus { box-shadow: 0 0 0 2px var(--primary); }
+    .auth-submit-btn {
+        width: 100%; padding: 14px; border-radius: 12px; background: var(--primary); color: white; font-size: 16px; font-weight: 700; transition: background 0.2s;
+    }
+    .auth-toggle-link { color: var(--primary); font-weight: 600; cursor: pointer; }
+    
+    /* Misc UI */
+    .profile-tab { flex: 1; text-align: center; padding: 12px 0; font-weight: 500; color: #8e8e8e; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .profile-tab.active { color: var(--text-main); border-bottom: 2px solid var(--text-main); }
+    .profile-grid { display: none; } .profile-grid.active { display: grid; }
+    
+    .profile-sub-filter { flex: 1; text-align: center; padding: 8px 12px; font-weight: 500; font-size: 0.875rem; border-radius: 8px; background-color: var(--bg-app); border: 1px solid var(--border); color: #8e8e8e; }
+    .profile-sub-filter.active { background-color: var(--primary); color: white; border-color: var(--primary); }
+
+    .community-tab { flex: 1; text-align: center; padding: 12px 0; font-weight: 500; color: #8e8e8e; border-bottom: 2px solid var(--border); }
+    .community-tab.active { color: var(--text-main); border-bottom: 2px solid var(--text-main); }
+    
+    .category-filter-btn { background-color: #f3f4f6; color: #374151; }
+    html.dark .category-filter-btn { background-color: #1f2937; color: #d1d5db; }
+    .category-filter-btn.active { background-color: #2563eb; color: white; }
+    html.dark .category-filter-btn.active { background-color: #60a5fa; }
+
+    .notify-badge { position: absolute; top: -3px; right: -4px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 9999px; border: 2px solid var(--card-bg); }
+    .nav-icon .notify-badge { top: -1px; right: 18px; }
+    
+    .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); background: var(--card-bg); border-radius: 12px; margin-bottom: 12px; }
+    .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-switch .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
+    .toggle-switch .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .choice-button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 24px; border-radius: 16px; background-color: var(--bg-app); border: 1px solid var(--border); font-size: 1.1rem; font-weight: 700; transition: all 0.2s; }
+    .choice-button:hover { border-color: var(--primary); background-color: var(--card-bg); color: var(--primary); }
   </style>
 </head>
 <body class="pb-16 md:pb-0">
 
+  <!-- TOP NAV -->
   <header class="fixed top-0 w-full z-40 h-14 flex items-center justify-between px-4 md:px-6">
-    <a href="#" class="flex items-center gap-3" onclick="event.preventDefault(); location.reload();" aria-label="NewsTally Home">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
       <div class="bg-gradient-to-tr from-blue-600 to-purple-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg">N</div>
       <h1 class="text-xl font-bold tracking-tight hidden md:block">NewsTally</h1>
-    </a>
-
+    </div>
     <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-gray-500 dark:text-gray-400">
-      <button onclick="switchView('home')" class="nav-link hover:text-blue-600 transition active-nav" data-target="home">Top Stories</button>
-      <button onclick="filterCategory('Politics')" class="nav-link hover:text-blue-600 transition">Politics</button>
-      <button onclick="filterCategory('Technology')" class="nav-link hover:text-blue-600 transition">Tech</button>
-      <button onclick="switchView('community')" class="nav-link hover:text-purple-500 transition font-semibold flex items-center gap-2" data-target="community"><i class="fas fa-fire" aria-hidden="true"></i> Community</button>
+       <button onclick="switchView('home')" class="nav-link hover:text-blue-600 transition active-nav" data-target="home">News</button>
+       <button onclick="switchView('community')" class="nav-link hover:text-purple-500 transition font-semibold flex items-center gap-2" data-target="community"><i class="fas fa-fire"></i> Community</button>
     </nav>
-
     <div class="flex items-center gap-4">
-      <button id="dark-mode-toggle" class="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition" aria-label="Toggle dark mode"><i class="far fa-moon" aria-hidden="true"></i></button>
-      <button id="sign-in-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-full text-sm font-bold transition shadow-sm">Sign In</button>
-      
+      <button id="sign-in-btn" onclick="openAuthModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-full text-sm font-bold transition shadow-sm">Sign In</button>
       <div id="user-actions" class="hidden flex items-center gap-3">
-        <button onclick="openCreatePostModal()" class="hidden md:flex w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 items-center justify-center text-xl" aria-label="Create new post"><i class="far fa-plus-square" aria-hidden="true"></i></button>
-        <button type="button" onclick="openProfile()" aria-label="Open Profile">
-          <img id="header-avatar" src="" class="w-8 h-8 rounded-full object-cover border border-gray-200">
+        <button onclick="openAddPostOptionsModal()" class="hidden md:flex w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 items-center justify-center text-xl"><i class="far fa-plus-square"></i></button>
+        <button id="nav-notify-btn" onclick="openNotificationsPage()" class="hidden md:flex w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 items-center justify-center text-xl relative">
+          <i class="far fa-heart"></i>
+          <span id="notify-badge-header" class="notify-badge hidden"></span>
         </button>
-        <button onclick="doLogout()" class="text-gray-400 hover:text-red-500 ml-1" title="Sign Out" aria-label="Sign Out"><i class="fas fa-sign-out-alt" aria-hidden="true"></i></button>
+        <img id="header-avatar" src="" class="w-8 h-8 rounded-full object-cover border border-gray-200 cursor-pointer" onclick="openProfile()">
+        <button onclick="doLogout()" class="text-gray-400 hover:text-red-500 ml-1" title="Sign Out"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     </div>
   </header>
 
+  <!-- MAIN CONTAINER -->
   <div class="pt-16 max-w-5xl mx-auto min-h-screen">
-    
+    <!-- VIEW: HOME (News) -->
     <div id="view-home" class="animate-fade">
       <div class="px-4 md:px-0 mb-8">
         <div class="carousel-wrapper shadow-lg">
-          <div id="carousel-track" class="w-full h-full relative">
-            <div class="skeleton w-full h-full absolute inset-0"></div>
+          <div id="carousel-track">
+            <div class="skeleton w-full h-full flex-shrink-0"></div>
           </div>
-          <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-3 rounded-full z-10" aria-label="Previous slide"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
-          <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-3 rounded-full z-10" aria-label="Next slide"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+          <button id="prev-slide" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-3 rounded-full z-10"><i class="fas fa-chevron-left"></i></button>
+          <button id="next-slide" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white p-3 rounded-full z-10"><i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
-
+      <!-- FEATURE: Hide Scrollbar on list -->
+      <div id="category-filter-bar" class="px-4 md:px-0 space-x-2 hide-scrollbar">
+        <div class="px-4 py-2 rounded-full skeleton h-9 w-20"></div>
+      </div>
       <div class="px-4 md:px-0">
-        <div class="flex items-center justify-between mb-6 border-l-4 border-blue-600 pl-3">
+        <div class="flex items-center justify-between my-6 border-l-4 border-blue-600 pl-3">
            <h2 class="text-2xl font-bold">Latest Headlines</h2>
            <span id="category-label" class="text-sm font-mono text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">All</span>
         </div>
         <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="h-80 rounded-xl bg-gray-100 dark:bg-gray-800 skeleton"></div>
+          <div class="h-80 rounded-xl bg-gray-100 dark:bg-gray-800 skeleton news-skeleton"></div>
         </div>
         <div class="text-center mt-10 mb-10">
           <button id="load-more-btn" class="px-8 py-3 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-full font-semibold shadow-sm hover:shadow-md transition text-sm">Load More</button>
@@ -156,47 +251,59 @@
       </div>
     </div>
 
+    <!-- VIEW: COMMUNITY -->
     <div id="view-community" class="hidden max-w-lg mx-auto px-0 md:px-4">
       <div class="flex items-center justify-between px-4 py-4 mb-2">
         <h2 class="text-xl font-bold tracking-tight">Community Feed</h2>
-        <button onclick="openCreatePostModal()" class="text-blue-500 font-semibold text-sm md:hidden">Create</button>
+        <button onclick="openAddPostOptionsModal()" class="text-blue-500 font-semibold text-sm md:hidden">Create</button>
       </div>
-
-      <div class="px-4 mb-4">
+      <div class="flex sticky top-14 bg-[var(--bg-app)] z-30">
+          <button class="community-tab active" onclick="switchCommunityFeed(this, 'global')">Global</button>
+          <button class="community-tab" onclick="switchCommunityFeed(this, 'following')">Following</button>
+      </div>
+      <div class="px-4 mb-4 mt-4">
         <div class="relative">
-            <input type="text" id="user-search-input" class="w-full pl-10 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800 dark:text-white placeholder-gray-400 text-sm" placeholder="Find users by @username...">
-            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400" aria-hidden="true"></i>
-            <div id="search-results" class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 hidden overflow-hidden border dark:border-gray-700 max-h-60 overflow-y-auto"></div>
+            <!-- FEATURE: Smart Input & Auto-Select -->
+            <input type="text" id="user-search-input" enterkeyhint="search" onfocus="this.select()" class="w-full pl-10 p-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800 dark:text-white placeholder-gray-400 text-sm" placeholder="Find users by @username...">
+            <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+            <div id="search-results" class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-50 hidden overflow-hidden border dark:border-gray-700 max-h-60 overflow-y-auto hide-scrollbar"></div>
         </div>
       </div>
-
       <div id="community-feed" class="space-y-0 md:space-y-4 pb-20">
         <div class="insta-card p-4 space-y-4">
            <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full skeleton"></div><div class="h-4 w-32 skeleton"></div></div>
            <div class="aspect-square w-full skeleton rounded"></div>
         </div>
       </div>
-
-      <button onclick="openCreatePostModal()" class="md:hidden fixed bottom-20 right-5 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-30 active:scale-90 transition" aria-label="Create new post">
-        <i class="fas fa-plus" aria-hidden="true"></i>
-      </button>
+      <div id="load-more-container" class="text-center p-4">
+        <button id="load-more-community-btn" onclick="handleLoadMore()" class="px-6 py-2 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-full font-semibold shadow-sm hover:shadow-md transition text-sm">Load More</button>
+      </div>
+      <button onclick="openAddPostOptionsModal()" class="md:hidden fixed bottom-20 right-5 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-xl flex items-center justify-center text-2xl z-30 active:scale-90 transition"><i class="fas fa-plus"></i></button>
     </div>
   </div>
 
+  <!-- MOBILE BOTTOM NAV -->
   <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-black border-t dark:border-gray-800 flex justify-around py-3 z-40 safe-pb">
-    <button onclick="switchView('home')" class="nav-icon active text-blue-600 flex flex-col items-center gap-1" aria-label="Home"><i class="fas fa-home text-xl" aria-hidden="true"></i></button>
-    <button onclick="switchView('community')" class="nav-icon text-gray-400 hover:text-purple-500 flex flex-col items-center gap-1" aria-label="Community"><i class="fas fa-compass text-xl" aria-hidden="true"></i></button>
-    <button onclick="openProfile()" class="nav-icon text-gray-400 hover:text-gray-900 dark:hover:text-white flex flex-col items-center gap-1" aria-label="Profile">
+    <button onclick="switchView('home')" class="nav-icon active text-blue-600 flex flex-col items-center gap-1"><i class="fas fa-home text-xl"></i></button>
+    <button onclick="switchView('community')" class="nav-icon text-gray-400 hover:text-purple-500 flex flex-col items-center gap-1"><i class="fas fa-compass text-xl"></i></button>
+    <button onclick="openNotificationsPage()" class="nav-icon text-gray-400 hover:text-gray-900 dark:hover:text-white flex flex-col items-center gap-1 relative">
+      <i class="far fa-heart text-xl"></i> <span id="notify-badge-mobile" class="notify-badge hidden"></span>
+    </button>
+    <button onclick="openProfile()" class="nav-icon text-gray-400 hover:text-gray-900 dark:hover:text-white flex flex-col items-center gap-1">
         <img id="btm-avatar" src="https://via.placeholder.com/30" class="w-6 h-6 rounded-full border border-gray-300">
     </button>
   </nav>
 
+  <!-- === PAGES & MODALS === -->
+
+  <!-- 1. NEWS DETAIL -->
   <div id="news-detail-page" class="page-layer bg-white dark:bg-black">
     <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
-      <button onclick="closePage('news-detail-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Go back"><i class="fas fa-arrow-left" aria-hidden="true"></i></button>
+      <button onclick="closePage('news-detail-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
       <div class="flex gap-4 text-xl text-gray-600 dark:text-gray-300">
-        <button onclick="repostCurrentNews()" class="hover:text-green-500" title="Repost" aria-label="Repost"><i class="fas fa-retweet" aria-hidden="true"></i></button>
-        <button id="detail-bookmark-btn" onclick="bookmarkCurrentNews()" class="hover:text-yellow-500" title="Save" aria-label="Save"><i class="far fa-bookmark" aria-hidden="true"></i></button>
+        <button onclick="shareApp(currentNewsItem?.headline, 'Check out this news!')" class="hover:text-blue-500" title="Share"><i class="fas fa-share-alt"></i></button>
+        <button onclick="repostCurrentNews()" class="hover:text-green-500" title="Repost"><i class="fas fa-retweet"></i></button>
+        <button id="detail-bookmark-btn" onclick="bookmarkCurrentNews()" class="hover:text-yellow-500" title="Save"><i class="far fa-bookmark"></i></button>
       </div>
     </div>
     <div class="max-w-3xl mx-auto p-5 pb-20">
@@ -205,727 +312,587 @@
        <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
          <span id="nd-source" class="font-bold text-gray-900 dark:text-gray-100">Source</span> • <span id="nd-date">Date</span>
        </div>
-       <img id="nd-img" src="" class="w-full rounded-xl shadow-sm mb-8 object-cover max-h-[500px]">
+       <img id="nd-img" src="" loading="lazy" decoding="async" draggable="false" class="w-full rounded-xl shadow-sm mb-8 object-cover max-h-[500px]">
        <div id="nd-body" class="prose dark:prose-invert prose-lg max-w-none text-gray-800 dark:text-gray-200 leading-relaxed"></div>
     </div>
   </div>
 
+  <!-- 2. PROFILE -->
   <div id="profile-page" class="page-layer bg-white dark:bg-black">
     <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
-      <h2 class="font-bold text-lg">Profile</h2>
-      <button onclick="closePage('profile-page')" class="text-2xl" aria-label="Close Profile"><i class="fas fa-times" aria-hidden="true"></i></button>
+      <h2 id="p-title" class="font-bold text-lg">Profile</h2>
+      <div class="flex items-center gap-4">
+        <button id="p-settings-btn" onclick="openPage('settings-page')" class="text-xl text-gray-600 dark:text-gray-300"><i class="fas fa-cog"></i></button>
+        <button onclick="closePage('profile-page')" class="text-2xl"><i class="fas fa-times"></i></button>
+      </div>
     </div>
     <div class="max-w-2xl mx-auto p-4">
-      <div class="flex items-center gap-6 mb-8">
-        <img id="p-avatar" src="" class="w-20 h-20 rounded-full border-2 border-gray-200 p-1">
+      <div class="flex items-center gap-6 mb-6">
+        <img id="p-avatar" src="" class="w-20 h-20 rounded-full border-2 border-gray-200 p-1" draggable="false">
         <div class="flex-1">
           <h2 id="p-name" class="text-xl font-bold">Name</h2>
-          <p id="p-username" class="text-sm text-gray-500 mb-3">@username</p>
-          <button onclick="doLogout()" class="text-xs bg-gray-100 dark:bg-gray-800 border dark:border-gray-700 px-4 py-2 rounded font-semibold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition">Sign Out</button>
+          <div class="flex items-center gap-2">
+            <p id="p-username" class="text-sm text-gray-500">@username</p>
+            <button id="p-edit-username-btn" onclick="editUsername()" class="text-xs text-blue-500 hover:underline"><i class="fas fa-pen"></i></button>
+          </div>
+          <button id="p-follow-btn" class="hidden mt-3 w-full btn-insta-base"></button>
+          <button id="p-logout-btn" onclick="doLogout()" class="mt-3 text-xs bg-gray-100 dark:bg-gray-800 border dark:border-gray-700 px-4 py-2 rounded font-semibold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition">Sign Out</button>
         </div>
       </div>
-
-      <div class="flex mb-4">
-        <button id="tab-btn-reposts" class="profile-tab active" onclick="switchProfileTab('reposts')"><i class="fas fa-th mr-2" aria-hidden="true"></i>Posts</button>
-        <button id="tab-btn-bookmarks" class="profile-tab" onclick="switchProfileTab('bookmarks')"><i class="far fa-bookmark mr-2" aria-hidden="true"></i>Saved</button>
+      <div class="flex justify-around text-center mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div><span id="p-posts-count" class="font-bold text-lg">0</span><p class="text-sm text-gray-500">Posts</p></div>
+          <div onclick="openFollowList('followers')" class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg"><span id="p-followers-count" class="font-bold text-lg">0</span><p class="text-sm text-gray-500">Followers</p></div>
+          <div onclick="openFollowList('following')" class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg"><span id="p-following-count" class="font-bold text-lg">0</span><p class="text-sm text-gray-500">Following</p></div>
       </div>
-
+      <div id="p-tabs-container" class="flex mb-4">
+        <button id="tab-btn-reposts" class="profile-tab active" onclick="switchProfileTab('reposts')"><i class="fas fa-th mr-2"></i>Posts</button>
+        <button id="tab-btn-bookmarks" class="profile-tab" onclick="switchProfileTab('bookmarks')"><i class="far fa-bookmark mr-2"></i>Saved</button>
+        <button id="tab-btn-liked" class="profile-tab" onclick="switchProfileTab('liked')"><i class="far fa-heart mr-2"></i>Liked</button>
+      </div>
+      <div id="p-reposts-filters" class="flex gap-2 mb-4 hide-scrollbar">
+          <button class="profile-sub-filter active" data-filter="all">All</button>
+          <button class="profile-sub-filter" data-filter="my_posts">My Posts</button>
+          <button class="profile-sub-filter" data-filter="reposts">Reposts</button>
+      </div>
       <div id="p-reposts-grid" class="profile-grid active grid-cols-3 gap-1"></div>
-      <div id="p-bookmarks-list" class_name="profile-grid space-y-3"></div>
+      <div id="p-bookmarks-grid" class="profile-grid grid-cols-3 gap-1"></div>
+      <div id="p-liked-grid" class="profile-grid grid-cols-3 gap-1"></div> 
     </div>
   </div>
 
+  <!-- 3. CREATE MODAL -->
   <div id="create-modal" class="modal-layer bg-white dark:bg-black">
       <div class="p-3 border-b dark:border-gray-800 flex justify-between items-center">
-        <button onclick="closeCreatePostModal()" class="text-gray-500 hover:text-black dark:hover:text-white text-lg" aria-label="Close create post modal"><i class="fas fa-times" aria-hidden="true"></i></button>
-        <h3 class="font-bold">New Post</h3>
+        <button onclick="closeCreatePostModal()" class="text-gray-500 hover:text-black dark:hover:text-white text-lg"><i class="fas fa-times"></i></button>
+        <h3 class="font-bold">New Image Post</h3>
         <button id="share-btn" class="text-blue-500 font-bold opacity-50" disabled>Share</button>
       </div>
-      
       <div class="p-4 flex-1 overflow-y-auto">
         <div id="drop-area" class="aspect-square bg-gray-100 dark:bg-gray-800 rounded-xl flex flex-col items-center justify-center cursor-pointer mb-4 border-2 border-dashed border-transparent hover:border-blue-500 transition relative overflow-hidden">
            <div id="upload-ui" class="text-center">
-             <i class="fas fa-images text-4xl text-gray-300 mb-2" aria-hidden="true"></i>
+             <i class="fas fa-images text-4xl text-gray-300 mb-2"></i>
              <p class="text-sm font-medium text-blue-500">Select Photo</p>
            </div>
            <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hidden">
            <input type="file" id="file-in" class="hidden" accept="image/*">
         </div>
-        
         <div class="flex gap-3">
-          <img id="create-avatar" src="" class="w-8 h-8 rounded-full">
+          <img id="create-avatar" src="" class="w-8 h-8 rounded-full" draggable="false">
           <textarea id="caption-in" class="flex-1 bg-transparent outline-none resize-none mt-1" rows="3" placeholder="Write a caption..."></textarea>
         </div>
-
         <div id="progress-bar" class="h-1 bg-blue-600 w-0 transition-all mt-4 hidden"></div>
       </div>
   </div>
 
+  <!-- 4. USERNAME MODAL -->
   <div id="username-modal" class="overlay-modal">
       <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-11/12 max-w-sm text-center">
-          <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-tag" aria-hidden="true"></i></div>
-          <h3 class="text-2xl font-bold mb-2 dark:text-white">Choose your @username</h3>
-          <p class="text-gray-500 mb-6 text-sm">This will be your unique name on Community.</p>
+          <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fas fa-user-tag"></i></div>
+          <h3 class="text-2xl font-bold mb-2 dark:text-white">Choose @username</h3>
           <div class="relative">
               <span class="absolute left-4 top-3.5 text-gray-400 font-bold">@</span>
-              <input type="text" id="new-username-input" placeholder="username" class="w-full pl-10 p-3 border rounded-xl mb-4 bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 ring-blue-500 outline-none font-bold text-lg">
+              <!-- FEATURE: Smart Inputs -->
+              <input type="text" id="new-username-input" placeholder="username" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="w-full pl-10 p-3 border rounded-xl mb-4 bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:ring-2 ring-blue-500 outline-none font-bold text-lg">
           </div>
           <button id="save-username-btn" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">Save & Continue</button>
       </div>
   </div>
-
-  <div id="toast" class="fixed bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl text-sm font-medium opacity-0 pointer-events-none transition-opacity z- flex items-center gap-2">
-    <i class="fas fa-info-circle" aria-hidden="true"></i> <span>Action successful</span>
+  
+  <!-- 5. COMMENTS PAGE -->
+  <div id="comments-page" class="page-layer bg-white dark:bg-black flex flex-col">
+    <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
+      <button onclick="closePage('comments-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
+      <h2 class="font-bold text-lg">Comments</h2>
+      <div class="w-8"></div>
+    </div>
+    <div id="comments-list" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div class="text-center py-10 text-gray-400">Loading comments...</div>
+    </div>
+    <form id="comment-form" class="sticky bottom-0 p-3 bg-white dark:bg-black border-t dark:border-gray-800 flex gap-2">
+        <input id="comment-input" type="text" enterkeyhint="send" class="flex-1 p-3 border rounded-full bg-gray-100 dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Add a comment..." required onkeypress="if(event.key === 'Enter') document.getElementById('comment-submit-btn').click()">
+        <button id="comment-submit-btn" type="submit" class="bg-blue-600 text-white px-5 rounded-full font-bold">Post</button>
+    </form>
+  </div>
+  
+  <!-- 6. HASHTAG -->
+  <div id="hashtag-feed-page" class="page-layer bg-white dark:bg-black">
+    <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
+      <button onclick="closePage('hashtag-feed-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
+      <h2 id="hashtag-title" class="font-bold text-lg">#hashtag</h2>
+      <div class="w-8"></div>
+    </div>
+    <div id="hashtag-grid" class="max-w-2xl mx-auto p-4 grid grid-cols-3 gap-1"></div>
   </div>
 
+  <!-- 7. FOLLOW LIST -->
+  <div id="follow-list-modal" class="page-layer bg-white dark:bg-black flex flex-col">
+    <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
+      <button onclick="closePage('follow-list-modal')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
+      <h2 id="follow-list-title" class="font-bold text-lg">...</h2>
+      <div class="w-8"></div>
+    </div>
+    <div id="follow-list-content" class="flex-1 overflow-y-auto p-2"></div>
+  </div>
+
+  <!-- 8. AUTH MODAL -->
+  <div id="auth-modal" class="overlay-modal">
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-11/12 max-w-sm relative">
+      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-white text-xl w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
+      <div id="auth-view-signin">
+        <h3 class="text-3xl font-bold mb-6 text-center dark:text-white">Sign In</h3>
+        <button onclick="handleGoogleSignIn()" class="auth-google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"><span>Sign In with Google</span></button>
+        <div class="auth-divider">OR</div>
+        <form id="signin-form" onsubmit="handleEmailSignIn(event)" class="space-y-4">
+          <input id="signin-email" type="email" inputmode="email" placeholder="Email" class="auth-input" required>
+          <input id="signin-password" type="password" placeholder="Password" class="auth-input" required>
+          <div id="auth-error-signin" class="text-red-500 text-sm text-center min-h-[20px]"></div>
+          <button type="submit" class="auth-submit-btn">Sign In</button>
+        </form>
+        <p class="text-sm text-center text-gray-500 mt-6">Don't have an account? <span onclick="toggleAuthView('signup')" class="auth-toggle-link">Sign Up</span></p>
+      </div>
+      <div id="auth-view-signup" class="hidden">
+        <h3 class="text-3xl font-bold mb-6 text-center dark:text-white">Create Account</h3>
+        <form id="signup-form" onsubmit="handleEmailSignUp(event)" class="space-y-4">
+          <input id="signup-name" type="text" placeholder="Full Name" autocapitalize="words" class="auth-input" required>
+          <input id="signup-email" type="email" inputmode="email" placeholder="Email" class="auth-input" required>
+          <input id="signup-password" type="password" placeholder="Password (6+ characters)" class="auth-input" minlength="6" required>
+          <div id="auth-error-signup" class="text-red-500 text-sm text-center min-h-[20px]"></div>
+          <button type="submit" class="auth-submit-btn">Create Account</button>
+        </form>
+        <p class="text-sm text-center text-gray-500 mt-6">Already have an account? <span onclick="toggleAuthView('signin')" class="auth-toggle-link">Sign In</span></p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 9. NOTIFICATIONS -->
+  <div id="notifications-page" class="page-layer bg-white dark:bg-black flex flex-col">
+    <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
+      <button onclick="closePage('notifications-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
+      <h2 class="font-bold text-lg">Notifications</h2>
+      <div class="w-8"></div>
+    </div>
+    <div id="notifications-list" class="flex-1 overflow-y-auto"></div>
+  </div>
+
+  <!-- 10. POST DETAIL -->
+  <div id="post-detail-page" class="page-layer bg-white dark:bg-black flex flex-col">
+    <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
+      <button onclick="closePage('post-detail-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
+      <h2 class="font-bold text-lg">Post</h2>
+      <div id="post-detail-actions" class="flex gap-2">
+        <button onclick="shareApp('Shared Post', 'Check this out!')" class="text-sm font-bold text-blue-500 px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/50 mr-2">Share</button>
+        <button id="post-detail-edit-btn" class="hidden text-sm font-bold text-blue-500 px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/50">Edit</button>
+        <button id="post-detail-action-btn" class="hidden text-sm font-bold text-red-500 px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/50">Delete</button>
+      </div>
+    </div>
+    <div id="post-detail-content" class="max-w-lg mx-auto w-full"></div>
+  </div>
+  
+  <!-- 11. SETTINGS -->
+  <div id="settings-page" class="page-layer bg-white dark:bg-black">
+    <div class="sticky top-0 flex items-center justify-between p-4 bg-white/90 dark:bg-black/90 backdrop-blur z-20 border-b dark:border-gray-800">
+      <button onclick="closePage('settings-page')" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-arrow-left"></i></button>
+      <h2 class="font-bold text-lg">Settings</h2>
+      <div class="w-8"></div>
+    </div>
+    <div class="max-w-2xl mx-auto p-4">
+        <div class="settings-row">
+            <div class="flex items-center gap-4"><i class="fas fa-moon text-lg w-6 text-center text-gray-500"></i><span class="font-medium">Dark Mode</span></div>
+            <label class="toggle-switch"><input type="checkbox" id="dark-mode-toggle-switch" onchange="toggleDarkMode(this)"><span class="slider"></span></label>
+        </div>
+        <div class="settings-row settings-form-row">
+            <div class="flex items-center gap-4 mb-4"><i class="fas fa-user-edit text-lg w-6 text-center text-gray-500"></i><span class="font-medium">Edit Profile</span></div>
+            <div class="space-y-3">
+                <input type="text" id="edit-profile-name" placeholder="Display Name" autocapitalize="words" class="auth-input">
+                <input type="text" id="edit-profile-photo" placeholder="Photo URL" class="auth-input">
+                <button id="save-profile-btn" onclick="handleSaveProfile()" class="auth-submit-btn text-sm">Save Profile</button>
+            </div>
+        </div>
+    </div>
+  </div>
+  
+  <!-- 12. ADD OPTIONS -->
+  <div id="add-post-options-modal" class="overlay-modal" onclick="closeAddPostOptionsModal()">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl w-11/12 max-w-sm" onclick="event.stopPropagation()">
+      <h3 class="text-xl font-bold text-center mb-6">Create New Post</h3>
+      <div class="space-y-4">
+        <button class="choice-button" onclick="openCreatePostModal()"><i class="fas fa-images text-blue-500"></i><span>Post with Image</span></button>
+        <button class="choice-button" onclick="openCreateThoughtModal()"><i class="fas fa-comment-dots text-purple-500"></i><span>Write your thoughts 💬</span></button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 13. CREATE THOUGHT -->
+  <div id="create-thought-modal" class="modal-layer bg-white dark:bg-black">
+      <div class="p-3 border-b dark:border-gray-800 flex justify-between items-center">
+        <button onclick="closeCreateThoughtModal()" class="text-gray-500 hover:text-black dark:hover:text-white text-lg"><i class="fas fa-times"></i></button>
+        <h3 class="font-bold">New Thought</h3>
+        <button id="share-thought-btn" class="text-blue-500 font-bold" onclick="handleShareThought()">Share</button>
+      </div>
+      <div class="p-4 flex-1 overflow-y-auto">
+        <div class="flex gap-3">
+          <img id="create-thought-avatar" src="" class="w-8 h-8 rounded-full" draggable="false">
+          <textarea id="thought-text-in" class="flex-1 bg-transparent outline-none resize-none mt-1 text-lg" rows="6" placeholder="Your thoughts..."></textarea>
+        </div>
+        <div class="mt-4"><input id="thought-category-in" type="text" placeholder="Add a category (e.g., #tech, #life)" class="w-full p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 focus:ring-2 ring-blue-500 outline-none"></div>
+      </div>
+  </div>
+
+  <!-- 14. EDIT POST -->
+  <div id="edit-post-modal" class="modal-layer bg-white dark:bg-black">
+      <div class="p-3 border-b dark:border-gray-800 flex justify-between items-center">
+        <button onclick="closeEditPostModal()" class="text-gray-500 hover:text-black dark:hover:text-white text-lg"><i class="fas fa-times"></i></button>
+        <h3 class="font-bold">Edit Post</h3>
+        <button id="save-edit-btn" class="text-blue-500 font-bold" onclick="handleSavePost()">Save</button>
+      </div>
+      <div class="p-4 flex-1 overflow-y-auto">
+        <img id="edit-post-image-preview" src="" loading="lazy" decoding="async" draggable="false" class="w-full h-48 object-cover rounded-lg mb-4 bg-gray-100 dark:bg-gray-800">
+        <div class="flex gap-3">
+          <img id="edit-post-avatar" src="" class="w-8 h-8 rounded-full" draggable="false">
+          <textarea id="edit-caption-in" class="flex-1 bg-transparent outline-none resize-none mt-1 text-lg" rows="6" placeholder="Caption..."></textarea>
+        </div>
+      </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-xl text-sm font-medium opacity-0 pointer-events-none transition-opacity z-[100] flex items-center gap-2">
+    <i class="fas fa-info-circle"></i> <span>Action successful</span>
+  </div>
+
+  <!-- LOGIC -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc, updateDoc, getDoc, onSnapshot, arrayUnion, arrayRemove, collection, addDoc, query, limit, where, getDocs, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, updateDoc, getDoc, onSnapshot, arrayUnion, arrayRemove, collection, addDoc, query, limit, where, getDocs, increment, serverTimestamp, orderBy, writeBatch, documentId, deleteDoc, startAfter } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyA4zw5cZqxLwzkTy2e5NiHz-tGKqk1KGdI", 
-        authDomain: "newstally-df03c.firebaseapp.com", 
-        projectId: "newstally-df03c", 
-        storageBucket: "newstally-df03c.appspot.com", 
-        messagingSenderId: "506893212961", 
-        appId: "1:506893212961:web:63882290195da992207260" 
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyA4zw5cZqxLwzkTy2e5NiHz-tGKqk1KGdI", authDomain: "newstally-df03c.firebaseapp.com", projectId: "newstally-df03c", storageBucket: "newstally-df03c.appspot.com", messagingSenderId: "506893212961", appId: "1:506893212961:web:63882290195da992207260" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
     const APP_ID = 'newstally-social';
 
-    // --- STATE ---
-    let currentUser = null;
-    let currentUsername = null;
-    let newsData =;
-    let newsLimit = 9;
-    let currentCategory = 'All';
-    let currentNewsItem = null; // For detail page
-    let userBookmarks =; // For saved feature
-    let pendingRepostItem = null; // For username modal flow
+    let currentUser = null, currentUserDoc = null, currentUsername = null, newsData = [], newsLimit = 9, currentCategory = 'All', currentNewsItem = null, userBookmarks = [], userSavedPosts = [], pendingRepostItem = null;
+    let currentCommunityFeed = 'global', currentPostIdForComments = null, commentsUnsub = null, currentProfileUid = null, unreadNotifsUnsub = null, unreadCount = 0, lastVisiblePost = null, isFeedLoading = false, currentPostIdForEdit = null;
 
-    // --- AUTH ---
+    // FEATURE: Smart Header Shadow
+    window.onscroll = () => {
+      const header = document.querySelector('header');
+      if(window.scrollY > 10) header.classList.add('shadow-md');
+      else header.classList.remove('shadow-md');
+    };
+    
+    // FEATURE: Back Button History Logic
+    window.onpopstate = (event) => {
+        const modals = document.querySelectorAll('.page-layer.open, .modal-layer.open, .overlay-modal.open');
+        modals.forEach(el => el.classList.remove('open'));
+    };
+
+    window.shareApp = async (title, text) => {
+        if (navigator.share) { try { await navigator.share({ title: title || "NewsTally", text: text || "Check this out!", url: window.location.href }); } catch(e) {} } 
+        else { navigator.clipboard.writeText(window.location.href); showToast("Link copied!"); }
+        if(navigator.vibrate) navigator.vibrate(50);
+    };
+
+    const authModal = document.getElementById('auth-modal');
+    window.openAuthModal = () => { authModal.classList.add('open'); toggleAuthView('signin'); };
+    window.closeAuthModal = () => authModal.classList.remove('open');
+    window.toggleAuthView = (view) => {
+        document.getElementById('auth-error-signin').innerText = ''; document.getElementById('auth-error-signup').innerText = '';
+        if (view === 'signup') { document.getElementById('auth-view-signin').classList.add('hidden'); document.getElementById('auth-view-signup').classList.remove('hidden'); } 
+        else { document.getElementById('auth-view-signin').classList.remove('hidden'); document.getElementById('auth-view-signup').classList.add('hidden'); }
+    };
+    
+    window.handleGoogleSignIn = async () => { try { await signInWithPopup(auth, provider); closeAuthModal(); showToast("Signed in with Google!"); } catch (error) { document.getElementById('auth-error-signin').innerText = getFriendlyAuthError(error.code); } };
+    window.handleEmailSignUp = async (event) => {
+        event.preventDefault(); const name = document.getElementById('signup-name').value, email = document.getElementById('signup-email').value, password = document.getElementById('signup-password').value;
+        try { const { user } = await createUserWithEmailAndPassword(auth, email, password); await updateProfile(user, { displayName: name });
+            const userRef = doc(db, 'users', user.uid); const defaultAvatar = `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb&textColor=ffffff&fontSize=40`;
+            await setDoc(userRef, { displayName: name, photoURL: defaultAvatar, email: user.email, username: email.split('@')[0].replace(/[^a-z0-9_]/g, ''), followersCount: 0, followingCount: 0, followers: [], following: [], bookmarks: [], savedPosts: [] });
+            closeAuthModal(); showToast("Welcome to NewsTally!");
+        } catch (error) { document.getElementById('auth-error-signup').innerText = getFriendlyAuthError(error.code); }
+    };
+    window.handleEmailSignIn = async (event) => {
+        event.preventDefault(); const email = document.getElementById('signin-email').value, password = document.getElementById('signin-password').value;
+        try { await signInWithEmailAndPassword(auth, email, password); closeAuthModal(); showToast("Welcome back!"); } catch (error) { document.getElementById('auth-error-signin').innerText = getFriendlyAuthError(error.code); }
+    };
+    function getFriendlyAuthError(code) { if(code==='auth/invalid-email') return "Invalid email."; if(code==='auth/user-not-found'||code==='auth/wrong-password') return "Invalid credentials."; return "Error occurred."; }
+
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if(user) {
-        document.getElementById('sign-in-btn').classList.add('hidden');
-        document.getElementById('user-actions').classList.remove('hidden');
-        document.getElementById('user-actions').classList.add('flex');
-        
-        const av = user.photoURL |
-
-| 'https://via.placeholder.com/40';
-        document.getElementById('header-avatar').src = av;
-        document.getElementById('btm-avatar').src = av;
-        document.getElementById('p-avatar').src = av;
-        document.getElementById('p-name').innerText = user.displayName;
-        document.getElementById('create-avatar').src = av;
-
-        const userRef = doc(db, 'users', user.uid);
-        await setDoc(userRef, { 
-            displayName: user.displayName, 
-            photoURL: user.photoURL, 
-            email: user.email 
-        }, { merge: true });
-
-        onSnapshot(userRef, (s) => {
-            if(s.exists()) {
-                const data = s.data();
-                currentUsername = data.username;
-                userBookmarks = data.bookmarks ||;
-                
-                document.getElementById('p-username').innerText = '@' + (currentUsername |
-
-| user.email.split('@'));
-
-                if(currentUsername && pendingRepostItem) {
-                    repostCurrentNews(pendingRepostItem);
-                    pendingRepostItem = null;
-                }
-            }
+        document.getElementById('sign-in-btn').classList.add('hidden'); document.getElementById('user-actions').classList.remove('hidden'); document.getElementById('user-actions').classList.add('flex');
+        const userRef = doc(db, 'users', user.uid); const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+            const name = user.displayName || 'User'; const defaultAvatar = user.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=2563eb&textColor=ffffff&fontSize=40`;
+            await setDoc(userRef, { displayName: name, photoURL: defaultAvatar, email: user.email, username: user.email.split('@')[0].replace(/[^a-z0-9_]/g, ''), followersCount: 0, followingCount: 0, followers: [], following: [], bookmarks: [], savedPosts: [] });
+        }
+        onSnapshot(userRef, (s) => { if(s.exists()) { currentUserDoc = s.data(); currentUsername = currentUserDoc.username; userBookmarks = currentUserDoc.bookmarks || []; userSavedPosts = currentUserDoc.savedPosts || [];
+                document.getElementById('header-avatar').src = currentUserDoc.photoURL; document.getElementById('btm-avatar').src = currentUserDoc.photoURL; document.getElementById('create-avatar').src = currentUserDoc.photoURL; document.getElementById('create-thought-avatar').src = currentUserDoc.photoURL; document.getElementById('edit-post-avatar').src = currentUserDoc.photoURL;
+                if (currentProfileUid === currentUser.uid) { document.getElementById('p-avatar').src = currentUserDoc.photoURL; document.getElementById('p-name').innerText = currentUserDoc.displayName; document.getElementById('p-username').innerText = '@' + currentUsername; document.getElementById('p-followers-count').innerText = currentUserDoc.followersCount || 0; document.getElementById('p-following-count').innerText = currentUserDoc.followingCount || 0; }
+                if(currentUsername && pendingRepostItem) { repostCurrentNews(pendingRepostItem); pendingRepostItem = null; }
+                if(currentCommunityFeed === 'following') loadCommunityFeed(false); } });
+        if (unreadNotifsUnsub) unreadNotifsUnsub();
+        unreadNotifsUnsub = onSnapshot(query(collection(db, 'users', user.uid, 'notifications'), where('read', '==', false)), (snap) => {
+            unreadCount = snap.docs.length; const bH = document.getElementById('notify-badge-header'), bM = document.getElementById('notify-badge-mobile');
+            if (unreadCount > 0) { bH.classList.remove('hidden'); bM.classList.remove('hidden'); if (!document.hasFocus()) document.title = `(${unreadCount}) NewsTally`; } else { bH.classList.add('hidden'); bM.classList.add('hidden'); }
         });
       } else {
-        currentUser = null; currentUsername = null; userBookmarks =;
-        document.getElementById('sign-in-btn').classList.remove('hidden');
-        document.getElementById('user-actions').classList.add('hidden');
-        document.getElementById('user-actions').classList.remove('flex');
-        document.getElementById('btm-avatar').src = 'https://via.placeholder.com/30';
+        currentUser = null; currentUserDoc = null; currentUsername = null; userBookmarks = []; userSavedPosts = [];
+        document.getElementById('sign-in-btn').classList.remove('hidden'); document.getElementById('user-actions').classList.add('hidden'); document.getElementById('user-actions').classList.remove('flex'); document.getElementById('btm-avatar').src = 'https://via.placeholder.com/30';
+        if (unreadNotifsUnsub) unreadNotifsUnsub(); document.getElementById('notify-badge-header').classList.add('hidden'); document.getElementById('notify-badge-mobile').classList.add('hidden');
+        switchView('home'); loadCommunityFeed(false);
       }
     });
+    window.onfocus = () => { document.title = "NewsTally - Premium Social News"; };
+    window.doLogout = () => { showToast("Signing out..."); switchView('home'); signOut(auth).then(() => { showToast("Signed Out"); closePage('profile-page'); closePage('notifications-page'); closePage('settings-page'); }); };
 
-    // REMEDIATION (II.3): Create a generic sign-in handler with differentiated error catching
-    async function handledSignIn() {
-      if (currentUser) return true; // Already signed in
-      try {
-        await signInWithPopup(auth, provider);
-        return true; // Successfully signed in
-      } catch (error) {
-        if (error.code === 'auth/popup-closed-by-user') {
-          console.log("Sign-in popup closed by user."); // Benign error, ignore.
-        } else if (error.code === 'auth/account-exists-with-different-credential') {
-          showToast("An account already exists with this email. Try your original login method.");
-        } else {
-          console.error("Firebase Auth Error:", error); // Log unexpected errors
-          showToast("An error occurred during sign-in.");
-        }
-        return false; // Sign-in failed or was cancelled
-      }
-    }
-
-    // REMEDIATION (II.3): Use new error-handling function
-    document.getElementById('sign-in-btn').onclick = handledSignIn;
-
-    // REMEDIATION (II.3): Use async/await and robust try/catch for signout
-    window.doLogout = async () => {
-        if(confirm("Are you sure you want to sign out?")) {
-            try {
-                await signOut(auth);
-                showToast("Signed Out");
-                closePage('profile-page');
-            } catch (error) {
-                console.error("Sign Out Error:", error);
-                showToast("An error occurred during sign-out.");
-            }
-        }
-    };
-
-    // --- USERNAME MODAL (Re-added) ---
+    window.editUsername = () => { document.getElementById('new-username-input').value = currentUsername || ''; document.getElementById('username-modal').classList.add('open'); };
     document.getElementById('save-username-btn').onclick = async () => {
-        const input = document.getElementById('new-username-input');
-        const newName = input.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-        
-        if(newName.length < 3) { showToast("Username must be 3+ characters"); return; }
-        if(!currentUser) return;
-
-        try {
-            await setDoc(doc(db, 'users', currentUser.uid), { username: newName }, { merge: true });
-            showToast("Username saved!");
-            document.getElementById('username-modal').classList.remove('open');
-        } catch(e) { console.error(e); showToast("Error saving username"); }
+        const newName = document.getElementById('new-username-input').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+        if(newName.length < 3) { showToast("Username too short"); return; }
+        try { const q = query(collection(db, 'users'), where('username', '==', newName), limit(1)); const snap = await getDocs(q);
+            if(!snap.empty && snap.docs[0].id !== currentUser.uid) { showToast("Taken!"); return; }
+            await setDoc(doc(db, 'users', currentUser.uid), { username: newName }, { merge: true }); showToast("Saved!"); document.getElementById('username-modal').classList.remove('open');
+        } catch(e) { showToast("Error"); }
     };
 
-    // --- NEWS LOGIC ---
-    const SHEET_ID = '1Wy6rzaCALqPLFx079nqBCDRP7dk3au5eRO4GuMwQ8Sk';
-    const API_KEY = 'AIzaSyC8D-4bl3GDyj_--BGG1pPdO5Bz63r5iXI';
-
+    const SHEET_ID = '1Wy6rzaCALqPLFx079nqBCDRP7dk3au5eRO4GuMwQ8Sk', API_KEY = 'AIzaSyC8D-4bl3GDyj_--BGG1pPdO5Bz63r5iXI';
     async function fetchNews() {
-        try {
-            const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`);
-            const json = await res.json();
-            const rows = json.values.slice(1);
-            
-            newsData = rows.map(r => ({
-                headline: r[span_0](start_span)[span_0](end_span), source: r[span_1](start_span)[span_1](end_span), date: r[span_2](start_span)[span_2](end_span), 
-                desc: r[span_3](start_span)[span_3](end_span), category: r[span_4](start_span)[span_4](end_span) |
-
-| 'General', 
-                image: (r[span_5](start_span)[span_5](end_span) && r.[span_6](start_span)[span_6](end_span)startsWith('http'))? r[span_7](start_span)[span_7](end_span) : `https://placehold.co/600x400?text=News`
-            })).reverse();
-            
-            renderCarousel();
-            renderNewsGrid();
+        try { const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`); const json = await res.json(); newsData = json.values.slice(1).map(r => ({ headline: r[1], source: r[2], date: r[3], desc: r[4], category: r[6] || 'General', image: (r[7] && r[7].startsWith('http')) ? r[7] : `https://placehold.co/600x400?text=News` })).reverse();
+            renderCategoryFilters(['All', ...new Set(newsData.map(n => n.category).filter(c => c))]); renderCarousel(); renderNewsGrid();
         } catch(e) { console.error("News Error", e); }
     }
-
     function renderCarousel() {
-        const top = newsData.filter(n => n.category === 'Top Story').slice(0, 5);
-        const track = document.getElementById('carousel-track');
+        const top = newsData.filter(n => n.category === 'Top Story').slice(0, 5); const track = document.getElementById('carousel-track');
         if(!top.length) return;
-        
-        track.innerHTML = top.map((n, i) => `
-            <div class="carousel-slide ${i===0?'active':''}" data-idx="${i}">
-                <img src="${n.image}" class="w-full h-full object-cover">
-                <div class="carousel-overlay absolute inset-0 flex flex-col justify-end p-6 text-white">
-                    <span class="bg-blue-600 w-max px-2 py-1 text-xs font-bold uppercase rounded mb-2">${n.category}</span>
-                    <h2 class="text-2xl md:text-4xl font-black leading-tight drop-shadow-md cursor-pointer hover:underline" onclick="openNewsDetail('${encodeURIComponent(n.headline)}')">${n.headline}</h2>
-                </div>
-            </div>
-        `).join('');
+        track.innerHTML = top.map((n) => `<div class="carousel-slide"><img src="${n.image}" loading="lazy" decoding="async" class="w-full h-full object-cover"><div class="carousel-overlay absolute inset-0 flex flex-col justify-end p-6 text-white"><span class="bg-blue-600 w-max px-2 py-1 text-xs font-bold uppercase rounded mb-2">${n.source}</span><h2 class="text-2xl md:text-4xl font-black leading-tight drop-shadow-md cursor-pointer hover:underline" onclick="openNewsDetail('${encodeURIComponent(n.headline)}')">${n.headline}</h2></div></div>`).join('');
+        document.getElementById('next-slide').onclick = () => track.scrollBy({ left: track.clientWidth, behavior: 'smooth' });
+        document.getElementById('prev-slide').onclick = () => track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' });
     }
-
+    function renderCategoryFilters(categories) { document.getElementById('category-filter-bar').innerHTML = categories.map(cat => `<button class="category-filter-btn ${cat === 'All' ? 'active' : ''} px-4 py-2 rounded-full font-medium text-sm transition whitespace-nowrap" onclick="selectCategoryFilter(this, '${cat}')">${cat}</button>`).join(''); }
+    window.selectCategoryFilter = (btn, cat) => { document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filterCategory(cat); };
     function renderNewsGrid() {
-        const grid = document.getElementById('news-grid');
-        const filtered = currentCategory === 'All'? newsData : newsData.filter(n => n.category === currentCategory);
-        
-        const oldLimit = (grid.children.length > 0)? grid.children.length : 0;
-        const visible = filtered.slice(0, newsLimit);
-
-        document.getElementById('category-label').innerText = currentCategory;
-        
-        if(oldLimit === 0) {
-            grid.innerHTML = visible.map(n => createNewsCardHTML(n, 0)).join('');
-        } else {
-            const newItems = visible.slice(oldLimit);
-            const newHTML = newItems.map((n, i) => createNewsCardHTML(n, i * 50)).join('');
-            grid.insertAdjacentHTML('beforeend', newHTML);
-        }
-
-        document.getElementById('load-more-btn').style.display = newsLimit >= filtered.length? 'none' : 'inline-block';
+        const grid = document.getElementById('news-grid'); if (grid.querySelectorAll('.news-skeleton').length > 0) grid.innerHTML = '';
+        const filtered = currentCategory === 'All' ? newsData.filter(n => n.category !== 'Top Story') : newsData.filter(n => n.category === currentCategory);
+        const visible = filtered.slice(0, newsLimit); document.getElementById('category-label').innerText = currentCategory;
+        if(grid.children.length === 0) grid.innerHTML = visible.map(n => createNewsCardHTML(n, 0)).join('');
+        else grid.insertAdjacentHTML('beforeend', visible.slice(grid.children.length).map((n, i) => createNewsCardHTML(n, i * 50)).join(''));
+        document.getElementById('load-more-btn').style.display = (newsLimit >= filtered.length || visible.length === 0) ? 'none' : 'inline-block';
     }
-
-    // REMEDIATION (IV.1): Changed outer `div` to an `<a>` for semantic navigation
-    function createNewsCardHTML(n, delay) {
-        return `
-            <a href="#" class="group cursor-pointer animate-fade block" style="animation-delay: ${delay}ms" onclick="event.preventDefault(); openNewsDetail('${encodeURIComponent(n.headline)}')">
-                <div class="aspect-video overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 relative mb-3">
-                    <img src="${n.image}" loading="lazy" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 img-fade-in" onload="this.classList.add('img-loaded')">
-                    <div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm font-medium">${n.source}</div>
-                </div>
-                <h3 class="font-bold text-lg leading-snug group-hover:text-blue-600 transition-colors">${n.headline}</h3>
-                <p class="text-sm text-gray-400 mt-1">${n.date}</p>
-            </a>
-        `;
-    }
-
-    window.filterCategory = (cat) => {
-        currentCategory = cat;
-        newsLimit = 9;
-        document.getElementById('news-grid').innerHTML = "";
-        switchView('home');
-        renderNewsGrid();
-    };
+    function createNewsCardHTML(n, delay) { return `<div class="group cursor-pointer animate-fade" style="animation-delay: ${delay}ms" onclick="openNewsDetail('${encodeURIComponent(n.headline)}')"><div class="aspect-video overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 relative mb-3"><img src="${n.image}" loading="lazy" decoding="async" class="w-full h-full object-cover transition duration-500 group-hover:scale-105 img-fade-in" onerror="this.src='https://placehold.co/600x400?text=Error'" onload="this.classList.add('img-loaded')"><div class="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm font-medium">${n.source}</div></div><h3 class="font-bold text-lg leading-snug group-hover:text-blue-600 transition-colors line-clamp-3">${n.headline}</h3><p class="text-sm text-gray-400 mt-1" title="${n.date}">${n.date}</p></div>`; }
+    window.filterCategory = (cat) => { currentCategory = cat; newsLimit = 9; document.getElementById('news-grid').innerHTML = ''; switchView('home'); renderNewsGrid(); };
     document.getElementById('load-more-btn').onclick = () => { newsLimit += 6; renderNewsGrid(); };
 
-    // --- NEWS DETAIL & BOOKMARKS ---
     window.openNewsDetail = (encTitle) => {
-        const n = newsData.find(i => i.headline === decodeURIComponent(encTitle));
-        if(!n) return;
+        const n = newsData.find(i => i.headline === decodeURIComponent(encTitle)); if(!n) return;
         currentNewsItem = n;
-
-        document.getElementById('nd-cat').innerText = n.category;
-        document.getElementById('nd-title').innerText = n.headline;
-        document.getElementById('nd-source').innerText = n.source;
-        document.getElementById('nd-date').innerText = n.date;
-        document.getElementById('nd-img').src = n.image;
-        document.getElementById('nd-body').innerHTML = n.desc.split('\n').map(p => `<p class="mb-4">${p}</p>`).join('');
-        
-        const btn = document.getElementById('detail-bookmark-btn');
-        const icon = btn.querySelector('i');
-        if(userBookmarks.some(b => b.headline === n.headline)) {
-            icon.classList.remove('far');
-            icon.classList.add('fas');
-            btn.classList.add('text-yellow-500');
-        } else {
-            icon.classList.remove('fas');
-            icon.classList.add('far');
-            btn.classList.remove('text-yellow-500');
-        }
-        document.getElementById('news-detail-page').classList.add('open');
+        document.getElementById('nd-cat').innerText = n.category; document.getElementById('nd-title').innerText = n.headline; document.getElementById('nd-source').innerText = n.source; document.getElementById('nd-date').innerText = n.date; document.getElementById('nd-img').src = n.image; document.getElementById('nd-body').innerHTML = n.desc.split('\n').map(p => `<p class="mb-4">${p}</p>`).join('');
+        const btn = document.getElementById('detail-bookmark-btn'); if(userBookmarks.some(b => b.headline === n.headline)) { btn.innerHTML = '<i class="fas fa-bookmark"></i>'; btn.classList.add('text-yellow-500'); } else { btn.innerHTML = '<i class="far fa-bookmark"></i>'; btn.classList.remove('text-yellow-500'); }
+        openPage('news-detail-page');
     };
-
-    // REMEDIATION (II.3): Use handled sign-in flow
     window.repostCurrentNews = async (itemToRepost = null) => {
-        const item = itemToRepost |
-
-| currentNewsItem;
-        if (!item) return;
-        
-        if (!currentUser) {
-            const signedIn = await handledSignIn();
-            if (!signedIn) return; // Stop if user didn't sign in
-            // After successful sign-in, onAuthStateChanged will run, but we might need to wait
-            // We'll add a re-check
-        }
-
-        if (!currentUser) {
-            showToast("Please sign in to repost.");
-            return;
-        }
-
-        if(!currentUsername) {
-            pendingRepostItem = item;
-            document.getElementById('username-modal').classList.add('open');
-            return;
-        }
-
-        const id = btoa(encodeURIComponent(item.headline)).replace(/=/g,'');
-        const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id);
-        const snap = await getDoc(ref);
-
-        if(snap.exists() && snap.data().reposters.includes(currentUser.uid)) {
-            showToast("Already reposted!"); return;
-        }
-
-        const payload = {
-            headline: item.headline, image: item.image, source: item.source,
-            reposters: arrayUnion(currentUser.uid),
-            repostCount: increment(1),
-            timestamp: new Date().toISOString(),
-            latestReposter: { username: currentUsername, uid: currentUser.uid, avatar: currentUser.photoURL }
-        };
-        
-        await setDoc(ref, payload, { merge: true });
-        showToast("Reposted to Community!");
-        closePage('news-detail-page');
-        switchView('community');
+        const item = itemToRepost || currentNewsItem; if(!currentUser) { openAuthModal(); return; }
+        if(!currentUsername) { pendingRepostItem = item; document.getElementById('username-modal').classList.add('open'); return; }
+        if(navigator.vibrate) navigator.vibrate(50);
+        const id = btoa(encodeURIComponent(item.headline)).replace(/=/g,''); const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id);
+        const snap = await getDoc(ref); if(snap.exists() && snap.data().reposters.includes(currentUser.uid)) { showToast("Already reposted!"); return; }
+        await setDoc(ref, { headline: item.headline, image: item.image, source: item.source, reposters: arrayUnion(currentUser.uid), repostCount: increment(1), timestamp: serverTimestamp(), latestReposter: { username: currentUsername, uid: currentUser.uid, avatar: currentUserDoc.photoURL }, isUserPost: false, hashtags: [], commentsCount: 0 }, { merge: true });
+        showToast("Reposted!"); closePage('news-detail-page'); switchView('community');
     };
-
-    // REMEDIATION (II.3): Use handled sign-in flow
     window.bookmarkCurrentNews = async () => {
-        if (!currentUser) {
-            const signedIn = await handledSignIn();
-            if (!signedIn) return; // Stop if user didn't sign in
-        }
-        if (!currentUser ||!currentNewsItem) return;
-
-        const userRef = doc(db, 'users', currentUser.uid);
-        const bookmark = { 
-            headline: currentNewsItem.headline, 
-            image: currentNewsItem.image, 
-            source: currentNewsItem.source 
-        };
-        const btn = document.getElementById('detail-bookmark-btn');
-        const icon = btn.querySelector('i');
-
-        // Check against the array of objects
+        if(!currentUser) { openAuthModal(); return; } if(!currentNewsItem) return; if(navigator.vibrate) navigator.vibrate(50);
+        const userRef = doc(db, 'users', currentUser.uid); const bookmark = { headline: currentNewsItem.headline, image: currentNewsItem.image, source: currentNewsItem.source, category: currentNewsItem.category, date: currentNewsItem.date };
         const isBookmarked = userBookmarks.some(b => b.headline === bookmark.headline);
-
-        if(isBookmarked) {
-            // Find the *exact* object to remove
-            const existingBookmark = userBookmarks.find(b => b.headline === bookmark.headline);
-            await updateDoc(userRef, { bookmarks: arrayRemove(existingBookmark) });
-            icon.classList.remove('fas');
-            icon.classList.add('far');
-            btn.classList.remove('text-yellow-500');
-            showToast("Bookmark removed");
-        } else {
-            await updateDoc(userRef, { bookmarks: arrayUnion(bookmark) });
-            icon.classList.remove('far');
-            icon.classList.add('fas');
-            btn.classList.add('text-yellow-500');
-            showToast("Bookmark Saved!");
-        }
+        if(isBookmarked) { await updateDoc(userRef, { bookmarks: arrayRemove(userBookmarks.find(b => b.headline === bookmark.headline)) }); document.getElementById('detail-bookmark-btn').classList.remove('text-yellow-500'); document.getElementById('detail-bookmark-btn').innerHTML = '<i class="far fa-bookmark"></i>'; showToast("Removed"); }
+        else { await updateDoc(userRef, { bookmarks: arrayUnion(bookmark) }); document.getElementById('detail-bookmark-btn').classList.add('text-yellow-500'); document.getElementById('detail-bookmark-btn').innerHTML = '<i class="fas fa-bookmark"></i>'; showToast("Saved!"); }
     };
 
-    // --- COMMUNITY FEED ---
-    let commUnsub = null;
-    window.loadCommunity = () => {
-        const feed = document.getElementById('community-feed');
-        if(commUnsub) return;
-        
-        feed.innerHTML =.[span_8](start_span)[span_8](end_span)[span_9](start_span)[span_9](end_span)map(() => `
-            <div class="insta-card p-4 space-y-4">
-               <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full skeleton"></div><div class="h-4 w-32 skeleton"></div></div>
-               <div class="aspect-square w-full skeleton rounded"></div>
-            </div>
-        `).join('');
+    window.switchCommunityFeed = (btn, feedType) => { currentCommunityFeed = feedType; document.querySelectorAll('.community-tab').forEach(t => t.classList.remove('active')); btn.classList.add('active'); lastVisiblePost = null; loadCommunityFeed(false); };
+    window.handleLoadMore = () => { if (!isFeedLoading && lastVisiblePost) loadCommunityFeed(true); };
+    async function loadCommunityFeed(loadMore = false) {
+        const feed = document.getElementById('community-feed'); isFeedLoading = true;
+        if (!loadMore) feed.innerHTML = `<div class="insta-card p-4 space-y-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full skeleton"></div><div class="h-4 w-32 skeleton"></div></div><div class="aspect-square w-full skeleton rounded"></div></div>`;
+        else document.getElementById('load-more-community-btn').innerText = "Loading...";
 
-        const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), limit(50));
-        
-        commUnsub = onSnapshot(q, (snap) => {
-             if(snap.empty) { feed.innerHTML = "<div class='text-center py-10 text-gray-400'>No posts yet.</div>"; return; }
-             const docs = snap.docs.map(d => ({id: d.id,...d.data()})).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-             
-             feed.innerHTML = docs.map(p => {
-                 const isLiked = currentUser && p.likes && p.likes.includes(currentUser.uid);
-                 const username = p.latestReposter?.username |
-
-| p.source |
-| 'User';
-                 const avatar = p.latestReposter?.avatar |
-
-| 'https://via.placeholder.com/40';
-                 const isUserPost = p.isUserPost |
-
-| false;
-                 const caption = p.headline |
-
-| '';
-                 const subHeader = isUserPost? '' : `<span class="text-xs text-gray-400 ml-2">Reposted News</span>`;
-
-                 // REMEDIATION (IV.1 & IV.2): Wrap avatar image in a button for accessibility
-                 return `
-                    <div class="insta-card animate-fade">
-                        <div class="flex items-center justify-between p-3">
-                            <div class="flex items-center gap-3">
-                                <button type="button" onclick="openPublicProfile('${p.latestReposter?.uid}')" aria-label="Open Profile">
-                                    <img src="${avatar}" class="w-9 h-9 rounded-full border object-cover p-0.5">
-                                </button>
-                                <div><div class="font-bold text-sm flex items-center">${username} ${subHeader}</div></div>
-                            </div>
-                            <button class="text-gray-400" aria-label="Post options"><i class="fas fa-ellipsis-h" aria-hidden="true"></i></button>
-                        </div>
-                        <div class="w-full bg-gray-100 dark:bg-black relative" ondblclick="toggleLike('${p.id}', true)">
-                            <img src="${p.image}" class="w-full object-contain max-h-[500px] img-fade-in" onload="this.classList.add('img-loaded')">
-                            <div id="heart-${p.id}" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
-                                <i class="fas fa-heart text-white text-6xl drop-shadow-lg heart-anim" aria-hidden="true"></i>
-                            </div>
-                        </div>
-                        <div class="p-3">
-                            <div class="flex items-center gap-4 text-2xl mb-2">
-                                <button id="like-btn-${p.id}" onclick="toggleLike('${p.id}')" class="transition-transform active:scale-125 ${isLiked? 'text-red-500' : 'text-gray-800 dark:text-white hover:text-gray-600'}" aria-label="Like post">
-                                    <i class="${isLiked? 'fas' : 'far'} fa-heart" aria-hidden="true"></i>
-                                </button>
-                                <button class="text-gray-800 dark:text-white hover:text-gray-600" aria-label="Comment"><i class="far fa-comment" aria-hidden="true"></i></button>
-                                <button class="text-gray-800 dark:text-white hover:text-gray-600 ml-auto" aria-label="Save post"><i class="far fa-bookmark" aria-hidden="true"></i></button>
-                            </div>
-                            <div class="font-bold text-sm mb-1">${p.likes? p.likes.length : 0} likes</div>
-                            <div>
-                                <span class="font-bold text-sm mr-2">${username}</span>
-                                <span class="text-sm text-gray-800 dark:text-gray-200">${caption}</span>
-                            </div>
-                        </div>
-                    </div>
-                 `;
-             }).join('');
-         });
-    };
-
-    // REMEDIATION (II.3): Use handled sign-in flow
-    window.toggleLike = async (id, fromDblClick = false) => {
-        if (!currentUser) {
-            const signedIn = await handledSignIn();
-            if (!signedIn) return;
+        if (currentCommunityFeed === 'following' && (!currentUserDoc?.following || currentUserDoc.following.length === 0)) {
+            feed.innerHTML = `<div class='text-center py-10 text-gray-400'>Follow users to see posts here.</div>`; isFeedLoading = false; document.getElementById('load-more-container').classList.add('hidden'); return;
         }
-        if (!currentUser) return; // Re-check after potential sign-in
-
-        const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id);
-        const snap = await getDoc(ref);
-        if(!snap.exists()) return;
-
-        const btn = document.getElementById(`like-btn-${id}`);
-        const likes = snap.data().likes ||;
-        
-        if(likes.includes(currentUser.uid)) {
-            if(fromDblClick) return;
-            updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
-            if(btn) btn.classList.remove('heart-anim');
-        } else {
-            if(fromDblClick) {
-                const heartEl = document.getElementById(`heart-${id}`);
-                if(heartEl) {
-                    heartEl.style.opacity = 1;
-                    setTimeout(() => { heartEl.style.opacity = 0; }, 800);
-                }
-            }
-            if(btn) btn.classList.add('heart-anim');
-            updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
-        }
-    };
-
-    // --- CREATE POST (FIXED LOGIC) ---
-    const createModal = document.getElementById('create-modal');
-    const dropArea = document.getElementById('drop-area');
-    const fileIn = document.getElementById('file-in');
-    const previewImg = document.getElementById('preview-img');
-    const shareBtn = document.getElementById('share-btn');
-    let selectedFile = null;
-
-    // REMEDIATION (II.3): Use handled sign-in flow
-    window.openCreatePostModal = async () => {
-        if (!currentUser) {
-            const signedIn = await handledSignIn();
-            if (!signedIn) return;
-        }
-        if (!currentUser) return;
-
-        if(!currentUsername) {
-            document.getElementById('username-modal').classList.add('open');
-            return;
-        }
-        // FIXED LOGIC: Just add 'open'.
-        createModal.classList.add('open'); 
-    };
-    window.closeCreatePostModal = () => {
-        // FIXED LOGIC: Just remove 'open'.
-        createModal.classList.remove('open'); 
-        resetCreateForm();
-    };
-
-    dropArea.onclick = () => fileIn.click();
-    fileIn.onchange = (e) => {
-        if(e.target.files) {
-            selectedFile = e.target.files;
-            previewImg.src = URL.createObjectURL(selectedFile);
-            previewImg.classList.remove('hidden');
-            document.getElementById('upload-ui').classList.add('hidden');
-            shareBtn.disabled = false;
-            shareBtn.classList.remove('opacity-50');
-        }
-    };
-
-    shareBtn.onclick = async () => {
-        if(!selectedFile) return;
-        shareBtn.disabled = true; shareBtn.innerText = "Posting...";
-        document.getElementById('progress-bar').classList.remove('hidden');
-        document.getElementById('progress-bar').style.width = "50%";
-
         try {
-            const base64 = await compressImage(selectedFile);
-            document.getElementById('progress-bar').style.width = "80%";
-
-            const docId = `post_${Date.now()}_${currentUser.uid.slice(0,4)}`;
-            await setDoc(doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), docId), {
-                headline: document.getElementById('caption-in').value,
-                image: base64, source: 'Community',
-                reposters: [currentUser.uid],
-                repostCount: 1, likes:,
-                timestamp: new Date().toISOString(),
-                latestReposter: { username: currentUsername, uid: currentUser.uid, avatar: currentUser.photoURL },
-                isUserPost: true
-            });
-
-            document.getElementById('progress-bar').style.width = "100%";
-            showToast("Shared Successfully!");
-            closeCreatePostModal();
-            switchView('community');
-
-        } catch(e) { console.error(e); showToast("Error posting"); }
-    };
-
-    function compressImage(file) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.src = ev.target.result;
-                img.onload = () => {
-                    const cvs = document.createElement('canvas');
-                    const max = 800;
-                    let w = img.width, h = img.height;
-                    if(w > h && w > max) { h *= max/w; w=max; }
-                    else if(h > max) { w *= max/h; h=max; }
-                    cvs.width = w; cvs.height = h;
-                    cvs.getContext('2d').drawImage(img,0,0,w,h);
-                    resolve(cvs.toDataURL('image/jpeg', 0.7));
-                }
-            }
-        });
-    }
-    function resetCreateForm() {
-        selectedFile = null;
-        previewImg.src = ""; previewImg.classList.add('hidden');
-        document.getElementById('upload-ui').classList.remove('hidden');
-        document.getElementById('caption-in').value = "";
-        shareBtn.disabled = true; shareBtn.classList.add('opacity-50'); shareBtn.innerText = "Share";
-        document.getElementById('progress-bar').style.width = "0%";
-        document.getElementById('progress-bar').classList.add('hidden');
+            let q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), orderBy('timestamp', 'desc'), limit(20));
+            if (loadMore && lastVisiblePost) q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), orderBy('timestamp', 'desc'), startAfter(lastVisiblePost), limit(20));
+            const snap = await getDocs(q); lastVisiblePost = snap.docs[snap.docs.length - 1];
+            const posts = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(p => p.timestamp && p.latestReposter?.uid);
+            const finalDocs = currentCommunityFeed === 'following' ? posts.filter(p => currentUserDoc.following.includes(p.latestReposter.uid)) : posts;
+            if (!loadMore) feed.innerHTML = '';
+            if (finalDocs.length === 0) { if(!loadMore) feed.innerHTML = `<div class='text-center py-10 text-gray-400'>No posts found.</div>`; document.getElementById('load-more-container').classList.add('hidden'); }
+            else { feed.insertAdjacentHTML('beforeend', finalDocs.map(p => renderPostCardHTML(p)).join('')); document.getElementById('load-more-container').classList.remove('hidden'); }
+        } catch (e) { console.error(e); feed.innerHTML = `<div class='text-center py-10 text-gray-400'>Error loading.</div>`; }
+        document.getElementById('load-more-community-btn').innerText = "Load More"; isFeedLoading = false;
     }
 
-    // --- PROFILE (Fixed Reposts & Bookmarks) ---
-    // REMEDIATION (II.3): Use handled sign-in flow
-    window.openProfile = async () => {
-        if (!currentUser) {
-            const signedIn = await handledSignIn();
-            if (!signedIn) return;
+    function renderPostCardHTML(p) {
+        const liked = currentUser && p.likes?.includes(currentUser.uid), bookmarked = currentUser && userSavedPosts.includes(p.id);
+        const reposter = p.latestReposter || {};
+        let followBtn = '';
+        if (currentUser && reposter.uid && reposter.uid !== currentUser.uid) {
+            const isFollowing = currentUserDoc?.following?.includes(reposter.uid);
+            followBtn = `<span class="text-gray-400 mx-1">•</span> <button class="text-sm transition-colors duration-200 js-follow-text-${reposter.uid} ${isFollowing ? 'text-gray-400 dark:text-gray-500' : 'text-blue-500 font-semibold hover:text-blue-700'}" onclick="event.stopPropagation(); toggleFollow('${reposter.uid}')">${isFollowing ? 'Following' : 'Follow'}</button>`;
         }
-        if (!currentUser) return;
-        
-        document.getElementById('profile-page').classList.add('open');
-        switchProfileTab('reposts');
-    };
-
-    window.switchProfileTab = (tab) => {
-        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(`tab-btn-${tab}`).classList.add('active');
-        
-        document.querySelectorAll('.profile-grid').forEach(g => g.classList.remove('active'));
-        const grid = document.getElementById(tab === 'reposts'? 'p-reposts-grid' : 'p-bookmarks-list');
-        grid.classList.add('active');
-        grid.innerHTML = `<div class="col-span-3 py-10 text-center"><div class="inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>`;
-        
-        if(tab === 'reposts') {
-            const q = query(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), where('reposters', 'array-contains', currentUser.uid));
-            getDocs(q).then(snap => {
-                if(snap.empty) { grid.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-400">No posts yet.</div>`; return; }
-                const docs = snap.docs.map(d => d.data()).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                grid.innerHTML = docs.map(d => `
-                    <div class="aspect-square bg-gray-100 relative group cursor-pointer border border-white dark:border-black">
-                        <img src="${d.image}" class="w-full h-full object-cover">
-                    </div>
-                `).join('');
-            });
-        } else if (tab === 'bookmarks') {
-            if(userBookmarks.length === 0) {
-                grid.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-400">No saved posts.</div>`; return;
-            }
-            // REMEDIATION (IV.1): Changed outer `div` to `button` for semantic interaction
-            grid.innerHTML = userBookmarks.map(b => `
-                <button type="button" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl w-full text-left cursor-pointer" onclick="openNewsDetail('${encodeURIComponent(b.headline)}'); closePage('profile-page');">
-                    <img src="${b.image}" class="w-12 h-12 rounded-lg object-cover">
-                    <span class="text-sm font-bold truncate flex-1">${b.headline}</span>
-                </button>
-            `).join('');
-        }
-    };
-
-    // --- USER SEARCH ---
-    function debounce(fn, delay) {
-      let timer;
-      return (...args) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => fn(...args), delay);
-      };
+        return `<div class="insta-card animate-fade"><div class="flex items-center justify-between p-3"><div class="flex items-center gap-3 cursor-pointer" onclick="openPublicProfile('${reposter.uid}')"><img src="${reposter.avatar||'https://via.placeholder.com/40'}" class="w-9 h-9 rounded-full border object-cover p-0.5" onerror="this.src='https://via.placeholder.com/40'" draggable="false"><div><div class="font-bold text-sm flex items-center">${reposter.username||p.source} ${p.isUserPost?'':`<span class="text-xs text-gray-400 ml-2">Reposted News</span>`} ${followBtn}</div></div></div><button onclick="shareApp('${reposter.username}', 'Check this post!')" class="text-gray-500"><i class="fas fa-share-alt"></i></button></div><div class="w-full bg-gray-100 dark:bg-black relative" ondblclick="toggleLike('${p.id}', true)"><img src="${p.image}" loading="lazy" decoding="async" draggable="false" class="w-full object-contain max-h-[500px] img-fade-in" onload="this.classList.add('img-loaded')" onerror="this.src='https://placehold.co/600x600/2563eb/ffffff?text=Post'"><div id="heart-${p.id}" class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300"><i class="fas fa-heart text-white text-6xl drop-shadow-lg heart-anim"></i></div></div><div class="p-3"><div class="flex items-center gap-4 text-2xl mb-2"><button id="like-btn-${p.id}" onclick="toggleLike('${p.id}')" class="transition-transform active:scale-125 ${liked?'text-red-500':'text-gray-800 dark:text-white'}"><i class="${liked?'fas':'far'} fa-heart"></i></button><button onclick="openComments('${p.id}')" class="text-gray-800 dark:text-white"><i class="far fa-comment"></i></button><button onclick="shareApp('${reposter.username}', 'Check this post!')" class="text-gray-800 dark:text-white"><i class="far fa-paper-plane"></i></button><button onclick="toggleBookmark('${p.id}')" class="ml-auto transition-transform active:scale-125 ${bookmarked?'text-yellow-500':'text-gray-800 dark:text-white'}"><i class="${bookmarked?'fas':'far'} fa-bookmark"></i></button></div><div id="like-count-${p.id}" class="font-bold text-sm mb-1">${(p.likes||[]).length} likes</div><div class="text-sm text-gray-800 dark:text-gray-200 line-clamp-3"><span class="font-bold mr-2 cursor-pointer" onclick="openPublicProfile('${reposter.uid}')">${reposter.username}</span><span id="caption-${p.id}">${renderHashtags(p.headline)}</span></div><div class="text-sm text-gray-400 mt-1 cursor-pointer" onclick="openComments('${p.id}')">View all ${p.commentsCount||0} comments</div></div></div>`;
     }
-    const searchInput = document.getElementById('user-search-input');
-    const searchResults = document.getElementById('search-results');
-    searchInput.addEventListener('input', debounce(async (e) => {
-        const term = e.target.value.trim().toLowerCase();
-        if(term.length < 2) { searchResults.classList.add('hidden'); return; }
-        
-        const q = query(collection(db, 'users'), where('username', '>=', term), where('username', '<=', term + '\uf8ff'), limit(5));
-        
-        const snap = await getDocs(q);
-        if(snap.empty) { searchResults.innerHTML = `<div class="p-3 text-gray-500 text-sm text-center">No users found.</div>`; } 
-        else {
-            // REMEDIATION (IV.1): Changed outer `div` to `button` for semantic interaction
-            searchResults.innerHTML = snap.docs.map(d => {
-                const u = d.data();
-                return `<button type="button" class="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700 w-full text-left cursor-pointer border-b dark:border-gray-700 last:border-0 transition" onclick="openPublicProfile('${d.id}');">
-                    <img src="${u.photoURL}" class="w-8 h-8 rounded-full mr-3">
-                    <div>
-                        <p class="text-sm font-bold dark:text-white">${u.displayName}</p>
-                        <p class="text-xs text-blue-500">@${u.username}</p>
-                    </div>
-                </button>`;
-            }).join('');
-        }
-        searchResults.classList.remove('hidden');
-    }, 350));
-    document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) &&!searchResults.contains(e.target)) {
-            searchResults.classList.add('hidden');
-        }
-    });
+    
+    async function sendLikeNotification(postRef) {
+        try { const s = await getDoc(postRef); if(!s.exists()) return; const d = s.data();
+            if(d.latestReposter?.uid && d.latestReposter.uid !== currentUser.uid) await setDoc(doc(collection(db,'users',d.latestReposter.uid,'notifications')), {type:'like', actorUid:currentUser.uid, actorUsername:currentUsername, actorAvatar:currentUserDoc.photoURL, timestamp:serverTimestamp(), read:false, postId:postRef.id, postImage:d.image});
+        } catch(e){}
+    }
+    window.toggleLike = (id, dbl=false) => {
+        if(!currentUser) { openAuthModal(); return; } if(navigator.vibrate) navigator.vibrate(50);
+        const ref = doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), id); const btn = document.getElementById(`like-btn-${id}`), icon = btn?.querySelector('i'), cnt = document.getElementById(`like-count-${id}`);
+        if(!btn) return; const isLiked = icon.classList.contains('fas'); let c = parseInt(cnt.innerText)||0;
+        if(isLiked) { if(dbl) return; icon.classList.replace('fas','far'); btn.classList.remove('text-red-500'); cnt.innerText = `${Math.max(0, c-1)} likes`; updateDoc(ref, {likes:arrayRemove(currentUser.uid)}).catch(()=>{icon.classList.replace('far','fas'); btn.classList.add('text-red-500'); cnt.innerText = `${c} likes`;}); }
+        else { icon.classList.replace('far','fas'); btn.classList.add('text-red-500'); btn.classList.add('heart-anim'); cnt.innerText = `${c+1} likes`; if(dbl){const h=document.getElementById(`heart-${id}`); if(h){h.style.opacity=1;setTimeout(()=>h.style.opacity=0,800);}} updateDoc(ref, {likes:arrayUnion(currentUser.uid)}).then(()=>sendLikeNotification(ref)).catch(()=>{icon.classList.replace('fas','far'); btn.classList.remove('text-red-500'); cnt.innerText = `${c} likes`;}); }
+    };
+    window.toggleBookmark = async (id) => { if(!currentUser) {openAuthModal(); return;} if(navigator.vibrate) navigator.vibrate(50); const ref = doc(db, 'users', currentUser.uid), b = userSavedPosts.includes(id); try { if(b) {await updateDoc(ref,{savedPosts:arrayRemove(id)}); showToast("Unsaved");} else {await updateDoc(ref,{savedPosts:arrayUnion(id)}); showToast("Saved");} } catch(e){showToast("Error");} };
 
-    window.openPublicProfile = (uid) => {
-        showToast(`Opening profile for ${uid.slice(0,5)}...`);
-        searchResults.classList.add('hidden');
+    document.getElementById('share-btn').onclick = async () => {
+        if(!selectedFile) return; const btn = document.getElementById('share-btn'); btn.disabled=true; btn.innerText="Posting..."; document.getElementById('progress-bar').classList.remove('hidden'); document.getElementById('progress-bar').style.width="50%";
+        try { const b64 = await compressImage(selectedFile); document.getElementById('progress-bar').style.width="80%"; const cap = document.getElementById('caption-in').value, tags = (cap.match(/#\w+/g)||[]).map(t=>t.substring(1).toLowerCase());
+            await setDoc(doc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'reposts'), `post_${Date.now()}_${currentUser.uid.slice(0,4)}`), { headline: cap, hashtags: tags, image: b64, source: 'Community', reposters: [currentUser.uid], repostCount: 1, likes: [], commentsCount: 0, timestamp: serverTimestamp(), latestReposter: { username: currentUsername, uid: currentUser.uid, avatar: currentUserDoc.photoURL }, isUserPost: true });
+            if(navigator.vibrate) navigator.vibrate(50); document.getElementById('progress-bar').style.width="100%"; showToast("Shared!"); closeCreatePostModal(); switchView('community');
+        } catch(e){ showToast("Error"); }
+    };
+    let selectedFile=null; const createModal=document.getElementById('create-modal'), fileIn=document.getElementById('file-in'), previewImg=document.getElementById('preview-img');
+    window.openAddPostOptionsModal = () => { if(!currentUser){openAuthModal(); return;} if(!currentUsername){editUsername(); return;} document.getElementById('add-post-options-modal').classList.add('open'); };
+    window.closeAddPostOptionsModal = () => document.getElementById('add-post-options-modal').classList.remove('open');
+    window.openCreatePostModal = () => { closeAddPostOptionsModal(); createModal.classList.add('open'); };
+    window.closeCreatePostModal = () => { createModal.classList.remove('open'); resetCreateForm(); };
+    document.getElementById('drop-area').onclick = () => fileIn.click();
+    fileIn.onchange = (e) => { if(e.target.files[0]) { selectedFile=e.target.files[0]; previewImg.src=URL.createObjectURL(selectedFile); previewImg.classList.remove('hidden'); document.getElementById('upload-ui').classList.add('hidden'); document.getElementById('share-btn').disabled=false; document.getElementById('share-btn').classList.remove('opacity-50'); } };
+    function compressImage(file) { return new Promise((resolve) => { const r = new FileReader(); r.readAsDataURL(file); r.onload = (ev) => { const i = new Image(); i.src = ev.target.result; i.onload = () => { const c = document.createElement('canvas'), max=800; let w=i.width, h=i.height; if(w>h && w>max){h*=max/w; w=max;} else if(h>max){w*=max/h; h=max;} c.width=w; c.height=h; c.getContext('2d').drawImage(i,0,0,w,h); resolve(c.toDataURL('image/jpeg',0.7)); } } }); }
+    function resetCreateForm() { selectedFile=null; previewImg.src=""; previewImg.classList.add('hidden'); document.getElementById('upload-ui').classList.remove('hidden'); document.getElementById('caption-in').value=""; document.getElementById('share-btn').disabled=true; document.getElementById('share-btn').classList.add('opacity-50'); document.getElementById('share-btn').innerText="Share"; document.getElementById('progress-bar').style.width="0%"; document.getElementById('progress-bar').classList.add('hidden'); }
+
+    window.openCreateThoughtModal = () => { closeAddPostOptionsModal(); document.getElementById('create-thought-modal').classList.add('open'); setTimeout(()=>document.getElementById('thought-text-in').focus(),100); };
+    window.closeCreateThoughtModal = () => { document.getElementById('create-thought-modal').classList.remove('open'); document.getElementById('thought-text-in').value=''; document.getElementById('thought-category-in').value=''; };
+    window.handleShareThought = async () => {
+        const txt = document.getElementById('thought-text-in').value.trim(), cat = document.getElementById('thought-category-in').value, btn = document.getElementById('share-thought-btn'); if(!txt) return showToast("Empty!"); btn.disabled=true; btn.innerText="...";
+        try { const img = `https://placehold.co/600x600/2563eb/ffffff?text=${encodeURIComponent(txt.substring(0,50))}`, tags = (cat.match(/#\w+/g)||[]).map(t=>t.substring(1).toLowerCase()); if(cat && !cat.startsWith('#')) tags.push(cat.toLowerCase());
+            await setDoc(doc(collection(db,'artifacts',APP_ID,'public','data','reposts'),`post_${Date.now()}_${currentUser.uid.slice(0,4)}`), { headline: txt, hashtags: tags, image: img, source: 'Community', reposters: [currentUser.uid], repostCount: 1, likes: [], commentsCount: 0, timestamp: serverTimestamp(), latestReposter: { username: currentUsername, uid: currentUser.uid, avatar: currentUserDoc.photoURL }, isUserPost: true });
+            if(navigator.vibrate) navigator.vibrate(50); showToast("Shared!"); closeCreateThoughtModal(); switchView('community');
+        } catch(e) { showToast("Error"); } btn.disabled=false; btn.innerText="Share";
     };
 
-    // --- UTILS ---
-    window.switchView = (v) => {
-        document.getElementById('view-home').classList.add('hidden');
-        document.getElementById('view-community').classList.add('hidden');
-        document.getElementById(`view-${v}`).classList.remove('hidden');
-        if(v === 'community') loadCommunity();
-        
-        document.querySelectorAll('.nav-link,.nav-icon').forEach(el => el.classList.remove('text-blue-600', 'text-purple-600', 'active'));
-        document.querySelector(`.nav-link[data-target="${v}"]`)?.classList.add('text-blue-600');
-        document.querySelector(`.nav-icon[onclick*="${v}"]`)?.classList.add(v === 'home'? 'text-blue-600' : 'text-purple-600', 'active');
+    window.openProfile = () => { if(!currentUser) { openAuthModal(); return; } renderProfilePage(currentUser.uid); };
+    window.openPublicProfile = (uid) => { if (!uid) return; if (currentUser && uid === currentUser.uid) openProfile(); else renderProfilePage(uid); };
+    async function renderProfilePage(uid) {
+        currentProfileUid = uid; openPage('profile-page'); document.getElementById('p-title').innerText = "Loading...";
+        const s = await getDoc(doc(db, 'users', uid)); if(!s.exists()) { closePage('profile-page'); return; } const d = s.data();
+        document.getElementById('p-avatar').src = d.photoURL; document.getElementById('p-name').innerText = d.displayName; document.getElementById('p-username').innerText = '@'+d.username; document.getElementById('p-followers-count').innerText = d.followersCount||0; document.getElementById('p-following-count').innerText = d.followingCount||0;
+        const followBtn = document.getElementById('p-follow-btn'), logoutBtn = document.getElementById('p-logout-btn'), editBtn = document.getElementById('p-edit-username-btn'), tabs = document.getElementById('p-tabs-container'), settings = document.getElementById('p-settings-btn');
+        followBtn.className = '';
+        if (currentUser && currentUser.uid === uid) { document.getElementById('p-title').innerText="My Profile"; followBtn.classList.add('hidden'); logoutBtn.classList.remove('hidden'); editBtn.classList.remove('hidden'); tabs.classList.remove('hidden'); settings.classList.remove('hidden'); switchProfileTab('reposts'); }
+        else { document.getElementById('p-title').innerText="Profile"; logoutBtn.classList.add('hidden'); editBtn.classList.add('hidden'); tabs.classList.add('hidden'); settings.classList.add('hidden'); followBtn.classList.remove('hidden'); followBtn.classList.add(`js-follow-btn-${uid}`);
+            if(currentUser) { updateFollowUI(uid, currentUserDoc?.following?.includes(uid)); followBtn.onclick = () => toggleFollow(uid); } else { updateFollowUI(uid, false); followBtn.onclick = () => openAuthModal(); } switchProfileTab('reposts'); }
+    }
+    function updateFollowUI(uid, isFollowing) {
+        document.querySelectorAll(`.js-follow-btn-${uid}`).forEach(b => { if(isFollowing){b.innerText='Following'; b.className='w-full font-bold text-sm py-2 px-4 rounded-lg transition-all duration-200 btn-insta-following js-follow-btn-'+uid;}else{b.innerText='Follow'; b.className='w-full font-bold text-sm py-2 px-4 rounded-lg transition-all duration-200 btn-insta-follow js-follow-btn-'+uid;} });
+        document.querySelectorAll(`.js-follow-text-${uid}`).forEach(l => { if(isFollowing){l.innerText='Following'; l.classList.remove('text-blue-500','font-semibold'); l.classList.add('text-gray-400');}else{l.innerText='Follow'; l.classList.remove('text-gray-400'); l.classList.add('text-blue-500','font-semibold');} });
+    }
+
+    window.switchProfileTab = async (tab) => {
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active')); document.getElementById(`tab-btn-${tab}`).classList.add('active');
+        const g = document.getElementById('p-reposts-grid'), b = document.getElementById('p-bookmarks-grid'), l = document.getElementById('p-liked-grid'); document.querySelectorAll('.profile-grid').forEach(x=>x.classList.remove('active')); document.getElementById('p-reposts-filters').classList.add('hidden');
+        if(tab==='reposts') { g.classList.add('active'); document.getElementById('p-reposts-filters').classList.remove('hidden'); g.innerHTML='<div class="col-span-3 py-10 text-center">Loading...</div>'; const s=await getDocs(query(collection(db,'artifacts',APP_ID,'public','data','reposts'),where('reposters','array-contains',currentProfileUid))); window.currentUserPosts=s.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(y.timestamp?.toDate()||0)-(x.timestamp?.toDate()||0)); document.getElementById('p-posts-count').innerText=window.currentUserPosts.length; renderProfilePosts('all'); }
+        else if(tab==='bookmarks') { b.classList.add('active'); b.innerHTML='<div class="col-span-3 py-10 text-center">Loading...</div>'; if(!userSavedPosts.length) { b.innerHTML='<div class="col-span-3 text-center py-10 text-gray-400">Empty</div>'; return; } const s=await getDocs(query(collection(db,'artifacts',APP_ID,'public','data','reposts'),where(documentId(),'in',userSavedPosts.slice(0,30)))); b.innerHTML=s.docs.map(d=>renderPostThumbnail(d.data(),d.id)).join(''); }
+        else if(tab==='liked') { l.classList.add('active'); l.innerHTML='<div class="col-span-3 py-10 text-center">Loading...</div>'; const s=await getDocs(query(collection(db,'artifacts',APP_ID,'public','data','reposts'),where('likes','array-contains',currentProfileUid),limit(30))); l.innerHTML=s.docs.map(d=>renderPostThumbnail(d.data(),d.id)).join(''); }
     };
-    window.closePage = (id) => document.getElementById(id).classList.remove('open');
+    function renderPostThumbnail(p, id) { return `<div class="aspect-square bg-gray-100 dark:bg-gray-800 relative group cursor-pointer border border-white dark:border-black" onclick="openPostDetail('${id}')"><img src="${p.image}" class="w-full h-full object-cover" loading="lazy" draggable="false">${p.isUserPost?'<i class="fas fa-user absolute top-2 right-2 text-white text-xs bg-black/50 p-1.5 rounded-full"></i>':'<i class="fas fa-retweet absolute top-2 right-2 text-white text-xs bg-black/50 p-1.5 rounded-full"></i>'}</div>`; }
+    document.querySelectorAll('.profile-sub-filter').forEach(btn => btn.onclick = () => renderProfilePosts(btn.dataset.filter));
+    window.renderProfilePosts = (type) => { const g = document.getElementById('p-reposts-grid'); if(!window.currentUserPosts) return; document.querySelectorAll('.profile-sub-filter').forEach(b=>b.classList.remove('active')); document.querySelector(`.profile-sub-filter[data-filter="${type}"]`).classList.add('active');
+        const f = type==='my_posts'?window.currentUserPosts.filter(d=>d.isUserPost&&d.latestReposter.uid===currentProfileUid):type==='reposts'?window.currentUserPosts.filter(d=>!d.isUserPost):window.currentUserPosts;
+        g.innerHTML = f.length ? f.map(d=>renderPostThumbnail(d,d.id)).join('') : '<div class="col-span-3 text-center py-10 text-gray-400">No posts.</div>'; };
 
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.querySelector('span').innerText = msg;
-        t.style.opacity = 1;
-        setTimeout(() => t.style.opacity = 0, 2500);
-    }
-    const darkBtn = document.getElementById('dark-mode-toggle');
-    darkBtn.onclick = () => {
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', document.documentElement.classList.contains('dark')? 'dark' : 'light');
-    }
-    if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+    const sIn = document.getElementById('user-search-input'), sRes = document.getElementById('search-results');
+    sIn.addEventListener('input', debounce(async (e) => { const t = e.target.value.trim().toLowerCase(); if(t.length<2){sRes.classList.add('hidden');return;}
+        const s = await getDocs(query(collection(db,'users'),where('username','>=',t),where('username','<=',t+'\uf8ff'),limit(5)));
+        sRes.innerHTML = s.empty ? '<div class="p-3 text-center text-gray-500">No users</div>' : s.docs.map(d=>{const u=d.data(),uid=d.id,f=currentUser&&currentUser.uid!==uid,isF=currentUserDoc?.following?.includes(uid); return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b dark:border-gray-700" onclick="openPublicProfile('${uid}')"><div class="flex items-center"><img src="${u.photoURL}" class="w-8 h-8 rounded-full mr-3"><div><p class="font-bold text-sm dark:text-white">${u.displayName}</p><p class="text-xs text-blue-500">@${u.username}</p></div></div>${f?`<button onclick="event.stopPropagation();toggleFollow('${uid}')" class="font-bold text-xs py-1 px-3 rounded transition ${isF?'btn-insta-following':'btn-insta-follow'} js-follow-btn-${uid}">${isF?'Following':'Follow'}</button>`:''}</div>`;}).join(''); sRes.classList.remove('hidden'); }, 350));
+    document.addEventListener('click', (e) => { if (!sIn.contains(e.target)) sRes.classList.add('hidden'); });
 
-    fetchNews();
+    window.toggleFollow = async (uid) => {
+        if(!currentUser) { openAuthModal(); return; } if(uid===currentUser.uid) return; if(navigator.vibrate) navigator.vibrate(50);
+        const isF = currentUserDoc?.following?.includes(uid); updateFollowUI(uid, !isF);
+        const my = doc(db,'users',currentUser.uid), their = doc(db,'users',uid), b = writeBatch(db);
+        if(isF) { b.update(my,{following:arrayRemove(uid),followingCount:increment(-1)}); b.update(their,{followers:arrayRemove(currentUser.uid),followersCount:increment(-1)}); }
+        else { b.update(my,{following:arrayUnion(uid),followingCount:increment(1)}); b.update(their,{followers:arrayUnion(currentUser.uid),followersCount:increment(1)}); }
+        try { await b.commit(); if(!isF) await setDoc(doc(collection(db,'users',uid,'notifications')),{type:'follow',actorUid:currentUser.uid,actorUsername:currentUsername,actorAvatar:currentUserDoc.photoURL,timestamp:serverTimestamp(),read:false}); }
+        catch(e) { updateFollowUI(uid, isF); showToast("Error"); }
+    };
+
+    window.openFollowList = async (type) => { if(type==='posts'||!currentProfileUid) return; openPage('follow-list-modal'); document.getElementById('follow-list-title').innerText=type==='followers'?'Followers':'Following'; const c=document.getElementById('follow-list-content'); c.innerHTML='Loading...';
+        const u=await getDoc(doc(db,'users',currentProfileUid)), ids=u.data()[type]||[]; if(!ids.length){c.innerHTML='<div class="text-center py-10 text-gray-400">Empty</div>';return;}
+        const s=await getDocs(query(collection(db,'users'),where(documentId(),'in',ids.slice(0,30)))); c.innerHTML=s.docs.map(d=>{const u=d.data(),uid=d.id,f=currentUser&&currentUser.uid!==uid,isF=currentUserDoc?.following?.includes(uid); return `<div class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg"><div class="flex items-center gap-3 cursor-pointer" onclick="openPublicProfile('${uid}');closePage('follow-list-modal')"><img src="${u.photoURL}" class="w-10 h-10 rounded-full"><div><p class="font-bold text-sm">${u.displayName}</p><p class="text-sm text-gray-500">@${u.username}</p></div></div>${f?`<button onclick="toggleFollow('${uid}')" class="font-bold text-xs py-1.5 px-4 rounded ${isF?'btn-insta-following':'btn-insta-follow'} js-follow-btn-${uid}">${isF?'Following':'Follow'}</button>`:'<span class="text-xs text-gray-400">You</span>'}</div>`;}).join('');
+    };
+
+    window.openComments = (pid) => {
+        currentPostIdForComments=pid; openPage('comments-page'); document.getElementById('comments-list').innerHTML='Loading...'; if(commentsUnsub)commentsUnsub();
+        commentsUnsub=onSnapshot(query(collection(db,'artifacts',APP_ID,'public','data','reposts',pid,'comments'),orderBy('timestamp','desc')), s=>{
+            document.getElementById('comments-list').innerHTML = s.empty ? '<div class="text-center py-10 text-gray-400">No comments yet.</div>' : s.docs.map(d=>{const c=d.data(); return `<div class="flex gap-3"><img src="${c.userAvatar}" class="w-8 h-8 rounded-full mt-1 cursor-pointer" onclick="openPublicProfile('${c.userId}')"><div class="flex-1"><p class="text-sm"><span class="font-bold cursor-pointer" onclick="openPublicProfile('${c.userId}')">${c.username}</span> ${c.text}</p><div class="flex items-center"><p class="text-xs text-gray-400 mt-1">${timeAgo(c.timestamp?.toDate())}</p>${currentUser&&c.userId===currentUser.uid?`<button onclick="handleDeleteComment('${d.id}')" class="text-xs text-red-500 ml-auto">Delete</button>`:''}</div></div></div>`;}).join('');
+        }); setTimeout(()=>document.getElementById('comment-input').focus(),100);
+    };
+    window.handleDeleteComment = async (cid) => { try { await deleteDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',currentPostIdForComments,'comments',cid)); await updateDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',currentPostIdForComments),{commentsCount:increment(-1)}); showToast("Deleted"); } catch(e){} };
+    document.getElementById('comment-form').onsubmit = async (e) => { e.preventDefault(); if(!currentUser){openAuthModal();return;} const i=document.getElementById('comment-input'), t=i.value.trim(); if(!t)return; i.disabled=true;
+        try { await addDoc(collection(db,'artifacts',APP_ID,'public','data','reposts',currentPostIdForComments,'comments'),{text:t,userId:currentUser.uid,username:currentUsername,userAvatar:currentUserDoc.photoURL,timestamp:serverTimestamp()}); await updateDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',currentPostIdForComments),{commentsCount:increment(1)}); i.value=''; 
+             const p=await getDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',currentPostIdForComments)); const pd=p.data(); if(pd.latestReposter.uid!==currentUser.uid) await setDoc(doc(collection(db,'users',pd.latestReposter.uid,'notifications')),{type:'comment',actorUid:currentUser.uid,actorUsername:currentUsername,actorAvatar:currentUserDoc.photoURL,timestamp:serverTimestamp(),read:false,postId:currentPostIdForComments,postImage:pd.image,commentText:t});
+        } catch(e){showToast("Error");} i.disabled=false; setTimeout(()=>i.focus(),10);
+    };
+
+    window.renderHashtags = (t) => t ? t.replace(/</g,"&lt;").replace(/#(\w+)/g, (m,g) => `<a href="#" class="text-blue-500 hover:underline" onclick="event.preventDefault();event.stopPropagation();openHashtagFeed('${g}')">#${g}</a>`) : '';
+    window.openHashtagFeed = async (tag) => { openPage('hashtag-feed-page'); document.getElementById('hashtag-title').innerText=`#${tag}`; document.getElementById('hashtag-grid').innerHTML='Loading...';
+        const s = await getDocs(query(collection(db,'artifacts',APP_ID,'public','data','reposts'),where('hashtags','array-contains',tag.toLowerCase()),orderBy('timestamp','desc')));
+        document.getElementById('hashtag-grid').innerHTML = s.empty ? '<div class="col-span-3 text-center text-gray-400 py-10">No posts</div>' : s.docs.map(d=>`<div class="aspect-square bg-gray-100 cursor-pointer" onclick="openPostDetail('${d.id}')"><img src="${d.data().image}" class="w-full h-full object-cover"></div>`).join('');
+    };
+    window.openNotificationsPage = async () => { if(!currentUser){openAuthModal();return;} openPage('notifications-page'); const l=document.getElementById('notifications-list'); l.innerHTML='Loading...';
+        try { const s=await getDocs(query(collection(db,'users',currentUser.uid,'notifications'),orderBy('timestamp','desc'),limit(30))); l.innerHTML=s.empty?'<div class="text-center py-10 text-gray-400">Empty</div>':s.docs.map(d=>{const n=d.data();return `<div class="flex items-center gap-3 p-4 border-b dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"><img src="${n.actorAvatar}" class="w-10 h-10 rounded-full object-cover" onclick="openPublicProfile('${n.actorUid}');closePage('notifications-page')"><div class="flex-1 text-sm"><p><strong onclick="openPublicProfile('${n.actorUid}')">@${n.actorUsername}</strong> ${n.type==='like'?'liked your post.':n.type==='follow'?'started following you.':`commented: "${n.commentText?.substring(0,20)}..."`}</p><p class="text-xs text-gray-400 mt-1">${timeAgo(n.timestamp?.toDate())}</p></div>${n.postImage?`<img src="${n.postImage}" class="notif-post-img">`:''}</div>`;}).join('');
+            const b=writeBatch(db); s.docs.forEach(d=>{if(!d.data().read)b.update(d.ref,{read:true});}); await b.commit(); } catch(e){l.innerHTML='Error';}
+    };
+
+    window.openPostDetail = async (pid) => { openPage('post-detail-page'); const c=document.getElementById('post-detail-content'); c.innerHTML='Loading...'; document.getElementById('post-detail-actions').classList.add('hidden');
+        try { const s=await getDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',pid)); if(!s.exists()){c.innerHTML='Not Found';return;} const p={id:s.id,...s.data()}; c.innerHTML=renderPostCardHTML(p);
+            if(currentUser) { const a=document.getElementById('post-detail-actions'), del=document.getElementById('post-detail-action-btn'), ed=document.getElementById('post-detail-edit-btn'); a.classList.remove('hidden');
+                if(p.isUserPost && p.latestReposter.uid===currentUser.uid) { del.classList.remove('hidden'); del.onclick=()=>handleDeletePost(p.id); ed.classList.remove('hidden'); ed.innerText="Edit"; ed.onclick=()=>openEditPostModal(p); }
+                else if(!p.isUserPost && p.reposters.includes(currentUser.uid)) { del.classList.remove('hidden'); del.innerText="Remove Repost"; del.onclick=()=>handleUnrepost(p.id); ed.classList.add('hidden'); } else { del.classList.add('hidden'); ed.classList.add('hidden'); } }
+        } catch(e){c.innerHTML='Error';}
+    };
+    window.handleDeletePost = async (id) => { try{await deleteDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',id)); showToast("Deleted"); closePage('post-detail-page'); switchProfileTab('reposts');}catch(e){showToast("Error");} };
+    window.handleUnrepost = async (id) => { try{await updateDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',id),{reposters:arrayRemove(currentUser.uid),repostCount:increment(-1)}); showToast("Removed"); closePage('post-detail-page'); switchProfileTab('reposts');}catch(e){showToast("Error");} };
+    window.openEditPostModal = (p) => { currentPostIdForEdit=p.id; document.getElementById('edit-caption-in').value=p.headline; document.getElementById('edit-post-image-preview').src=p.image; document.getElementById('edit-post-modal').classList.add('open'); };
+    window.closeEditPostModal = () => { document.getElementById('edit-post-modal').classList.remove('open'); currentPostIdForEdit=null; };
+    window.handleSavePost = async () => { const t=document.getElementById('edit-caption-in').value.trim(); if(!t)return; try{await updateDoc(doc(db,'artifacts',APP_ID,'public','data','reposts',currentPostIdForEdit),{headline:t}); showToast("Updated!"); closeEditPostModal(); if(document.getElementById(`caption-${currentPostIdForEdit}`)) document.getElementById(`caption-${currentPostIdForEdit}`).innerHTML=renderHashtags(t); }catch(e){showToast("Error");} };
+    window.handleSaveProfile = async () => { const n=document.getElementById('edit-profile-name').value.trim(), p=document.getElementById('edit-profile-photo').value.trim(); if(!n)return; try{await updateDoc(doc(db,'users',currentUser.uid),{displayName:n,photoURL:p||currentUserDoc.photoURL}); await updateProfile(auth.currentUser,{displayName:n,photoURL:p||currentUserDoc.photoURL}); showToast("Saved!"); closePage('settings-page');}catch(e){showToast("Error");} };
+
+    window.switchView = (v) => { document.getElementById('view-home').classList.add('hidden'); document.getElementById('view-community').classList.add('hidden'); document.getElementById(`view-${v}`).classList.remove('hidden');
+        document.querySelectorAll('.nav-icon').forEach(e=>e.classList.remove('text-blue-600','text-purple-500','text-gray-900','dark:text-white','active')); document.querySelectorAll('.nav-link').forEach(e=>e.classList.remove('text-blue-600','text-purple-500','active-nav'));
+        if(v==='home'){ document.querySelector('.nav-icon[onclick*="home"]').classList.add('text-blue-600','active'); document.querySelector('.nav-link[data-target="home"]').classList.add('text-blue-600','active-nav'); }
+        else{ document.querySelector('.nav-icon[onclick*="community"]').classList.add('text-purple-500','active'); document.querySelector('.nav-link[data-target="community"]').classList.add('text-purple-500','active-nav'); }
+        window.scrollTo({top:0,behavior:'smooth'});
+    };
+    window.openPage = (id) => { 
+        if(id==='settings-page'&&currentUserDoc){document.getElementById('edit-profile-name').value=currentUserDoc.displayName;document.getElementById('edit-profile-photo').value=currentUserDoc.photoURL;} 
+        document.getElementById(id).classList.add('open'); history.pushState({modal:id},null,"");
+    };
+    window.closePage = (id) => { document.getElementById(id).classList.remove('open'); if(id==='comments-page'&&commentsUnsub)commentsUnsub(); if(id==='post-detail-page')document.getElementById('post-detail-content').innerHTML=''; };
+    function showToast(msg) { const t=document.getElementById('toast'); t.querySelector('span').innerText=msg; t.style.opacity=1; setTimeout(()=>t.style.opacity=0,2500); }
+    
+    window.toggleDarkMode = (t) => { if(t.checked){document.documentElement.classList.add('dark');localStorage.setItem('theme','dark');document.getElementById('theme-color-meta').content='#000000';}else{document.documentElement.classList.remove('dark');localStorage.setItem('theme','light');document.getElementById('theme-color-meta').content='#ffffff';} };
+    function initTheme() { const t=localStorage.getItem('theme'), el=document.getElementById('dark-mode-toggle-switch'); if(t==='dark'){document.documentElement.classList.add('dark');if(el)el.checked=true;document.getElementById('theme-color-meta').content='#000000';}else{document.documentElement.classList.remove('dark');if(el)el.checked=false;document.getElementById('theme-color-meta').content='#ffffff';} }
+    window.addEventListener('offline',()=>showToast("Offline 📴")); window.addEventListener('online',()=>showToast("Online 📶"));
+    function debounce(f,d){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>f(...a),d)}}
+    function timeAgo(d){if(!d)return'...';const s=Math.floor((new Date()-d)/1000); if(s<60)return s+'s'; if(s<3600)return Math.floor(s/60)+'m'; if(s<86400)return Math.floor(s/3600)+'h'; if(s<2592000)return Math.floor(s/86400)+'d'; return Math.floor(s/2592000)+'mo';}
+
+    initTheme(); fetchNews(); loadCommunityFeed(false);
   </script>
 </body>
 </html>
+
 
