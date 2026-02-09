@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="meta-title">NewsTally - Read News</title>
-<!-- Preconnect to Google for faster API handshake -->
-<link rel="preconnect" href="https://sheets.googleapis.com">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-
 <!-- SEO Meta Tags -->
 <meta name="description" id="meta-desc" content="Read the latest news on NewsTally.">
 <meta property="og:type" content="article">
@@ -15,10 +11,9 @@
 <meta property="og:image" id="og-img" content="https://placehold.co/1200x630?text=NewsTally">
 
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Defer html2canvas to not block initial render -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<!-- Fonts -->
+<!-- Fonts: Merriweather for News feel, Inter for UI -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Merriweather:wght@300;400;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
 <style>
@@ -26,25 +21,28 @@
     .font-serif-news { font-family: 'Merriweather', serif; }
     .font-display { font-family: 'Playfair Display', serif; }
     
-    /* Optimized Skeleton Animation */
+    /* Skeleton Animation */
     .skeleton { background: #e5e7eb; background-image: linear-gradient(90deg, #e5e7eb 0, #f3f4f6 40px, #e5e7eb 80px); background-size: 600px; animation: shimmer 1.5s infinite linear; }
     @keyframes shimmer { 0% { background-position: -100px } 100% { background-position: 100px } }
 
-    /* HIDDEN CARD CONTAINER */
+    /* HIDDEN CARD CONTAINER 
+       1080x1920 is standard 9:16 Story format.
+       We hide it offscreen but keep it rendered.
+    */
     #share-canvas-wrapper {
         position: fixed;
         left: -9999px; 
         top: 0;
         z-index: -5;
-        visibility: hidden; /* Hide from layout calculation initially */
     }
 
     #share-card {
         width: 1080px;
         height: 1920px;
-        background-color: #f8fafc;
+        background-color: #f8fafc; /* Subtle background */
         display: flex;
         flex-direction: column;
+        overflow: hidden;
         position: relative;
     }
 </style>
@@ -89,7 +87,7 @@
     </div>
 
     <!-- Article Content -->
-    <article id="news-content" class="hidden opacity-0 transition-opacity duration-300 ease-out">
+    <article id="news-content" class="hidden opacity-0 transition-opacity duration-500 ease-out">
         <div class="max-w-3xl mx-auto bg-white p-0 md:p-8 md:rounded-3xl md:shadow-sm">
             
             <!-- Breadcrumb / Meta -->
@@ -102,7 +100,7 @@
 
             <!-- Image -->
             <div class="w-full mb-8 relative">
-                <img id="main-image" src="" class="w-full h-auto object-cover md:rounded-xl shadow-sm bg-gray-100 min-h-[250px]" loading="lazy">
+                <img id="main-image" src="" class="w-full h-auto object-cover md:rounded-xl shadow-sm bg-gray-100 min-h-[250px]" onerror="this.src='https://placehold.co/800x500?text=NewsTally'">
             </div>
 
             <!-- Author Section -->
@@ -121,7 +119,7 @@
                 <!-- Data injection -->
             </div>
 
-            <!-- Action Area -->
+            <!-- Action Area (Restored Repost Feature) -->
             <div class="px-4 md:px-0 mb-12">
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
@@ -147,9 +145,10 @@
             </div>
             
             <div class="h-20 md:hidden"></div> 
+
         </div>
 
-        <!-- Recommendations -->
+        <!-- Recommendations (Restored) -->
         <div class="mt-12 max-w-3xl mx-auto px-4 md:px-0">
             <div class="flex items-center gap-2 mb-6">
                 <div class="w-1 h-6 bg-blue-600 rounded-full"></div>
@@ -162,27 +161,53 @@
     </article>
 </main>
 
-<!-- HIDDEN TEMPLATE (Rendered only on demand) -->
+<!-- 
+    ========================================
+    ULTIMATE SHARE CARD TEMPLATE (Hidden)
+    Design: "Inshorts" / "Magazine" Hybrid
+    Features: Rounded sheet overlapping image, crisp typography
+    Size: 1080px x 1920px (9:16)
+    ========================================
+-->
 <div id="share-canvas-wrapper">
     <div id="share-card">
-        <!-- IMAGE SECTION -->
+        
+        <!-- 1. IMAGE SECTION (Top 50%) -->
         <div class="h-[960px] w-full relative overflow-hidden bg-gray-900">
+            <!-- Smart Proxy Image -->
             <img id="card-img" src="" class="w-full h-full object-cover" crossorigin="anonymous">
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
         </div>
-        <!-- CONTENT SHEET -->
+
+        <!-- 2. CONTENT SHEET (Bottom 55% - Overlaps Image) -->
         <div class="absolute bottom-0 w-full h-[1050px] bg-white rounded-t-[80px] p-12 flex flex-col shadow-[0_-20px_60px_rgba(0,0,0,0.3)] z-10">
+            
+            <!-- Floating Category Badge -->
             <div class="absolute -top-8 left-12">
                  <span id="card-category" class="bg-blue-600 text-white text-2xl font-bold uppercase tracking-widest px-8 py-4 rounded-xl shadow-xl border-4 border-white">
                     Category
                 </span>
             </div>
+
+            <!-- Main Content -->
             <div class="mt-12 flex-1">
-                <h1 id="card-headline" class="text-[64px] leading-[1.15] font-extrabold text-gray-900 mb-8 font-display tracking-tight text-left">...</h1>
+                <!-- Headline -->
+                <h1 id="card-headline" class="text-[64px] leading-[1.15] font-extrabold text-gray-900 mb-8 font-display tracking-tight text-left">
+                    Headline Text Appears Here
+                </h1>
+                
+                <!-- Divider -->
                 <div class="w-24 h-2 bg-gray-200 rounded-full mb-8"></div>
-                <p id="card-desc" class="text-[36px] text-gray-600 leading-[1.6] font-serif-news text-left line-clamp-[8]">...</p>
+
+                <!-- Summary/Description -->
+                <p id="card-desc" class="text-[36px] text-gray-600 leading-[1.6] font-serif-news text-left line-clamp-[8]">
+                    This is where the summary of the news goes. It uses a serif font to look like a real newspaper article. The text is large and legible for mobile screens.
+                </p>
             </div>
+
+            <!-- Footer Area -->
             <div class="mt-auto pt-10 border-t border-gray-100 flex items-center justify-between">
+                <!-- Brand -->
                 <div class="flex items-center gap-5">
                     <div class="bg-black text-white w-20 h-20 rounded-2xl flex items-center justify-center font-bold text-5xl shadow-lg">N</div>
                     <div class="flex flex-col">
@@ -190,6 +215,8 @@
                         <span class="text-4xl font-black text-gray-900 tracking-tighter">NewsTally</span>
                     </div>
                 </div>
+                
+                <!-- Source Info -->
                 <div class="text-right">
                     <p class="text-xl text-gray-500 font-bold mb-1">Source</p>
                     <div class="flex items-center justify-end gap-3">
@@ -198,6 +225,8 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Bottom decorative bar -->
             <div class="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
         </div>
     </div>
@@ -207,16 +236,18 @@
     const SHEET_ID = '1Wy6rzaCALqPLFx079nqBCDRP7dk3au5eRO4GuMwQ8Sk';
     const API_KEY = 'AIzaSyC8D-4bl3GDyj_--BGG1pPdO5Bz63r5iXI';
     
-    // Cache Keys
-    const CACHE_KEY = 'newstally_data_v1';
-    const CACHE_TIME_KEY = 'newstally_time_v1';
-    const CACHE_DURATION = 1000 * 60 * 10; // 10 Minutes Cache
-
     let currentNewsItem = null;
     let allNewsItems = [];
 
-    // --- INSTANT LOAD LOGIC ---
-    async function init() {
+    // --- SMART IMAGE PROXY (High Res) ---
+    // Uses wsrv.nl to ensure image is readable by canvas and high quality
+    const getSmartImageUrl = (url) => {
+        if (!url || !url.startsWith('http')) return 'https://placehold.co/1080x1080/png?text=NewsTally';
+        // 'output=png' for transparency handling if needed, 'w=1080' for sharpness
+        return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=1080&output=png`;
+    };
+
+    async function fetchArticle() {
         const params = new URLSearchParams(window.location.search);
         const targetHeadline = params.get('headline');
 
@@ -225,24 +256,6 @@
             return;
         }
 
-        // 1. Try Cache First (Speed: < 50ms)
-        const cachedData = sessionStorage.getItem(CACHE_KEY);
-        const cachedTime = sessionStorage.getItem(CACHE_TIME_KEY);
-        const now = Date.now();
-
-        if (cachedData && cachedTime && (now - cachedTime < CACHE_DURATION)) {
-            console.log("Loading from Cache (Fast)");
-            try {
-                allNewsItems = JSON.parse(cachedData);
-                processArticle(targetHeadline);
-                return; // Done!
-            } catch (e) {
-                console.error("Cache corrupted, fetching fresh.");
-            }
-        }
-
-        // 2. Fetch from API (Speed: ~1-2s)
-        console.log("Fetching from API...");
         try {
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1?key=${API_KEY}`;
             const response = await fetch(url);
@@ -250,7 +263,6 @@
 
             if (data.error || !data.values) throw new Error("Data error");
 
-            // Parse Data
             allNewsItems = data.values.slice(1).map(r => ({
                 headline: r[1],
                 source: r[2],
@@ -260,41 +272,24 @@
                 image: r[7] && r[7].startsWith('http') ? r[7] : `https://placehold.co/600x400?text=News`
             }));
 
-            // Save to Cache
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify(allNewsItems));
-            sessionStorage.setItem(CACHE_TIME_KEY, now);
+            const decodedHeadline = decodeURIComponent(targetHeadline).trim();
+            currentNewsItem = allNewsItems.find(n => n.headline && n.headline.trim() === decodedHeadline);
+            
+            if (!currentNewsItem) {
+                // Fuzzy match
+                currentNewsItem = allNewsItems.find(n => n.headline && n.headline.includes(decodedHeadline.substring(0, 15)));
+            }
 
-            processArticle(targetHeadline);
+            if (currentNewsItem) {
+                renderArticle(currentNewsItem);
+                renderSuggestions(currentNewsItem, allNewsItems);
+            } else {
+                showError("News not found.");
+            }
 
         } catch (err) {
             console.error("Fetch Error:", err);
-            // Even if fetch fails, try to see if we have old cache as fallback
-            if(cachedData) {
-                allNewsItems = JSON.parse(cachedData);
-                processArticle(targetHeadline);
-                alert("You are offline. Showing cached version.");
-            } else {
-                showError("Could not load news. Check internet connection.");
-            }
-        }
-    }
-
-    function processArticle(targetHeadline) {
-        const decodedHeadline = decodeURIComponent(targetHeadline).trim();
-        
-        currentNewsItem = allNewsItems.find(n => n.headline && n.headline.trim() === decodedHeadline);
-        
-        if (!currentNewsItem) {
-            // Fuzzy match logic
-            currentNewsItem = allNewsItems.find(n => n.headline && n.headline.includes(decodedHeadline.substring(0, 15)));
-        }
-
-        if (currentNewsItem) {
-            renderArticle(currentNewsItem);
-            // Render suggestions in background (low priority)
-            setTimeout(() => renderSuggestions(currentNewsItem, allNewsItems), 100);
-        } else {
-            showError("News not found.");
+            showError("Network error.");
         }
     }
 
@@ -302,19 +297,17 @@
         document.getElementById('loader').classList.add('hidden');
         const content = document.getElementById('news-content');
         
-        document.title = n.headline.substring(0, 60);
+        document.title = n.headline;
         document.getElementById('title').innerText = n.headline;
         document.getElementById('category').innerText = n.category;
         document.getElementById('source').innerText = n.source;
         document.getElementById('date').innerText = n.date;
-        
-        // Image setup
-        const imgEl = document.getElementById('main-image');
-        imgEl.src = n.image;
-        imgEl.onerror = () => { imgEl.src = 'https://placehold.co/800x500?text=NewsTally'; };
-        
+        document.getElementById('main-image').src = n.image;
         document.getElementById('source-icon').innerText = n.source.charAt(0);
         
+        document.getElementById('og-title').content = n.headline;
+        document.getElementById('og-img').content = n.image;
+
         // Clean paragraphs
         const paragraphs = n.desc.split('\n')
             .filter(p => p.trim().length > 0)
@@ -322,13 +315,14 @@
         document.getElementById('body-text').innerHTML = paragraphs;
 
         content.classList.remove('hidden');
-        content.style.opacity = "1";
+        setTimeout(() => content.style.opacity = "1", 50);
     }
 
     function renderSuggestions(current, all) {
         const grid = document.getElementById('suggestions-grid');
         grid.innerHTML = '';
 
+        // Simple recommendation logic: Same category first, then others
         let suggestions = all.filter(item => 
             item.headline !== current.headline && item.category === current.category
         ).slice(0, 4);
@@ -341,10 +335,10 @@
         suggestions.forEach(item => {
             const card = document.createElement('a');
             card.href = `article.html?headline=${encodeURIComponent(item.headline)}`;
-            card.className = "flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition group";
+            card.className = "flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition hover:border-blue-200 group";
             card.innerHTML = `
-                <div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative bg-gray-100">
-                    <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy">
+                <div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative">
+                    <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-105 transition">
                 </div>
                 <div>
                     <span class="text-[10px] font-bold text-blue-600 uppercase mb-1 block">${item.category}</span>
@@ -355,69 +349,90 @@
         });
     }
 
+    // --- HIGH QUALITY CARD GEN LOGIC ---
     async function generateAndShareCard() {
         if (!currentNewsItem) return;
+
         const btns = document.querySelectorAll('button[onclick="generateAndShareCard()"]');
-        btns.forEach(b => { b.dataset.orig = b.innerHTML; b.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Making...`; b.disabled = true; });
+        btns.forEach(b => {
+            b.dataset.original = b.innerHTML;
+            b.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Generating...`;
+            b.disabled = true;
+        });
 
-        // Make wrapper visible for html2canvas
-        const wrapper = document.getElementById('share-canvas-wrapper');
-        wrapper.style.visibility = 'visible';
-
+        // 1. Setup Data in Hidden Card
         const cardImg = document.getElementById('card-img');
-        const proxyUrl = `https://wsrv.nl/?url=${encodeURIComponent(currentNewsItem.image)}&w=1080&output=png`;
+        const proxyUrl = getSmartImageUrl(currentNewsItem.image);
         
-        cardImg.src = "";
-        cardImg.crossOrigin = "anonymous";
+        cardImg.src = ""; // Clear to force reload
+        cardImg.crossOrigin = "anonymous"; 
         
         document.getElementById('card-headline').innerText = currentNewsItem.headline;
         document.getElementById('card-category').innerText = currentNewsItem.category;
         document.getElementById('card-source').innerText = currentNewsItem.source;
         
+        // Use ~300 chars for summary
         let cleanDesc = currentNewsItem.desc.replace(/\n/g, ' ').substring(0, 350);
         if(currentNewsItem.desc.length > 350) cleanDesc += "...";
         document.getElementById('card-desc').innerText = cleanDesc;
 
         try {
+            // 2. Load Image (Timeout 3s)
             await new Promise((resolve) => {
                 cardImg.onload = resolve;
                 cardImg.onerror = resolve; 
                 cardImg.src = proxyUrl;
-                setTimeout(resolve, 3000);
+                setTimeout(resolve, 3500);
             });
 
-            const canvas = await html2canvas(document.getElementById('share-card'), {
+            // 3. Render Canvas
+            const cardElement = document.getElementById('share-card');
+            const canvas = await html2canvas(cardElement, {
                 useCORS: true,
-                scale: 1.5,
+                scale: 1.5, // Super crisp
                 backgroundColor: '#ffffff',
-                logging: false
+                logging: false,
+                allowTaint: true
             });
 
+            // 4. Blob & Share
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], 'newstally-story.png', { type: 'image/png' });
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try { await navigator.share({ files: [file] }); } catch (e) {}
+                const shareData = {
+                    files: [file],
+                    title: "NewsTally Update",
+                    text: `${currentNewsItem.headline}\nRead full story: ${window.location.href}`
+                };
+
+                if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (e) { console.log("Share dismissed"); }
                 } else {
                     const link = document.createElement('a');
                     link.download = `NewsTally-${Date.now()}.png`;
                     link.href = canvas.toDataURL();
                     link.click();
+                    alert("Image saved! Share it manually.");
                 }
-                wrapper.style.visibility = 'hidden';
-                btns.forEach(b => { b.innerHTML = b.dataset.orig; b.disabled = false; });
-            }, 'image/png');
+                
+                btns.forEach(b => { b.innerHTML = b.dataset.original; b.disabled = false; });
+            }, 'image/png', 1.0);
 
         } catch (err) {
             console.error("Gen Error:", err);
-            wrapper.style.visibility = 'hidden';
-            shareLink();
-            btns.forEach(b => { b.innerHTML = b.dataset.orig; b.disabled = false; });
+            shareLink(); // Fallback
+            btns.forEach(b => { b.innerHTML = b.dataset.original; b.disabled = false; });
         }
     }
 
     function shareLink() {
-        if (navigator.share) navigator.share({ title: document.title, url: window.location.href });
-        else { navigator.clipboard.writeText(window.location.href); alert("Copied!"); }
+        if (navigator.share) {
+            navigator.share({ title: document.title, url: window.location.href });
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            alert("Link copied!");
+        }
     }
 
     function goToRepost() {
@@ -429,9 +444,7 @@
         document.getElementById('error-ui').classList.remove('hidden');
     }
 
-    // CRITICAL FIX: Use DOMContentLoaded instead of window.onload for instant start
-    document.addEventListener('DOMContentLoaded', init);
-
+    window.onload = fetchArticle;
 </script>
 
 </body>
