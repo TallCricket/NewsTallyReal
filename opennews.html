@@ -14,37 +14,36 @@
 <!-- html2canvas for generating images -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .serif-font { font-family: 'Playfair Display', serif; }
     .prose p { margin-bottom: 1.5rem; color: #475569; line-height: 1.8; font-size: 1.125rem; }
     
     /* Skeleton Animation */
     .skeleton { background: #e2e8f0; background-image: linear-gradient(90deg, #e2e8f0 0, #f1f5f9 40px, #e2e8f0 80px); background-size: 600px; animation: shimmer 1.5s infinite linear; }
     @keyframes shimmer { 0% { background-position: -100px } 100% { background-position: 100px } }
 
-    /* Hidden Share Card Container 
-       Fixed dimensions to ensure consistent output regardless of screen size.
-       Positioned off-screen.
+    /* HIDDEN CARD CONTAINER
+       Must be visible to the DOM but hidden from user view for html2canvas to work properly.
+       We place it absolute with z-index -1.
     */
-    #share-canvas-container {
+    #share-canvas-wrapper {
         position: fixed;
+        left: -9999px; /* Off-screen */
         top: 0;
-        left: -9999px;
-        z-index: -1;
+        width: 1080px; /* High Res Width */
+        height: 1920px; /* High Res Height */
+        z-index: -5;
     }
 
-    /* The Card Itself 
-        Designed for 1080x1350 (4:5 Ratio) or similar vertical social post
-    */
     #share-card {
-        width: 600px;
-        height: 900px;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        width: 1080px;
+        height: 1350px; /* 4:5 Instagram Portrait Ratio */
+        background: #fff;
         display: flex;
         flex-direction: column;
-        position: relative;
         overflow: hidden;
     }
 </style>
@@ -59,8 +58,9 @@
         <span class="font-bold text-xl tracking-tight text-slate-800">NewsTally</span>
     </a>
     <div class="flex items-center gap-3">
-        <button onclick="generateAndShareCard()" class="hidden md:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-full text-sm font-bold transition shadow-md shadow-indigo-200">
-            <i class="fas fa-download"></i> Save Card
+        <!-- Desktop Share Button -->
+        <button onclick="generateAndShareCard()" class="hidden md:flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2 rounded-full text-sm font-bold transition shadow-md hover:shadow-lg">
+            <i class="fas fa-magic"></i> Create Card
         </button>
         <button onclick="shareLink()" class="p-2.5 text-slate-500 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 rounded-full transition"><i class="fas fa-share-alt text-lg"></i></button>
         <a href="index.html" class="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-full hover:bg-blue-100 transition">Back Home</a>
@@ -100,7 +100,7 @@
                 <span id="date" class="text-sm text-slate-500 font-medium">Date</span>
             </div>
 
-            <h1 id="title" class="text-3xl md:text-5xl font-extrabold mb-8 leading-tight text-slate-900 tracking-tight font-serif">...</h1>
+            <h1 id="title" class="text-3xl md:text-5xl font-extrabold mb-8 leading-tight text-slate-900 tracking-tight serif-font">...</h1>
 
             <!-- Author/Source -->
             <div class="flex items-center gap-4 mb-8 p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
@@ -109,9 +109,10 @@
                     <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Published by</p>
                     <p id="source" class="font-bold text-slate-800 text-lg leading-none mt-0.5">Source Name</p>
                 </div>
-                <div class="ml-auto">
-                     <button onclick="generateAndShareCard()" class="md:hidden text-white bg-indigo-600 p-3 rounded-full shadow-lg shadow-indigo-200 active:scale-95 transition">
-                        <i class="fas fa-download"></i>
+                <!-- Mobile Share Card Button -->
+                <div class="ml-auto md:hidden">
+                     <button onclick="generateAndShareCard()" class="text-white bg-blue-600 px-4 py-2 rounded-full shadow-lg shadow-blue-200 active:scale-95 transition flex items-center gap-2">
+                        <i class="fas fa-magic text-sm"></i> <span class="text-sm font-bold">Share Card</span>
                     </button>
                 </div>
             </div>
@@ -137,8 +138,8 @@
                     <button onclick="goToRepost()" class="bg-white/10 backdrop-blur border border-white/20 text-white px-8 py-3 rounded-full font-bold hover:bg-white/20 transition">
                         <i class="fas fa-retweet mr-2"></i> Repost Internally
                     </button>
-                    <button onclick="generateAndShareCard()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-900/50 transition transform hover:scale-105">
-                         <i class="fas fa-image mr-2"></i> Generate Card
+                    <button onclick="generateAndShareCard()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-blue-900/50 transition transform hover:scale-105">
+                         <i class="fas fa-image mr-2"></i> Generate Graphic
                     </button>
                 </div>
             </div>
@@ -157,62 +158,67 @@
 </main>
 
 <!-- 
-    HIDDEN TEMPLATE FOR IMAGE GENERATION 
-    This is what gets converted to an image.
-    Structure: Vertical (Portrait), large image, bold typography.
+    ========================================
+    HIGH QUALITY SHARE CARD TEMPLATE (Hidden)
+    Size: 1080px x 1350px (4:5 Ratio)
+    ========================================
 -->
-<div id="share-canvas-container">
-    <div id="share-card" class="p-0">
-        <!-- Top Image Section (60% height) -->
-        <div class="h-[55%] w-full relative overflow-hidden bg-slate-100">
-            <img id="card-img" src="" class="w-full h-full object-cover" crossorigin="anonymous">
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+<div id="share-canvas-wrapper">
+    <div id="share-card" class="relative bg-white font-sans">
+        
+        <!-- 1. IMAGE SECTION (65% Height) -->
+        <div class="h-[65%] w-full relative overflow-hidden bg-gray-900">
+            <!-- Actual Image -->
+            <img id="card-img" src="" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
             
-            <!-- Category Tag Floating -->
-            <div class="absolute top-8 left-8">
-                <span id="card-category" class="bg-blue-600 text-white text-sm font-black uppercase tracking-widest px-4 py-2 rounded-lg shadow-lg">
-                    CATEGORY
+            <!-- Dark Gradient Overlay for text contrast -->
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90"></div>
+            
+            <!-- Category Badge -->
+            <div class="absolute top-10 left-10">
+                 <span id="card-category" class="bg-blue-600 text-white text-2xl font-black uppercase tracking-widest px-6 py-3 rounded-xl shadow-2xl">
+                    NEWS UPDATE
                 </span>
             </div>
         </div>
 
-        <!-- Bottom Content Section (40% height) -->
-        <div class="h-[45%] bg-white p-10 flex flex-col justify-between relative">
-            <!-- Decorative Background Element -->
-            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-[4rem] -z-0"></div>
+        <!-- 2. CONTENT SECTION (35% Height) -->
+        <div class="h-[35%] w-full bg-white px-12 py-10 flex flex-col justify-between relative z-10">
+            
+            <!-- Background Decors -->
+            <div class="absolute -top-10 right-10 w-20 h-20 bg-yellow-400 rounded-full blur-xl opacity-20"></div>
 
-            <div class="z-10">
-                <!-- Source Info -->
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 border border-slate-200" id="card-source-icon">S</div>
-                    <div>
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">News Update</p>
-                        <p id="card-source" class="text-sm font-bold text-slate-800">Source Name</p>
+            <div class="flex-1">
+                <!-- Source & Date -->
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-600 border border-gray-200" id="card-source-icon">N</div>
+                    <div class="flex flex-col">
+                        <span id="card-source" class="text-2xl font-bold text-gray-800 leading-none">Source Name</span>
+                        <span class="text-lg text-gray-500 font-medium">Just Now</span>
                     </div>
                 </div>
 
-                <!-- Headline -->
-                <h1 id="card-headline" class="text-4xl font-black text-slate-900 leading-tight mb-4 font-serif line-clamp-4">
-                    Headline goes here and it might be long so we clamp it to 4 lines...
+                <!-- Headline (Clamped) -->
+                <h1 id="card-headline" class="text-5xl font-black text-gray-900 leading-[1.15] serif-font line-clamp-3 mb-4">
+                    Headline goes here...
                 </h1>
             </div>
 
-            <!-- Footer -->
-            <div class="flex items-end justify-between mt-4 border-t border-slate-100 pt-6">
-                <div class="flex items-center gap-3">
-                    <div class="bg-indigo-600 text-white w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl shadow-md">N</div>
+            <!-- Footer / Branding -->
+            <div class="border-t-2 border-gray-100 pt-8 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-3xl shadow-md">N</div>
                     <div>
-                        <p class="font-bold text-slate-800 text-lg">NewsTally</p>
-                        <p class="text-xs text-slate-500">Read the full story on our app</p>
+                        <p class="text-2xl font-bold text-gray-900">NewsTally</p>
+                        <p class="text-lg text-gray-500">Short News for Busy People</p>
                     </div>
                 </div>
                 
-                <!-- Mock QR Code Area -->
                 <div class="text-right">
-                     <div class="bg-white border border-slate-200 p-1 rounded inline-block">
-                        <i class="fas fa-qrcode text-3xl text-slate-800"></i>
-                     </div>
-                     <p class="text-[10px] text-slate-400 font-bold mt-1 text-center">SCAN TO READ</p>
+                    <div class="inline-flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg">
+                        <i class="fas fa-arrow-right text-blue-600 text-xl"></i>
+                        <span class="text-xl font-bold text-gray-700">Read More</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -226,10 +232,15 @@
     let currentNewsItem = null;
     let allNewsItems = [];
 
-    // Helper to proxy images if needed (using a simple trick or just crossorigin)
-    // Note: For best results with external images on canvas, the server must support CORS.
-    // If images are from Google Drive or similar, they might block canvas export.
-    // We try to use the image as is with crossorigin='anonymous'.
+    // --- PROXY HELPER FOR IMAGES ---
+    // Forces external images to go through a CORS proxy so html2canvas can read them.
+    const getProxiedUrl = (url) => {
+        // Only proxy if it's an http/https url (not base64 or local)
+        if (url.startsWith('http')) {
+            return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        }
+        return url;
+    };
 
     async function fetchArticle() {
         const params = new URLSearchParams(window.location.search);
@@ -246,7 +257,7 @@
             const data = await response.json();
 
             if (data.error) throw new Error(data.error.message);
-            if (!data.values) throw new Error("Data values not found in Sheet.");
+            if (!data.values) throw new Error("Data values not found.");
 
             allNewsItems = data.values.slice(1).map(r => ({
                 headline: r[1],
@@ -254,16 +265,14 @@
                 date: r[3],
                 desc: r[4],
                 category: r[6] || 'General',
-                image: r[7] && r[7].startsWith('http') ? r[7] : `https://placehold.co/600x400?text=News`
+                image: r[7] && r[7].startsWith('http') ? r[7] : `https://placehold.co/1080x1350/1e293b/FFF?text=NewsTally`
             }));
 
             const decodedHeadline = decodeURIComponent(targetHeadline).trim();
             
-            // Flexible matching
+            // Search logic
             currentNewsItem = allNewsItems.find(n => n.headline && n.headline.trim() === decodedHeadline);
-            
             if (!currentNewsItem) {
-                // Fuzzy fallback
                 currentNewsItem = allNewsItems.find(n => n.headline && n.headline.includes(decodedHeadline.substring(0, 15)));
             }
 
@@ -276,7 +285,7 @@
 
         } catch (err) {
             console.error("Fetch Error:", err);
-            showError("Unable to load news. Please try again.");
+            showError("Unable to load news.");
         }
     }
 
@@ -321,14 +330,7 @@
             suggestions = [...suggestions, ...others];
         }
 
-        suggestions = suggestions.slice(0, 3);
-
-        if(suggestions.length === 0) {
-            document.querySelector('.mt-20').classList.add('hidden');
-            return;
-        }
-
-        suggestions.forEach(item => {
+        suggestions.slice(0, 3).forEach(item => {
             const card = document.createElement('a');
             card.href = `article.html?headline=${encodeURIComponent(item.headline)}`;
             card.className = "group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-xl hover:border-blue-100 transition duration-300 flex flex-col h-full";
@@ -349,95 +351,92 @@
         });
     }
 
+    // --- CARD GENERATION LOGIC ---
     async function generateAndShareCard() {
         if (!currentNewsItem) return;
 
-        // 1. Setup UI feedback
-        const btn = document.querySelector('button[onclick="generateAndShareCard()"]');
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Generating...`;
-        btn.disabled = true;
+        // 1. UI Feedback
+        const btns = document.querySelectorAll('button[onclick="generateAndShareCard()"]');
+        btns.forEach(b => {
+            b.dataset.original = b.innerHTML;
+            b.innerHTML = `<i class="fas fa-spinner fa-spin animate-spin"></i> Making Magic...`;
+            b.disabled = true;
+        });
 
-        // 2. Prepare the Hidden Card Data
+        // 2. Populate The Hidden Card
         const cardImg = document.getElementById('card-img');
+        const proxyUrl = getProxiedUrl(currentNewsItem.image);
         
-        // Use a proxy or CORS anonymous to try and fix canvas tainting
-        // If the image fails to load with CORS, we fallback to a placeholder color
+        // Very important: Reset src to empty first to force reload event
+        cardImg.src = ""; 
         cardImg.crossOrigin = "anonymous"; 
-        cardImg.src = currentNewsItem.image + "?not-from-cache-please"; // Cache bust attempt
         
         document.getElementById('card-headline').innerText = currentNewsItem.headline;
         document.getElementById('card-source').innerText = currentNewsItem.source;
         document.getElementById('card-source-icon').innerText = currentNewsItem.source.charAt(0);
-        document.getElementById('card-category').innerText = currentNewsItem.category ? currentNewsItem.category.toUpperCase() : 'NEWS';
-
-        // 3. Wait for image to load (Critical Step)
-        await new Promise(resolve => {
-            if (cardImg.complete) resolve();
-            cardImg.onload = resolve;
-            cardImg.onerror = () => {
-                // Fallback if CORS fails: use a solid color or pattern
-                cardImg.src = "https://placehold.co/600x600/1e293b/ffffff?text=NewsTally"; 
-                resolve();
-            };
-            setTimeout(resolve, 2000); // Max wait 2s
-        });
+        document.getElementById('card-category').innerText = currentNewsItem.category.toUpperCase();
 
         try {
+            // 3. Load Image safely
+            await new Promise((resolve) => {
+                cardImg.onload = resolve;
+                cardImg.onerror = () => {
+                    // Fallback to a placeholder if proxy fails
+                    console.warn("Proxy failed, using placeholder");
+                    cardImg.src = "https://placehold.co/1080x1080/2563eb/FFF?text=NewsTally+Update"; 
+                    resolve();
+                };
+                // Set the src AFTER setting callbacks
+                cardImg.src = proxyUrl;
+                
+                // Timeout safety (2.5s max)
+                setTimeout(resolve, 2500); 
+            });
+
+            // 4. Generate Canvas
             const cardElement = document.getElementById('share-card');
-            
-            // 4. Capture with html2canvas
             const canvas = await html2canvas(cardElement, {
-                useCORS: true, // Attempt to load images across origins
-                scale: 2,      // Retina quality
-                logging: false,
+                useCORS: true,
+                scale: 1, // Already high res (1080px width defined in CSS)
+                allowTaint: true,
                 backgroundColor: '#ffffff'
             });
 
-            // 5. Convert and Download/Share
+            // 5. Export
             canvas.toBlob(async (blob) => {
-                if (!blob) throw new Error("Canvas is empty");
+                const file = new File([blob], 'newstally-story.png', { type: 'image/png' });
+                const shareData = {
+                    files: [file],
+                    title: "NewsTally Update",
+                    text: `${currentNewsItem.headline}\n\nRead more on NewsTally app.`
+                };
 
-                const file = new File([blob], 'newstally-card.png', { type: 'image/png' });
-
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: currentNewsItem.headline,
-                            text: `Read full story on NewsTally: ${window.location.href}`
-                        });
-                    } catch (e) {
-                        console.log("Share cancelled");
-                    }
+                if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
                 } else {
-                    // Fallback to Download
+                    // Fallback Download
                     const link = document.createElement('a');
                     link.download = `NewsTally-${Date.now()}.png`;
-                    link.href = canvas.toDataURL('image/png');
+                    link.href = canvas.toDataURL();
                     link.click();
-                    alert("Card downloaded! You can now share it.");
+                    alert("Card saved to your device!");
                 }
                 
-                // Reset Button
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            }, 'image/png');
+                // Reset Buttons
+                btns.forEach(b => { b.innerHTML = b.dataset.original; b.disabled = false; });
+            }, 'image/png', 0.9); // 0.9 Quality
 
         } catch (err) {
-            console.error("Card Gen Failed:", err);
-            alert("Could not generate image due to browser security settings. Try opening the link directly.");
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
+            console.error("Gen Error:", err);
+            alert("Could not generate card. Sharing link instead.");
+            shareLink();
+            btns.forEach(b => { b.innerHTML = b.dataset.original; b.disabled = false; });
         }
     }
 
     function shareLink() {
         if (navigator.share) {
-            navigator.share({
-                title: document.title,
-                url: window.location.href
-            });
+            navigator.share({ title: document.title, url: window.location.href });
         } else {
             navigator.clipboard.writeText(window.location.href);
             alert("Link copied!");
@@ -445,9 +444,7 @@
     }
 
     function goToRepost() {
-        if (currentNewsItem) {
-            window.location.href = `index.html?action=repost&headline=${encodeURIComponent(currentNewsItem.headline)}`;
-        }
+        if (currentNewsItem) window.location.href = `index.html?action=repost&headline=${encodeURIComponent(currentNewsItem.headline)}`;
     }
 
     function showError(msg) {
