@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NewsTally</title>
+<meta name="robots" content="noindex">
+<script>
+  // GitHub Pages SPA routing trick
+  // Any unknown path → redirect to index.html preserving the path
+  var path = window.location.pathname;
+  var search = window.location.search;
+  var hash = window.location.hash;
+  window.location.replace('/?_route=' + encodeURIComponent(path + search + hash));
+</script>
+</head>
+<body>
+  <p style="font-family:sans-serif;text-align:center;padding:40px;color:#5f6368">
+    Redirecting to NewsTally...
+  </p>
+</body>
+</html>
