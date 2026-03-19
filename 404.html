@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>NewsTally</title>
+<meta name="robots" content="noindex">
+<script>
+var path   = window.location.pathname;
+var search = window.location.search;
+var hash   = window.location.hash;
+
+// /@username → profile
+if (path.match(/^\/@[a-zA-Z0-9_.]+$/)) {
+  window.location.replace('/?_open_user=' + encodeURIComponent(path.slice(2)));
+}
+// /post/ID or /s/ID
+else if (path.match(/^\/(post|s)\//)) {
+  window.location.replace('/?_open_post=' + encodeURIComponent(path.replace(/^\/(post|s)\//, '')));
+}
+// /socialgati → Socialgati home
+else if (path === '/socialgati' || path.startsWith('/socialgati')) {
+  window.location.replace('/' + search + hash);
+}
+// /newstally → NewsTally page
+else if (path === '/newstally' || path.startsWith('/newstally')) {
+  if (search.includes('nid') || search.includes('q=')) {
+    window.location.replace('/newstallyopen.html' + search + hash);
+  } else {
+    window.location.replace('/newstally.html' + search + hash);
+  }
+}
+// /news/* → newstallyopen
+else if (path.startsWith('/news/')) {
+  window.location.replace('/newstallyopen.html' + search + hash);
+}
+// /profile
+else if (path === '/profile' || path.startsWith('/profile/')) {
+  window.location.replace('/?_open_profile=1');
+}
+// /about
+else if (path === '/about') {
+  window.location.replace('/about.html');
+}
+// /settings
+else if (path === '/settings') {
+  window.location.replace('/?_open_settings=1');
+}
+// everything else → home
+else {
+  window.location.replace('/?_route=' + encodeURIComponent(path + search + hash));
+}
+</script>
+</head>
+<body><p style="font-family:sans-serif;text-align:center;padding:40px;color:#737373">Redirecting...</p></body>
+</html>
