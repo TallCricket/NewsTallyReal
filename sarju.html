@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d0d1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Sarju AI — NewsTally Smart Assistant</title>
+<meta name="description" content="Sarju AI is NewsTally's official intelligent assistant. Ask anything about your account, posts, news, settings and more. Instant answers, always available.">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="https://i.postimg.cc/dLTgRxbL/cropped-circle-image.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/dLTgRxbL/cropped-circle-image.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   RESET & BASE
+============================================= */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  background:#0d0d1a;
+  color:#e8eaed;
+  height:100%;
+  height:100dvh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* =============================================
+   ANIMATED MESH BACKGROUND
+============================================= */
+.bg-mesh{
+  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(147,52,230,0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 110%, rgba(26,115,232,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(236,72,153,0.1) 0%, transparent 60%);
+  background-color:#0d0d1a;
+}
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+.bg-particles{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.particle{
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:rgba(147,52,230,0.6);
+  animation:floatUp linear infinite;
+}
+@keyframes floatUp{
+  0%{transform:translateY(100vh) translateX(0);opacity:0}
+  10%{opacity:1}
+  90%{opacity:0.3}
+  100%{transform:translateY(-10vh) translateX(30px);opacity:0}
+}
+
+/* =============================================
+   APP SHELL — full height, centered, max-width
+============================================= */
+.app{
+  position:relative;z-index:1;
+  width:100%;max-width:760px;
+  height:100%;height:100dvh;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* =============================================
+   HEADER
+============================================= */
+.hdr{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px;
+  background:rgba(13,13,26,0.8);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  flex-shrink:0;
+  position:relative;
+  z-index:10;
+}
+.hdr-back{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.6);font-size:15px;
+  text-decoration:none;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  transition:all 0.18s;flex-shrink:0;
+}
+.hdr-back:hover{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.15)}
+
+/* Bot avatar with glow ring */
+.bot-av-wrap{position:relative;flex-shrink:0}
+.bot-av-ring{
+  width:46px;height:46px;border-radius:50%;padding:2px;
+  background:conic-gradient(#9334e6,#1a73e8,#ec4899,#9334e6);
+  animation:spinRing 4s linear infinite;
+  flex-shrink:0;
+}
+@keyframes spinRing{to{transform:rotate(360deg)}}
+.bot-av{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,#1a0533 0%,#0d1c3d 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  position:relative;
+  overflow:hidden;
+}
+.bot-av::before{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(135deg,rgba(147,52,230,0.3),rgba(26,115,232,0.3));
+}
+.online-dot{
+  position:absolute;bottom:1px;right:1px;
+  width:11px;height:11px;
+  background:#22c55e;border-radius:50%;
+  border:2px solid #0d0d1a;
+  z-index:2;
+}
+.online-dot::after{
+  content:'';position:absolute;inset:-2px;border-radius:50%;
+  background:rgba(34,197,94,0.4);
+  animation:onlinePulse 2s ease-in-out infinite;
+}
+@keyframes onlinePulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.6);opacity:0}}
+
+.bot-info{flex:1;min-width:0}
+.bot-name{
+  font-size:15px;font-weight:800;
+  color:#fff;letter-spacing:-0.3px;
+  line-height:1.2;
+}
+.bot-status{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:rgba(255,255,255,0.45);
+  margin-top:2px;font-weight:500;
+}
+.status-dot{
+  width:6px;height:6px;background:#22c55e;
+  border-radius:50%;flex-shrink:0;
+  animation:blink 2s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.hdr-actions{display:flex;gap:6px;flex-shrink:0}
+.hdr-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 10px;border-radius:8px;
+  font-size:11px;font-weight:600;
+  color:rgba(255,255,255,0.5);
+  text-decoration:none;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  transition:all 0.18s;white-space:nowrap;
+}
+.hdr-btn:hover{background:rgba(147,52,230,0.15);border-color:rgba(147,52,230,0.3);color:#c084fc}
+@media(max-width:360px){.hdr-btn span{display:none}}
+
+/* =============================================
+   CHAT AREA
+============================================= */
+.chat{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:20px 14px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  scroll-behavior:smooth;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,0.08) transparent;
+}
+.chat::-webkit-scrollbar{width:3px}
+.chat::-webkit-scrollbar-track{background:transparent}
+.chat::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:99px}
+
+/* =============================================
+   WELCOME SCREEN
+============================================= */
+.welcome{
+  text-align:center;
+  padding:28px 16px 20px;
+  animation:fadeUp 0.5s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.welcome-avatar{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,#2d0a4e,#0d1c3d);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;
+  position:relative;
+  font-size:38px;
+  box-shadow:0 0 0 4px rgba(147,52,230,0.15), 0 0 0 8px rgba(26,115,232,0.08), 0 16px 40px rgba(147,52,230,0.3);
+}
+.welcome-avatar::before{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
+  background:conic-gradient(#9334e6 0deg,#1a73e8 120deg,#ec4899 240deg,#9334e6 360deg);
+  z-index:-1;animation:spinRing 5s linear infinite;
+}
+.welcome-avatar::after{
+  content:'';position:absolute;inset:-1px;border-radius:50%;
+  background:#0d0d1a;z-index:-1;
+}
+
+.welcome-name{
+  font-size:24px;font-weight:900;
+  background:linear-gradient(135deg,#c084fc,#818cf8,#60a5fa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:-0.5px;margin-bottom:8px;
+}
+.welcome-desc{
+  font-size:14px;color:rgba(255,255,255,0.45);
+  line-height:1.7;max-width:320px;margin:0 auto 20px;
+  font-weight:400;
+}
+.welcome-pills{
+  display:flex;justify-content:center;gap:8px;flex-wrap:wrap;
+}
+.welcome-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:99px;
+  padding:5px 12px;
+  font-size:11px;font-weight:600;
+  color:rgba(255,255,255,0.45);
+}
+.welcome-pill i{font-size:10px}
+.welcome-pill.purple i{color:#c084fc}
+.welcome-pill.blue i{color:#60a5fa}
+.welcome-pill.green i{color:#4ade80}
+
+/* =============================================
+   MESSAGES
+============================================= */
+.msg{
+  display:flex;gap:8px;
+  animation:msgIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px) scale(0.97)}to{opacity:1;transform:none}}
+.msg.user{flex-direction:row-reverse}
+
+.av{
+  width:30px;height:30px;border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:13px;margin-top:2px;
+}
+.av.bot{
+  background:linear-gradient(135deg,#2d0a4e,#0d1c3d);
+  border:1.5px solid rgba(147,52,230,0.3);
+  font-size:15px;
+}
+.av.user{
+  background:rgba(255,255,255,0.07);
+  border:1.5px solid rgba(255,255,255,0.1);
+}
+
+.bubble-wrap{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.msg.user .bubble-wrap{align-items:flex-end}
+
+.bubble{
+  max-width:88%;
+  border-radius:18px;
+  padding:11px 14px;
+  font-size:14px;line-height:1.7;
+  word-break:break-word;
+  position:relative;
+}
+@media(min-width:480px){.bubble{max-width:80%}}
+
+.bubble.bot{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  color:#d1d5db;
+  border-bottom-left-radius:4px;
+  backdrop-filter:blur(8px);
+}
+.bubble.user{
+  background:linear-gradient(135deg,#7c3aed,#9334e6);
+  color:#fff;
+  border-bottom-right-radius:4px;
+  box-shadow:0 4px 18px rgba(147,52,230,0.25);
+}
+.bubble b{font-weight:700;color:#e9d5ff}
+.bubble.user b{color:#fff}
+.bubble ul{margin:8px 0 4px 18px}
+.bubble li{margin-bottom:5px;color:#d1d5db}
+.bubble.user li{color:rgba(255,255,255,0.9)}
+.bubble a{color:#93c5fd;text-decoration:underline;word-break:break-all}
+
+/* Bot bubble code-like styling */
+.bubble.bot code{
+  background:rgba(255,255,255,0.08);
+  padding:2px 6px;border-radius:4px;
+  font-size:12px;color:#c084fc;font-family:monospace;
+}
+
+/* =============================================
+   TYPING INDICATOR
+============================================= */
+.typing-row{display:flex;gap:8px;align-items:flex-end}
+.typing{
+  display:flex;align-items:center;gap:4px;
+  padding:12px 16px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px;border-bottom-left-radius:4px;
+}
+.typing span{
+  width:7px;height:7px;border-radius:50%;
+  animation:typeDot 0.9s ease-in-out infinite;
+}
+.typing span:nth-child(1){background:#9334e6;animation-delay:0s}
+.typing span:nth-child(2){background:#7c3aed;animation-delay:0.15s}
+.typing span:nth-child(3){background:#1a73e8;animation-delay:0.3s}
+@keyframes typeDot{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-7px);opacity:1}}
+
+/* =============================================
+   SUGGESTION CHIPS
+============================================= */
+.sugs{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.sug{
+  padding:6px 13px;
+  background:rgba(147,52,230,0.1);
+  color:#c084fc;
+  border:1px solid rgba(147,52,230,0.25);
+  border-radius:99px;
+  font-size:12px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:all 0.16s;
+  font-family:'Inter',sans-serif;
+}
+.sug:hover,.sug:active{
+  background:rgba(147,52,230,0.28);
+  border-color:#9334e6;color:#fff;
+  transform:translateY(-1px);
+}
+
+/* =============================================
+   CATEGORY CARDS GRID
+============================================= */
+.cat-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:7px;margin-top:6px;
+  width:100%;
+}
+.cat-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;padding:12px 10px;
+  cursor:pointer;transition:all 0.18s;
+  text-align:center;
+}
+.cat-card:hover,.cat-card:active{
+  background:rgba(147,52,230,0.15);
+  border-color:rgba(147,52,230,0.4);
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(147,52,230,0.15);
+}
+.cat-icon{font-size:22px;display:block;margin-bottom:5px}
+.cat-label{font-size:12px;font-weight:600;color:rgba(255,255,255,0.65)}
+
+/* =============================================
+   INPUT AREA
+============================================= */
+.inp-shell{
+  flex-shrink:0;
+  padding:10px 12px 10px;
+  background:rgba(13,13,26,0.85);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+
+/* Safe area for notched phones */
+.inp-safe{padding-bottom:env(safe-area-inset-bottom,0px)}
+
+.inp-row{display:flex;gap:8px;align-items:flex-end}
+.inp-wrap{flex:1;position:relative}
+
+textarea#inp{
+  width:100%;
+  padding:11px 42px 11px 16px;
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.1);
+  border-radius:22px;
+  color:#f0f0f0;
+  font-size:14px;font-family:'Inter',sans-serif;
+  line-height:1.5;
+  outline:none;resize:none;
+  min-height:44px;max-height:120px;
+  transition:border-color 0.18s,background 0.18s;
+  -webkit-appearance:none;
+  display:block;
+}
+textarea#inp::placeholder{color:rgba(255,255,255,0.25)}
+textarea#inp:focus{
+  border-color:rgba(147,52,230,0.55);
+  background:rgba(255,255,255,0.08);
+  box-shadow:0 0 0 3px rgba(147,52,230,0.1);
+}
+.inp-clear{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  background:none;border:none;
+  color:rgba(255,255,255,0.3);font-size:12px;
+  cursor:pointer;display:none;
+  width:24px;height:24px;
+  display:none;align-items:center;justify-content:center;
+  border-radius:50%;transition:all 0.15s;
+}
+.inp-clear:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7)}
+
+.send-btn{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#9334e6,#1a73e8);
+  color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;cursor:pointer;flex-shrink:0;
+  transition:all 0.2s;
+  box-shadow:0 4px 16px rgba(147,52,230,0.35);
+}
+.send-btn:not(:disabled):hover{
+  transform:scale(1.06);
+  box-shadow:0 6px 22px rgba(147,52,230,0.5);
+}
+.send-btn:disabled{
+  opacity:0.35;cursor:not-allowed;
+  box-shadow:none;background:rgba(255,255,255,0.1);
+}
+
+/* =============================================
+   TOAST
+============================================= */
+#toast{
+  position:fixed;bottom:90px;left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:rgba(28,28,46,0.95);
+  border:1px solid rgba(255,255,255,0.1);
+  color:#e8eaed;
+  padding:10px 18px;border-radius:10px;
+  font-size:13px;font-weight:500;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.2s,transform 0.2s;
+  z-index:9999;white-space:nowrap;
+  backdrop-filter:blur(12px);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* =============================================
+   RESPONSIVE — TABLET & DESKTOP
+============================================= */
+@media(min-width:600px){
+  .app{border-left:1px solid rgba(255,255,255,0.05);border-right:1px solid rgba(255,255,255,0.05)}
+  .hdr{padding:14px 20px}
+  .chat{padding:24px 20px 16px}
+  .inp-shell{padding:12px 20px 12px}
+  .bubble{max-width:75%}
+  .welcome{padding:40px 20px 24px}
+  .welcome-avatar{width:90px;height:90px;font-size:44px}
+  .welcome-name{font-size:28px}
+  .welcome-desc{font-size:15px;max-width:380px}
+  .cat-grid{grid-template-columns:repeat(4,1fr)}
+  .bot-av-ring{width:50px;height:50px}
+  .bot-av{width:46px;height:46px}
+  .bot-name{font-size:16px}
+}
+@media(min-width:900px){
+  .hdr-btn{padding:7px 14px;font-size:12px}
+  .hdr-btn span{display:inline}
+  .welcome-name{font-size:30px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- Mesh Background -->
+<div class="bg-mesh" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-particles" id="particles" aria-hidden="true"></div>
+
+<!-- App Shell -->
+<div class="app">
+
+  <!-- Header -->
+  <header class="hdr" role="banner">
+    <a href="/" class="hdr-back" title="Back to Socialgati" aria-label="Go back">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <div class="bot-av-wrap">
+      <div class="bot-av-ring">
+        <div class="bot-av">🤖</div>
+      </div>
+      <span class="online-dot" aria-hidden="true"></span>
+    </div>
+    <div class="bot-info">
+      <div class="bot-name">Sarju AI</div>
+      <div class="bot-status">
+        <span class="status-dot" aria-hidden="true"></span>
+        Online &nbsp;·&nbsp; NewsTally Assistant
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <a href="/" class="hdr-btn" title="Socialgati">
+        <i class="fas fa-bolt"></i><span>Socialgati</span>
+      </a>
+      <a href="/newstally.html" class="hdr-btn" title="News">
+        <i class="fas fa-newspaper"></i><span>News</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Chat Feed -->
+  <main class="chat" id="chat" role="main" aria-label="Chat conversation" aria-live="polite"></main>
+
+  <!-- Input -->
+  <div class="inp-shell inp-safe">
+    <div class="inp-row">
+      <div class="inp-wrap">
+        <textarea id="inp" rows="1"
+          placeholder="Ask Sarju anything..."
+          aria-label="Type your message"
+          oninput="autoResize(this);showClear(this.value)"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
+        <button class="inp-clear" id="inp-clear" onclick="clearInp()" aria-label="Clear input">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <button class="send-btn" id="snd" onclick="send()" aria-label="Send message">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- =============================================
+  FLOATING PARTICLES SCRIPT
+============================================= -->
+<script>
+(function(){
+  const container = document.getElementById('particles');
+  const count = window.innerWidth < 600 ? 10 : 20;
+  for(let i = 0; i < count; i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 2.5 + 1;
+    p.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${Math.random()*14+8}s;
+      animation-delay:-${Math.random()*14}s;
+      opacity:${Math.random()*0.6+0.2};
+      background:${Math.random()>0.5?'rgba(147,52,230,0.7)':'rgba(26,115,232,0.7)'};
+    `;
+    container.appendChild(p);
+  }
+})();
+</script>
+
+<!-- =============================================
+  FIREBASE + APP LOGIC
+============================================= -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+
+const app = initializeApp({
+  apiKey:'AIzaSyA4zw5cZqxLwzkTy2e5NiHz-tGKqk1KGdI',
+  authDomain:'newstally-df03c.firebaseapp.com',
+  projectId:'newstally-df03c',
+  storageBucket:'newstally-df03c.appspot.com',
+  messagingSenderId:'506893212961',
+  appId:'1:506893212961:web:63882290195da992207260'
+});
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUser = null;
+let busy = false;
+const $ = id => document.getElementById(id);
+onAuthStateChanged(auth, u => { currentUser = u; });
+
+// ================================================================
+// KNOWLEDGE BASE
+// ================================================================
+const QA = [
+  { tags:['account','banana','create','register','signup','naya','join'],
+    a:`NewsTally pe account banana is easy! 😊<br><br><b>Steps:</b><ul><li>newstally.online open करें</li><li>Profile icon या Sign In button tap करें</li><li><b>Google से Sign In</b> — fastest way</li><li><b>Email + Password</b> से भी account बन सकता है</li><li>First login के बाद unique username choose करें</li><li>Done! ✅ Account ready</li></ul><br>Account completely <b>FREE</b> है — no subscription.` },
+
+  { tags:['login','sign in','signin','log in'],
+    a:`Login करने के लिए:<ul><li>Profile icon (bottom right) tap करें</li><li><b>Google से Sign In</b> — easiest</li><li>या Email + Password enter करें</li></ul><br><b>Problem?</b> Browser cache clear करें या incognito mode try करें.` },
+
+  { tags:['username','rules','characters','unique','available','taken','change','edit'],
+    a:`Username rules:<ul><li>Only <b>a-z, 0-9, dot (.) and underscore (_)</b> allowed</li><li>Minimum <b>3 characters</b></li><li>Maximum <b>30 characters</b></li><li>Every user का username <b>unique</b> होना चाहिए</li><li>Change करने के लिए → Profile → ✏️ pencil icon</li><li>Live availability check होता है type करते time</li></ul>` },
+
+  { tags:['password','bhool','forgot','reset','change','badalna'],
+    a:`Password reset करने के steps:<ul><li>Login page पर <b>"Forgot Password"</b> tap करें</li><li>Email enter करें</li><li>Email पर reset link आएगा</li><li>Link से new password set करें</li></ul><br><b>Tip:</b> Google से login करो — password याद रखने की ज़रूरत नहीं! 😄` },
+
+  { tags:['delete','account','hatana','remove','permanently','band'],
+    a:`Account delete करने के steps:<ul><li>Profile page open करें</li><li>☰ Settings icon tap करें (top right)</li><li>Scroll down करें</li><li><b>"Delete Account"</b> tap करें</li><li>Confirm करें</li></ul><br>⚠️ <b>Warning:</b> This is permanent — सारा data delete हो जाएगा, वापस नहीं आएगा!` },
+
+  { tags:['photo','profile','picture','avatar','image','upload','change','badlna'],
+    a:`Profile photo के बारे में:<ul><li>अगर <b>Google से login</b> किया है → Google account का photo automatically आता है</li><li>Photo change करने के लिए → <b>Google account का photo update</b> करो → NewsTally पर automatically update हो जाएगा</li><li>Email login → initials avatar show होगा</li></ul><br><b>Quick way:</b> Google Photos → profile → photo change ✅` },
+
+  { tags:['display name','naam','name change'],
+    a:`Display name Google account से आता है.<br><br>Change करने के लिए:<ul><li>Google account settings: myaccount.google.com</li><li>Name update करो</li><li>NewsTally पर re-login करो</li></ul><br>Username अलग change कर सकते हो → Profile → ✏️ icon.` },
+
+  { tags:['post','karna','likhna','create','banao','text','kaise post','socialgati','share'],
+    a:`Socialgati पर post करने के steps:<ul><li>Bottom center में <b>✏️ pen button</b> tap करें</li><li>Text लिखें (max <b>500 characters</b>)</li><li>Hashtag add करें <b>#</b> से — like #cricket #news</li><li>Photo add करना हो → image icon tap करें</li><li><b>"Share"</b> tap करें</li></ul><br>⚡ Limit: 5 posts per minute<br><br><b>Post types:</b><ul><li>📝 Text post</li><li>🖼️ Image post</li><li>📊 Poll</li><li>↺ News repost</li></ul>` },
+
+  { tags:['repost','news share','news post','news ko socialgati'],
+    a:`News को Socialgati पर repost करना:<ul><li>News card tap करें → Article open होगा</li><li><b>↺ Repost</b> button tap करें</li><li>Automatically Socialgati feed में आ जाएगा</li></ul><br>⚠️ <b>Note:</b> Same news एक user से सिर्फ <b>एक बार</b> repost हो सकती है.` },
+
+  { tags:['gati','like','heart','dil','pasand','react'],
+    a:`Gati देना बहुत easy है!<ul><li>Post पर <b>❤️ Gati button</b> tap करें</li><li>या post पर <b>double tap</b> करें — instant Gati!</li><li>Count में "+1 Gati" add होगा</li></ul><br><b>Gati = NewsTally का "Like"</b> — our original feature 😊` },
+
+  { tags:['comment','reply','jawab','comment karna'],
+    a:`Comment करने के steps:<ul><li>कोई भी post tap करें → Post detail page खुलेगी</li><li>Scroll down → Comments section दिखेगा</li><li>नीचे <b>"Add a comment..."</b> box में type करें</li><li>Enter या <b>"Post"</b> button tap करें</li></ul><br>Comments real-time में दिखते हैं! ✅` },
+
+  { tags:['follow','following','follower','kisi ko follow'],
+    a:`किसी को follow करने के steps:<ul><li>Us user की profile tap करें</li><li><b>"Follow"</b> button tap करें (purple button)</li><li>अब उनकी posts आपके feed में दिखेंगी</li><li>उन्हें notification मिलेगा</li></ul>` },
+
+  { tags:['poll','voting','vote','banao poll'],
+    a:`Poll बनाने के steps:<ul><li>✏️ Compose button tap करें</li><li>Post type में <b>📊 Poll</b> select करें</li><li>Question और options enter करें</li><li>Share करें</li></ul><br>Users vote कर सकते हैं, results real-time में दिखते हैं!` },
+
+  { tags:['search','dhundhna','find','khabar','news search'],
+    a:`News search के लिए:<ul><li>News page पर <b>🔍 search button</b> tap करें</li><li>Topic, headline, या source name type करें</li><li>Live suggestions दिखेंगे with highlighted matches</li><li>Article tap करें → directly open होगा</li></ul><br><b>Tip:</b> Recent searches save होती हैं!<br>🎤 Voice search भी available है` },
+
+  { tags:['user search','log dhundho','find user','socialgati search'],
+    a:`User search करने के लिए:<ul><li>Socialgati page पर <b>🔍 button</b> tap करें</li><li>@username या display name type करें</li><li>Instagram-style clean results दिखेंगे</li><li>Tap करें → profile खुलेगी</li></ul>` },
+
+  { tags:['save','bookmark','saved','baad mein padhna'],
+    a:`News save/bookmark करना:<ul><li>कोई भी news article open करें</li><li>Header में <b>🔖 bookmark icon</b> tap करें</li><li>"Saved!" toast दिखेगा</li></ul><br>Saved news देखने के लिए:<ul><li>Profile → <b>Saved tab</b> (🔖 icon)</li></ul>` },
+
+  { tags:['notification','alert','bell','suchna','nahi aa rahi','badge'],
+    a:`Notifications के बारे में:<ul><li>🔔 Bell icon tap करें (header या bottom nav)</li><li>Notification आती है जब:<br>→ कोई <b>Gati करे</b> आपकी post पर<br>→ कोई <b>comment करे</b><br>→ कोई <b>follow करे</b></li><li>Blue dot = unread notification</li></ul><br>Visit: <a href="/notifications.html">notifications.html</a>` },
+
+  { tags:['settings','dark mode','dark','theme','color','font','language','hindi','english'],
+    a:`Settings में ये options हैं:<ul><li>🌙 <b>Dark Mode</b> — dark theme</li><li>🔤 <b>Font Size</b> — A- या A+ से adjust करो</li><li>🎨 <b>Accent Color</b> — Blue, Green, Purple, Red, Orange</li><li>🌐 <b>Language</b> — English या Hindi</li><li>⏰ <b>Auto Dark Schedule</b></li><li>Sign Out</li><li>Delete Account</li></ul><br>Settings open करें: Profile → ☰ hamburger icon` },
+
+  { tags:['dark mode','dark','andhera','raat','night'],
+    a:`Dark mode on करना:<ul><li>Profile page open करें</li><li>Settings (☰ icon top right) tap करें</li><li><b>Dark Mode toggle</b> on करें</li></ul><br><b>Auto Dark Schedule:</b> Settings में specific time set करो 🌙` },
+
+  { tags:['share','whatsapp','telegram','twitter','x','link','copy'],
+    a:`Share करना:<br><br><b>News article share:</b><ul><li>Article open करें → share icon tap करें</li><li>WhatsApp, X, Telegram, या Copy Link choose करें</li></ul><br><b>Socialgati post share:</b><ul><li>Post पर share icon tap करें</li><li>Unique link copy या direct share करें</li></ul>` },
+
+  { tags:['app','install','download','home screen','pwa','shortcut','add'],
+    a:`NewsTally को app जैसा install करो!<br><br><b>Android (Chrome):</b><ul><li>newstally.online open करें</li><li>Browser menu (⋮) tap करें</li><li><b>"Add to Home Screen"</b> tap करें ✅</li></ul><br><b>iPhone (Safari):</b><ul><li>Share button tap करें</li><li><b>"Add to Home Screen"</b> tap करें</li></ul><br>PWA benefits: Fast loading, Offline support, Native feel` },
+
+  { tags:['privacy','data','policy','private','personal','information','collect'],
+    a:`NewsTally Privacy Policy (Short version):<ul><li>✅ Only <b>email, name, profile photo</b> collect होता है</li><li>✅ Data <b>किसी को नहीं बेचा जाता</b></li><li>✅ No ads — data advertisers को नहीं जाता</li><li>✅ Posts <b>public</b> होती हैं</li><li>✅ Bookmarks <b>सिर्फ आपके device पर</b></li><li>✅ Account <b>कभी भी delete</b> कर सकते हो</li></ul><br>Full policy: <a href="/privacy.html">privacy.html</a>` },
+
+  { tags:['terms','rules','guidelines','service','conditions'],
+    a:`Terms of Service (Summary):<ul><li>📅 <b>13+ years</b> का होना जरूरी है</li><li>🚫 Hate speech, harassment allowed नहीं</li><li>🚫 Misinformation spread नहीं करो</li><li>🚫 Spam नहीं (5 posts/minute limit)</li><li>♻️ Same news सिर्फ एक बार repost</li></ul><br>Full terms: <a href="/terms.html">terms.html</a>` },
+
+  { tags:['listen','audio','tts','text speech','speak','bol do'],
+    a:`हाँ! Text-to-Speech feature available है!<ul><li>News article open करें (newstallyopen.html)</li><li><b>🔊 Speaker icon</b> tap करें</li><li>Article पढ़ा जाएगा</li><li>Fir se tap करें → stop</li></ul><br>English + Hindi दोनों support हैं` },
+
+  { tags:['reading mode','read','mode','full screen'],
+    a:`Reading Mode एक distraction-free experience है:<ul><li>News article में reading mode icon tap करें</li><li>Full screen clean article दिखेगा</li><li>Font size adjust कर सकते हो</li><li>TTS (listen) भी available है</li></ul>` },
+
+  { tags:['problem','issue','kaam nahi','nahi chal raha','error','bug','fix'],
+    a:`Common problems के solutions:<ul><li>🔄 <b>Page refresh</b> करें</li><li>🌐 <b>Internet connection</b> check करें</li><li>🗑️ <b>Browser cache</b> clear करें</li><li>🕵️ <b>Incognito mode</b> में try करें</li><li>🔄 <b>Re-login</b> करें</li></ul><br>Still problem? Email करें:<br>📧 <a href="mailto:newstallyofficial@gmail.com">newstallyofficial@gmail.com</a>` },
+
+  { tags:['news load','news nahi','content nahi','blank','refresh'],
+    a:`News load problem fix:<ul><li>Internet connection check करें</li><li>Page refresh करें</li><li>Browser cache clear करें</li><li>थोड़ी देर बाद try करें</li></ul><br>News हर <b>2-6 घंटे</b> में automatically update होती है!` },
+
+  { tags:['kya hai','about','newstally','socialgati','platform','website'],
+    a:`<b>NewsTally</b> = India का latest news platform 📰<ul><li>Real-time news: Cricket, Sports, Tech, Business, Entertainment</li><li>Free, no subscription</li><li>Website: newstally.online</li></ul><br><b>Socialgati</b> = Inbuilt social community ⚡<ul><li>Posts, polls, reposts</li><li>Follow users, Gati, comments</li></ul>` },
+
+  { tags:['contact','email','support','reach','sampark','help'],
+    a:`NewsTally से contact करें:<ul><li>📧 <b>newstallyofficial@gmail.com</b></li><li>📸 Instagram: <b>@newstallyofficial</b></li><li>▶️ YouTube: <b>youtube.com/@newstallyofficial</b></li></ul><br>या <a href="/contact.html">contact page</a> visit करें. We reply fast! 😊` },
+
+  { tags:['cricket','sports','category','filter','news type'],
+    a:`Category filter use करो:<ul><li>NewsTally news page open करें</li><li>Top पर category buttons: <b>All, Cricket, Sports, Technology, Business...</b></li><li>कोई भी category tap करें → filtered news दिखेगी</li></ul><br>🏏 Cricket news हर 6 घंटे update होती है!` },
+
+  { tags:['sarju','ai','bot','assistant','help'],
+    a:`Main <b>Sarju AI</b> हूँ — NewsTally का official assistant! 🤖<br><br>Main इन सब में help कर सकता हूँ:<ul><li>Account, login, username issues</li><li>Profile photo, settings</li><li>Post करना, repost, Gati</li><li>News search, save, share</li><li>Privacy policy, terms</li><li>Technical problems</li></ul><br>कुछ भी पूछो — main हमेशा ready हूँ! 😊` }
+];
+
+const SUGGESTIONS = [
+  'Account kaise banayein?',
+  'Post karna hai',
+  'Password reset',
+  'Dark mode on karo',
+  'Gati kya hai?',
+  'News save karna',
+  'App install karna',
+  'Contact support'
+];
+
+// ================================================================
+// HELPERS
+// ================================================================
+const scrollDown = () => {
+  const c = $('chat');
+  requestAnimationFrame(() => c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' }));
+};
+
+window.autoResize = el => {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+};
+
+window.showClear = val => {
+  $('inp-clear').style.display = val ? 'flex' : 'none';
+};
+
+window.clearInp = () => {
+  const inp = $('inp');
+  inp.value = '';
+  inp.style.height = 'auto';
+  $('inp-clear').style.display = 'none';
+  inp.focus();
+};
+
+const showToast = msg => {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+};
+
+function esc(s){ return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+// ================================================================
+// RENDER HELPERS
+// ================================================================
+function addBot(html, sugs, cats) {
+  const area = $('chat');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+
+  let extra = '';
+  if (sugs && sugs.length) {
+    extra += `<div class="sugs" style="margin-top:10px">${sugs.map(s =>
+      `<button class="sug" onclick="tapSug('${s.replace(/'/g,"\\'")}')"> ${esc(s)}</button>`
+    ).join('')}</div>`;
+  }
+  if (cats && cats.length) {
+    extra += `<div class="cat-grid" style="margin-top:10px">${cats.map(c =>
+      `<div class="cat-card" onclick="tapSug('${c.label.replace(/'/g,"\\'")}')">
+        <span class="cat-icon">${c.icon}</span>
+        <div class="cat-label">${c.label}</div>
+      </div>`
+    ).join('')}</div>`;
+  }
+
+  div.innerHTML = `
+    <div class="av bot">🤖</div>
+    <div class="bubble-wrap">
+      <div class="bubble bot">${html}</div>
+      ${extra}
+    </div>`;
+  area.appendChild(div);
+  scrollDown();
+}
+
+function addUser(text) {
+  const area = $('chat');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `
+    <div class="av user"><i class="fas fa-user" style="font-size:11px;color:rgba(255,255,255,0.6)"></i></div>
+    <div class="bubble-wrap">
+      <div class="bubble user">${esc(text)}</div>
+    </div>`;
+  area.appendChild(div);
+  scrollDown();
+}
+
+function showTyping() {
+  const area = $('chat');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typ';
+  div.innerHTML = `
+    <div class="av bot">🤖</div>
+    <div class="typing-row">
+      <div class="typing"><span></span><span></span><span></span></div>
+    </div>`;
+  area.appendChild(div);
+  scrollDown();
+}
+
+function hideTyping() { $('typ')?.remove(); }
+
+// ================================================================
+// FIND ANSWER
+// ================================================================
+function findAnswer(msg) {
+  const q = msg.toLowerCase().trim();
+  let best = null, bestScore = 0;
+  QA.forEach(item => {
+    let score = 0;
+    item.tags.forEach(tag => {
+      if (q.includes(tag)) score += tag.split(' ').length > 1 ? 5 : (tag.length > 4 ? 3 : 2);
+    });
+    const words = q.split(/\s+/);
+    words.forEach(w => {
+      if (w.length > 3) item.tags.forEach(t => {
+        if (t.includes(w) || w.includes(t)) score += 1;
+      });
+    });
+    if (score > bestScore) { bestScore = score; best = item; }
+  });
+  return bestScore >= 2 ? best.a : null;
+}
+
+// ================================================================
+// FIREBASE SAVE
+// ================================================================
+async function saveChat(userMsg, botReply) {
+  if (!currentUser) return;
+  try {
+    await addDoc(collection(db, 'sarju_chats'), {
+      userId: currentUser.uid,
+      userMsg,
+      botReply: botReply.replace(/<[^>]+>/g,' ').substring(0, 300),
+      timestamp: serverTimestamp()
+    });
+  } catch(e) {}
+}
+
+// ================================================================
+// SEND MESSAGE
+// ================================================================
+window.send = () => {
+  if (busy) return;
+  const inp = $('inp');
+  const text = inp.value.trim();
+  if (!text) return;
+
+  inp.value = '';
+  inp.style.height = 'auto';
+  $('inp-clear').style.display = 'none';
+  $('snd').disabled = true;
+  busy = true;
+
+  addUser(text);
+  showTyping();
+
+  setTimeout(async () => {
+    hideTyping();
+    const ans = findAnswer(text);
+    let reply;
+    if (ans) {
+      reply = ans;
+      addBot(reply);
+    } else {
+      reply = `I don't have an exact answer for that. 🤔<br><br>Try asking about one of these topics:`;
+      addBot(reply, SUGGESTIONS.slice(0, 6));
+    }
+    await saveChat(text, reply);
+    busy = false;
+    $('snd').disabled = false;
+    inp.focus();
+  }, 400 + Math.random() * 350);
+};
+
+window.tapSug = text => {
+  $('inp').value = text;
+  send();
+};
+
+// ================================================================
+// INIT
+// ================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  const area = $('chat');
+
+  // Welcome screen
+  const welcome = document.createElement('div');
+  welcome.className = 'welcome';
+  welcome.innerHTML = `
+    <div class="welcome-avatar">🤖</div>
+    <h1 class="welcome-name">Hi, I'm Sarju AI!</h1>
+    <p class="welcome-desc">NewsTally's official smart assistant. Ask me anything about accounts, posts, news, settings — I'm always here to help.</p>
+    <div class="welcome-pills">
+      <span class="welcome-pill purple"><i class="fas fa-bolt"></i> Instant replies</span>
+      <span class="welcome-pill blue"><i class="fas fa-shield-alt"></i> Secure</span>
+      <span class="welcome-pill green"><i class="fas fa-globe"></i> Hindi + English</span>
+    </div>`;
+  area.appendChild(welcome);
+
+  // Initial bot message
+  setTimeout(() => {
+    addBot(
+      `Namaste! 🙏 Select a topic below or type your question:`,
+      [],
+      [
+        { icon:'👤', label:'Account banana' },
+        { icon:'📸', label:'Profile photo change' },
+        { icon:'✏️', label:'Post karna hai' },
+        { icon:'🔒', label:'Privacy policy' },
+        { icon:'⚙️', label:'Settings & Dark mode' },
+        { icon:'📰', label:'News search karna' },
+        { icon:'🔔', label:'Notifications' },
+        { icon:'🛠️', label:'Technical problem' },
+      ]
+    );
+  }, 350);
+});
+</script>
+</body>
+</html>
